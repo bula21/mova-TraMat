@@ -98,6 +98,13 @@
         >
           mdi-pencil
         </v-icon>
+        <v-icon
+          small
+          class="text-center"
+          @click="printItem(item)"
+        >
+          mdi-printer
+        </v-icon>
       </template>
     </v-data-table>
     <!-- edit order dialog huge..-->
@@ -692,6 +699,18 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Dialog Print -->
+    <v-dialog
+      v-model="dialogPrint"
+      persistent
+      max-width="1100px"
+    >
+      <v-card>
+        <PrintTransportOrder
+          :order="printOrder"
+        />
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -702,6 +721,7 @@ import SearchShipmentTextfieldAdd from "@/components/subComponents/SearchShipmen
 import NewShipmentGoods from "@/components/subComponents/NewShipmentGoods.vue";
 import NewShipmentPeople from "@/components/subComponents/NewShipmentPeople.vue";
 import NewShipmentConstruction from "@/components/subComponents/NewShipmentConstruction.vue";
+import PrintTransportOrder from "@/components/subComponents/PrintTransportOrder.vue";
 import Order from "@/model/Order";
 import DirectusAPI from "@/services/DirectusAPI";
 import { format } from "fecha";
@@ -719,6 +739,7 @@ import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
     NewShipmentPeople,
     NewShipmentConstruction,
     SearchCustomer,
+    PrintTransportOrder,
   },
 })
 export default class SearchShipment extends Vue {
@@ -738,6 +759,8 @@ export default class SearchShipment extends Vue {
   // @ts-ignore
   private editedItem = new Order();
   // @ts-ignore
+  private printOrder = new Order();
+  // @ts-ignore
   private editedOrder = new Order();
   private orderTable: Order[] = [];
   // @ts-ignore
@@ -746,6 +769,8 @@ export default class SearchShipment extends Vue {
   private dialog = false;
   // @ts-ignore
   private dialogNotMova = false;
+  // @ts-ignore
+  private dialogPrint = false;
   // @ts-ignore
   private dialogSearchClient = false;
   // @ts-ignore
@@ -1339,6 +1364,163 @@ export default class SearchShipment extends Vue {
       return order;
     }
     return order;
+  }
+
+  //@ts-ignore
+  private printItem(item: Order): void {
+    this.editedItem = new Order();
+    this.editedOrder = new Order();
+
+    if (item.id) {
+      this.editedItem = item;
+
+      //@ts-ignore
+      this.editedOrder = this.orderTable.filter((value: unknown) => {
+        //@ts-ignore
+        return value.id === this.editedItem.id;
+      });
+
+      //@ts-ignore
+      this.editedOrder = this.editedOrder[0];
+
+      let convertedOrder = new Order();
+      convertedOrder.id = this.editedOrder.id;
+      //@ts-ignore
+      convertedOrder.modified_on = new Date(this.editedOrder.modified_on);
+      convertedOrder.receiver = new Client();
+      convertedOrder.receiver.id = this.editedOrder.receiver?.id;
+      //@ts-ignore
+      convertedOrder.receiver.type = this.editedOrder.receiver?.type.id;
+      convertedOrder.receiver.name = this.editedOrder.receiver?.name;
+      convertedOrder.receiver.street = this.editedOrder.receiver?.street;
+      convertedOrder.receiver.place = this.editedOrder.receiver?.place;
+      convertedOrder.receiver.zipcode = this.editedOrder.receiver?.zipcode;
+      convertedOrder.receiver.phone = this.editedOrder.receiver?.phone;
+      convertedOrder.receiver.email = this.editedOrder.receiver?.email;
+      convertedOrder.receiver.modified_on = new Date(
+        //@ts-ignore
+        this.editedOrder.receiver.modified_on
+      );
+      convertedOrder.receiver.created_on = new Date(
+        //@ts-ignore
+        this.editedOrder.receiver?.created_on
+      );
+      //@ts-ignore
+      convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
+      convertedOrder.principal = new Client();
+      convertedOrder.principal.id = this.editedOrder.principal?.id;
+      //@ts-ignore
+      convertedOrder.principal.type = this.editedOrder.principal?.type.id;
+      convertedOrder.principal.name = this.editedOrder.principal?.name;
+      convertedOrder.principal.street = this.editedOrder.principal?.street;
+      convertedOrder.principal.place = this.editedOrder.principal?.place;
+      convertedOrder.principal.zipcode = this.editedOrder.principal?.zipcode;
+      convertedOrder.principal.phone = this.editedOrder.principal?.phone;
+      convertedOrder.principal.email = this.editedOrder.principal?.email;
+      convertedOrder.principal.modified_on = new Date(
+        //@ts-ignore
+        this.editedOrder.principal?.modified_on
+      );
+      convertedOrder.principal.created_on = new Date(
+        //@ts-ignore
+        this.editedOrder.principal?.created_on
+      );
+      //@ts-ignore
+      convertedOrder.principal.modified_by = this.editedOrder.principal?.modified_by.id;
+      //@ts-ignore
+      convertedOrder.delivery_date = new Date(this.editedOrder.delivery_date);
+      //@ts-ignore
+      convertedOrder.pick_up_date = new Date(this.editedOrder.pick_up_date);
+      convertedOrder.tour = this.editedOrder.tour;
+      //@ts-ignore
+      convertedOrder.created_on = new Date(this.editedOrder.created_on);
+      //@ts-ignore
+      convertedOrder.modified_by = this.editedOrder.modified_by.id;
+      convertedOrder.remarks = this.editedOrder.remarks;
+      convertedOrder.people = [];
+      this.editedOrder.people.forEach((element) => {
+        convertedOrder.people.push(
+          new PositionPeople(
+            element.id,
+            element.quantity_of_people,
+            //@ts-ignore
+            element.type_people.id,
+            element.quantity_of_luggage,
+            element.description_of_luagge,
+            element.length,
+            element.height,
+            element.width,
+            element.weight,
+            //@ts-ignore
+            element.order.id
+          )
+        );
+      });
+      convertedOrder.goods = [];
+      this.editedOrder.goods.forEach((element) => {
+        convertedOrder.goods.push(
+          new PositionGoods(
+            element.id,
+            element.quantity,
+            //@ts-ignore
+            element.packing_unit.id,
+            element.marking,
+            element.goods_description,
+            element.length,
+            element.gross_weight,
+            element.width,
+            element.net_weight,
+            element.value_chf,
+            //@ts-ignore
+            element.order.id,
+            element.height,
+            //@ts-ignore
+            element.dangerous_goods
+          )
+        );
+      });
+      convertedOrder.construction = [];
+      this.editedOrder.construction.forEach((element) => {
+        convertedOrder.construction.push(
+          new PositionConstruction(
+            element.id,
+            element.quantity,
+            element.description,
+            element.weight,
+            //@ts-ignore
+            element.order.id
+          )
+        );
+      });
+      //@ts-ignore
+      convertedOrder.state = this.editedOrder.state.id;
+      convertedOrder.shipper = new Client();
+      convertedOrder.shipper.id = this.editedOrder.shipper?.id;
+      //@ts-ignore
+      convertedOrder.shipper.type = this.editedOrder.shipper?.type.id;
+      convertedOrder.shipper.name = this.editedOrder.shipper?.name;
+      convertedOrder.shipper.street = this.editedOrder.shipper?.street;
+      convertedOrder.shipper.place = this.editedOrder.shipper?.place;
+      convertedOrder.shipper.zipcode = this.editedOrder.shipper?.zipcode;
+      convertedOrder.shipper.phone = this.editedOrder.shipper?.phone;
+      convertedOrder.shipper.email = this.editedOrder.shipper?.email;
+      convertedOrder.shipper.modified_on = new Date(
+        //@ts-ignore
+        this.editedOrder.shipper?.modified_on
+      );
+      convertedOrder.shipper.created_on = new Date(
+        //@ts-ignore
+        this.editedOrder.shipper?.created_on
+      );
+      //@ts-ignore
+      convertedOrder.shipper.modified_by = this.editedOrder.shipper?.modified_by.id;
+
+      this.editedOrder = convertedOrder;
+
+      this.printOrder = this.editedOrder;
+
+      this.dialogPrint = true;
+    }
   }
 
   // @ts-ignore

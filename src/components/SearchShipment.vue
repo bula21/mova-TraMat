@@ -703,11 +703,13 @@
     <v-dialog
       v-model="dialogPrint"
       persistent
-      max-width="1100px"
+      max-width="1000px"
     >
       <v-card>
         <PrintTransportOrder
+          :key="componentKey"
           :order="printOrder"
+          @closePrint="closePrint()"
         />
       </v-card>
     </v-dialog>
@@ -749,6 +751,8 @@ export default class SearchShipment extends Vue {
   private searchCategoryChild = "";
   private searchChildAdd = [];
   private searchCategoryChildAdd = [];
+  // @ts-ignore
+  private componentKey = 0;
   // @ts-ignore
   private limit = 100;
   // @ts-ignore
@@ -797,9 +801,7 @@ export default class SearchShipment extends Vue {
     "Personentransport",
     "Bauleistung mit Fahrzeug",
   ];
-  // @ts-ts-ignore
   private stateTypeFromIdToState = new Map();
-  // @ts-ts-ignore
   private stateTypeFromStateToId = new Map();
   private packagingUntisFromDesToId = new Map();
   private typePeopleFromDesToId = new Map();
@@ -864,6 +866,10 @@ export default class SearchShipment extends Vue {
       return !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig";
     },
   ];
+
+  private forceRerenderPrint() :void {
+      this.componentKey += 1;  
+    }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async mounted() {
@@ -1368,6 +1374,8 @@ export default class SearchShipment extends Vue {
 
   //@ts-ignore
   private printItem(item: Order): void {
+    this.forceRerenderPrint();
+    this.printOrder = new Order();
     this.editedItem = new Order();
     this.editedOrder = new Order();
 
@@ -1517,9 +1525,10 @@ export default class SearchShipment extends Vue {
 
       this.editedOrder = convertedOrder;
 
-      this.printOrder = this.editedOrder;
-
-      this.dialogPrint = true;
+      this.$nextTick( () => {
+        this.printOrder = this.editedOrder;
+        this.dialogPrint = true;
+      });
     }
   }
 
@@ -1724,6 +1733,13 @@ export default class SearchShipment extends Vue {
       this.dialog = true;
     }
   }
+  
+  // @ts-ignore
+  private closePrint(){
+    this.printOrder = new Order();
+    this.dialogPrint = false;
+  }
+
   // @ts-ignore
   private async close(): Promise<void> {
     // @ts-ignore

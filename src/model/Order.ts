@@ -68,6 +68,19 @@ class Order {
         }
     }
 
+    public calcLuaggage(): number {
+        let nrPices = 0;
+        if (this.people.length > 0) {
+            this.people.forEach((people: PositionPeople) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                nrPices = people.quantity_of_luggage! + nrPices;
+            });
+            return nrPices;
+        } else {
+            return 0;
+        }
+    }
+
     public calcQuantity(): number {
 
         let nrPices = 0;

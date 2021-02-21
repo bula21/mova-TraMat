@@ -107,6 +107,21 @@
         </v-icon>
       </template>
     </v-data-table>
+    <div class="text-right pt-2">
+      <v-btn
+        color="blue"
+        dark
+        @click="exportOrders()"
+      >
+        CSV-Export
+        <v-icon
+          right
+          dark
+        >
+          mdi-table-arrow-right
+        </v-icon>
+      </v-btn>
+    </div>
     <!-- edit order dialog huge..-->
     <v-dialog
       v-model="dialog"
@@ -726,6 +741,7 @@ import NewShipmentConstruction from "@/components/subComponents/NewShipmentConst
 import PrintTransportOrder from "@/components/subComponents/PrintTransportOrder.vue";
 import Order from "@/model/Order";
 import DirectusAPI from "@/services/DirectusAPI";
+import ExportCSV from "@/services/ExportCSV";
 import { format } from "fecha";
 import PositionGoods from "@/model/PositionGoods";
 import PositionPeople from "@/model/PositionPeople";
@@ -867,9 +883,9 @@ export default class SearchShipment extends Vue {
     },
   ];
 
-  private forceRerenderPrint() :void {
-      this.componentKey += 1;  
-    }
+  private forceRerenderPrint(): void {
+    this.componentKey += 1;
+  }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async mounted() {
@@ -1525,7 +1541,7 @@ export default class SearchShipment extends Vue {
 
       this.editedOrder = convertedOrder;
 
-      this.$nextTick( () => {
+      this.$nextTick(() => {
         this.printOrder = this.editedOrder;
         this.dialogPrint = true;
       });
@@ -1733,9 +1749,9 @@ export default class SearchShipment extends Vue {
       this.dialog = true;
     }
   }
-  
+
   // @ts-ignore
-  private closePrint(){
+  private closePrint() {
     this.printOrder = new Order();
     this.dialogPrint = false;
   }
@@ -2335,6 +2351,28 @@ export default class SearchShipment extends Vue {
         break;
     }
   }
+
+  //@ts-ignore
+  private async exportOrders(): Promise<void> {
+    if (!(this.orderTable.length > 0)) {
+      return;
+    }
+
+    const collectionFields = await DirectusAPI.directusAPI.getFields(
+      "trp_order",
+      {
+        fields: ["*.*.*"],
+      }
+    );
+
+    const csv = ExportCSV.createCsvOrder(
+      collectionFields.data,
+      this.orderTable
+    );
+    ExportCSV.sendCsvDownload("orders.csv", csv);
+    await this.search();
+  }
+
   // @ts-ignore
   private triggerUpdateState(): void {
     const update = this.state;

@@ -65,6 +65,7 @@ export default class PrintTransportOrder extends Vue {
   // @ts-ignore
   private orderPDF = new jsPDF();
   private packagingUntisFromIdToDes = new Map();
+  private typePeopleFromIdToDes = new Map();
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async mounted() {
@@ -79,6 +80,16 @@ export default class PrintTransportOrder extends Vue {
       //@ts-ignore
       this.packagingUntisFromIdToDes.set(value.id, value.abbreviation);
     });
+
+    const typPeopleResp = await DirectusAPI.directusAPI.getItems(
+      "trp_typ_people"
+    );
+    typPeopleResp.data.forEach((value) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      this.typePeopleFromIdToDes.set(value.id, value.description);
+    });
+
     this.orderPDF = await this.generatePDF();
     PDFObject.embed(this.orderPDF.output("datauristring"), "#objectPDF");
   }
@@ -100,7 +111,9 @@ export default class PrintTransportOrder extends Vue {
   }
 
   private async printOrder(): Promise<void> {
-    this.fileName = this.order.id + ".pdf";
+    this.fileName = "Order" + this.order.id + ".pdf";
+    this.orderPDF.save(this.fileName);
+    this.close();
   }
 
   private breakLines(text: string, spaceLine: number): [string, number] {
@@ -261,7 +274,143 @@ export default class PrintTransportOrder extends Vue {
     pdf.setFont("Helvetica", "bold");
     //people order
     if (this.order.people.length > 0) {
-      pdf.text("Markierung", borderLeft, 14.9);
+      pdf.text("Anz. Personen", borderLeft, 14.9);
+      pdf.text("Typ Pers.", borderLeft + 3.5, 14.9);
+      pdf.text("Anz. Gepäckstk.", borderLeft + 6.5, 14.9);
+      pdf.text("Beschr. Gepäckstk.", borderLeft + 10.3, 14.9);
+      pdf.text("Gewicht (kg)", borderLeft + 16, 14.9);
+      pdf.setFont("Helvetica", "normal");
+      let currPos = 15.4;
+      for (let i = 0; this.order.people.length > i; i++) {
+        if (currPos > 29.7 - 5) {
+          pdf.addPage("a4", "p");
+          currPos = 2;
+          pageNr = pageNr + 1;
+          pdf.setFontSize(9);
+          //@ts-ignore
+          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.setFontSize(11);
+          pdf.setLineWidth(0.02);
+          pdf.setDrawColor(0, 0, 0);
+          //@ts-ignore
+          pdf.setLineDash([0.05]);
+        }
+
+        pdf.text(
+          this.order.people[i].quantity_of_people + "",
+          borderLeft,
+          currPos
+        );
+        pdf.text(
+          this.typePeopleFromIdToDes.get(this.order.people[i].type_people) + "",
+          borderLeft + 3.5,
+          currPos
+        );
+        pdf.text(
+          this.order.people[i].quantity_of_luggage + "",
+          borderLeft + 6.5,
+          currPos
+        );
+        let descBag = this.breakLines(
+          this.order.people[i].description_of_luagge!,
+          22
+        );
+        pdf.text(descBag[0], borderLeft + 10.3, currPos);
+        pdf.text(this.order.people[i].weight + "", borderLeft + 16, currPos);
+
+        if (descBag[1] > 0) {
+          currPos = currPos + 0.5 * descBag[1];
+        }
+
+        currPos = currPos + 0.5;
+
+        if (currPos > 29.7 - 3) {
+          pdf.addPage("a4", "p");
+          currPos = 2;
+          pageNr = pageNr + 1;
+          pdf.setFontSize(9);
+          //@ts-ignore
+          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.setFontSize(11);
+          pdf.setLineWidth(0.02);
+          pdf.setDrawColor(0, 0, 0);
+          //@ts-ignore
+          pdf.setLineDash([0.05]);
+        }
+
+        pdf.setFont("Helvetica", "italic");
+        pdf.setFontSize(10);
+        pdf.text(
+          "Dims Gepäck (LxBxH) cm: " +
+            this.order.people[i].length +
+            "x" +
+            this.order.people[i].width +
+            "x" +
+            this.order.people[i].height,
+          borderLeft,
+          currPos
+        );
+
+        pdf.setFont("Helvetica", "normal");
+        pdf.setFontSize(12);
+
+        if (currPos > 29.7 - 10) {
+          pdf.addPage("a4", "p");
+          currPos = 2;
+          pageNr = pageNr + 1;
+          pdf.setFontSize(9);
+          //@ts-ignore
+          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.setFontSize(11);
+          pdf.setLineWidth(0.02);
+          pdf.setDrawColor(0, 0, 0);
+          //@ts-ignore
+          pdf.setLineDash([0.05]);
+        }
+
+        if (i === this.order.people.length - 1) {
+          const posiPeople = i * 0.6 + currPos;
+          pdf.line(1, posiPeople, 20, posiPeople);
+          pdf.setFont("Helvetica", "bold");
+          pdf.text("Summe:", borderLeft, posiPeople + 0.5);
+          pdf.setFont("Helvetica", "normal");
+          pdf.text(
+            "Pers.: " + this.order.calcQuantity(),
+            borderLeft + 3.5,
+            posiPeople + 0.5
+          );
+          pdf.text(
+            "Gepäckstk.: " + this.order.calcLuaggage(),
+            borderLeft + 6.5,
+            posiPeople + 0.5
+          );
+          pdf.text(
+            this.order.calcCBM() + " m^3",
+            borderLeft + 10.3,
+            posiPeople + 0.5
+          );
+          pdf.text(
+            this.order.calcWeight() + " kg",
+            borderLeft + 16,
+            posiPeople + 0.5
+          );
+          pdf.line(1, posiPeople + 0.7, 20, posiPeople + 0.7);
+          pdf.line(1, posiPeople + 0.8, 20, posiPeople + 0.8);
+          let bemerkung = this.breakLines(this.order.remarks + "", 46);
+          pdf.text("Bemerkung: " + bemerkung[0], borderLeft, posiPeople + 1.6);
+          //@ts-ignore
+          pdf.setLineDash([0.0]);
+          pdf.line(borderLeft, posiPeople + 6.5, 8, posiPeople + 6.5);
+          pdf.setFont("Helvetica", "italic");
+          pdf.setFontSize(10);
+          pdf.text(
+            "Datum, (Stempel), Unterschirft",
+            borderLeft,
+            posiPeople + 7
+          );
+        }
+        currPos = currPos + 0.8;
+      }
     }
     //goods order
     if (this.order.goods.length > 0) {
@@ -287,7 +436,7 @@ export default class PrintTransportOrder extends Vue {
           pdf.setLineDash([0.05]);
         }
 
-        let arrayMark = this.breakLines(this.order.goods[i].marking!, 17);
+        let arrayMark = this.breakLines(this.order.goods[i].marking!, 14);
         pdf.text(arrayMark[0], borderLeft, currPos);
         pdf.text(this.order.goods[i].quantity! + "", borderLeft + 4, currPos);
         pdf.text(
@@ -299,7 +448,7 @@ export default class PrintTransportOrder extends Vue {
         );
         let arrayDesc = this.breakLines(
           this.order.goods[i].goods_description!,
-          30
+          26
         );
         pdf.text(arrayDesc[0], borderLeft + 8.5, currPos);
         pdf.text(
@@ -336,7 +485,7 @@ export default class PrintTransportOrder extends Vue {
         pdf.text(
           "Gefahrgut: " +
             this.order.goods[i].dangerous_goods +
-            ", (LxBxH): " +
+            ", (LxBxH) cm: " +
             this.order.goods[i].length +
             "x" +
             this.order.goods[i].width +
@@ -390,7 +539,7 @@ export default class PrintTransportOrder extends Vue {
           );
           pdf.line(1, positGoods + 0.7, 20, positGoods + 0.7);
           pdf.line(1, positGoods + 0.8, 20, positGoods + 0.8);
-          let bemerkung = this.breakLines(this.order.remarks + "", 15 * 9);
+          let bemerkung = this.breakLines(this.order.remarks + "", 46);
           pdf.text("Bemerkung: " + bemerkung[0], borderLeft, positGoods + 1.6);
           //@ts-ignore
           pdf.setLineDash([0.0]);
@@ -409,11 +558,95 @@ export default class PrintTransportOrder extends Vue {
     }
     //constr. order
     if (this.order.construction.length > 0) {
-      pdf.text("Markierung", borderLeft, 14.9);
+      pdf.text("Quantität Leistung", borderLeft, 14.9);
+      pdf.text("Beschreibung", borderLeft + 4, 14.9);
+      pdf.text("Gewicht (kg)", borderLeft + 15, 14.9);
+      pdf.setFont("Helvetica", "normal");
+      let currPos = 15.4;
+      for (let i = 0; this.order.construction.length > i; i++) {
+        if (currPos > 29.7 - 5) {
+          pdf.addPage("a4", "p");
+          currPos = 2;
+          pageNr = pageNr + 1;
+          pdf.setFontSize(9);
+          //@ts-ignore
+          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.setFontSize(11);
+          pdf.setLineWidth(0.02);
+          pdf.setDrawColor(0, 0, 0);
+          //@ts-ignore
+          pdf.setLineDash([0.05]);
+        }
+
+        pdf.text(
+          this.order.construction[i].quantity! + "",
+          borderLeft,
+          currPos
+        );
+        let arrayDes = this.breakLines(
+          this.order.construction[i].description!,
+          27
+        );
+        pdf.text(arrayDes[0], borderLeft + 4, currPos);
+        pdf.text(
+          this.order.construction[i].weight + "",
+          borderLeft + 15,
+          currPos
+        );
+
+        if (arrayDes[1] > 0) {
+          currPos = currPos + 0.5 * arrayDes[1];
+        }
+
+        currPos = currPos + 0.5;
+
+        pdf.setFont("Helvetica", "normal");
+        pdf.setFontSize(12);
+
+        if (currPos > 29.7 - 9) {
+          pdf.addPage("a4", "p");
+          currPos = 2;
+          pageNr = pageNr + 1;
+          pdf.setFontSize(9);
+          //@ts-ignore
+          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.setFontSize(11);
+          pdf.setLineWidth(0.02);
+          pdf.setDrawColor(0, 0, 0);
+          //@ts-ignore
+          pdf.setLineDash([0.05]);
+        }
+
+        if (i === this.order.construction.length - 1) {
+          const positCons = i * 0.6 + currPos;
+          pdf.line(1, positCons, 20, positCons);
+          pdf.setFont("Helvetica", "bold");
+          pdf.text("Summe:", borderLeft, positCons + 0.5);
+          pdf.setFont("Helvetica", "normal");
+          pdf.text(
+            "Quantität Leistungen: " + this.order.calcQuantity(),
+            borderLeft + 4,
+            positCons + 0.5
+          );
+          pdf.text(
+            this.order.calcWeight() + " kg",
+            borderLeft + 15,
+            positCons + 0.5
+          );
+          pdf.line(1, positCons + 0.7, 20, positCons + 0.7);
+          pdf.line(1, positCons + 0.8, 20, positCons + 0.8);
+          let bemerkung = this.breakLines(this.order.remarks + "", 46);
+          pdf.text("Bemerkung: " + bemerkung[0], borderLeft, positCons + 1.6);
+          //@ts-ignore
+          pdf.setLineDash([0.0]);
+          pdf.line(borderLeft, positCons + 6.5, 8, positCons + 6.5);
+          pdf.setFont("Helvetica", "italic");
+          pdf.setFontSize(10);
+          pdf.text("Datum, (Stempel), Unterschirft", borderLeft, positCons + 7);
+        }
+        currPos = currPos + 0.8;
+      }
     }
-
-    this.order.remarks;
-
     return pdf;
   }
 

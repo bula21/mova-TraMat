@@ -6,13 +6,7 @@
       <br>
       ToDo:
       <br>
-      -Export to CSV orders
-      <br>
-      -Export to CSV Customers (optional)
-      <br>
-      -Scheduling Orders/Vehicles
-      <br>
-      -Print Transport Orders
+      -Scheduling Orders/Vehicles with automatic print of Transport Orders
       <br>
       -Edit Vehicles
     </v-form>
@@ -23,5 +17,7 @@
 import { Component, Vue } from "vue-property-decorator";
 
 @Component
-export default class Scheduling extends Vue {}
+export default class Scheduling extends Vue {
+  //
+}
 </script>

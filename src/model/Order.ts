@@ -44,6 +44,105 @@ class Order {
         this.pick_up_date = pick_up_date;
         this.tour = tour;
     }
+
+    public calcCBM(): number {
+
+        let cbm = 0;
+
+        if (this.goods.length > 0) {
+            this.goods.forEach((good: PositionGoods) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                cbm = cbm + good.length! / 100 * good.width! / 100 * good.height! / 100;
+            });
+            return Math.round(cbm * 1000) / 1000;
+        }
+
+        if (this.people.length > 0) {
+            this.people.forEach((people: PositionPeople) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                cbm = cbm + people.length! / 100 * people.width! / 100 * people.height! / 100;
+            });
+            return Math.round(cbm * 1000) / 1000;
+        } else {
+            return 0;
+        }
+    }
+
+    public calcLuaggage(): number {
+        let nrPices = 0;
+        if (this.people.length > 0) {
+            this.people.forEach((people: PositionPeople) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                nrPices = people.quantity_of_luggage! + nrPices;
+            });
+            return nrPices;
+        } else {
+            return 0;
+        }
+    }
+
+    public calcQuantity(): number {
+
+        let nrPices = 0;
+
+        if (this.goods.length > 0) {
+            this.goods.forEach((good: PositionGoods) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                nrPices = good.quantity! + nrPices;
+            });
+            return nrPices;
+        }
+
+        if (this.construction.length > 0) {
+            this.construction.forEach((cons: PositionConstruction) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                nrPices = cons.quantity! + nrPices;
+            });
+            return nrPices;
+        }
+
+        if (this.people.length > 0) {
+            this.people.forEach((people: PositionPeople) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                nrPices = people.quantity_of_people! + nrPices;
+            });
+            return nrPices;
+        } else {
+            return 0;
+        }
+
+    }
+
+    public calcWeight(): number {
+
+        let weight = 0;
+
+        if (this.goods.length > 0) {
+            this.goods.forEach((good: PositionGoods) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                weight = good.gross_weight! + weight;
+            });
+            return Math.round(weight * 1000) / 1000;
+        }
+
+        if (this.construction.length > 0) {
+            this.construction.forEach((cons: PositionConstruction) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                weight = cons.weight! + weight;
+            });
+            return Math.round(weight * 1000) / 1000;
+        }
+
+        if (this.people.length > 0) {
+            this.people.forEach((people: PositionPeople) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                weight = people.weight! + weight;
+            });
+            return Math.round(weight * 1000) / 1000;
+        } else {
+            return 0;
+        }
+    }
 }
 
 export default Order;

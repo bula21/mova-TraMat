@@ -319,6 +319,21 @@
         </v-icon>
       </template>
     </v-data-table>
+    <div class="text-right pt-2">
+      <v-btn
+        color="blue"
+        dark
+        @click="exportCustomers()"
+      >
+        CSV-Export
+        <v-icon
+          right
+          dark
+        >
+          mdi-table-arrow-right
+        </v-icon>
+      </v-btn>
+    </div>
   </v-container>
 </template>
 
@@ -327,6 +342,7 @@ import DirectusAPI from "@/services/DirectusAPI";
 import { Component, Vue } from "vue-property-decorator";
 import Client from "../model/Client";
 import { format } from "fecha";
+import ExportCSV from "@/services/ExportCSV";
 
 @Component
 export default class NewShipment extends Vue {
@@ -640,6 +656,27 @@ export default class NewShipment extends Vue {
       return client;
     }
     return client;
+  }
+
+  //@ts-ignore
+  private exportCustomers(): void {
+    if (!(this.clients.length > 0 && this.clients[0].id)) {
+      return;
+    }
+
+    //@ts-ignore
+    const collectionFields = [];
+
+    this.headers.forEach((elemt) => {
+      collectionFields.push(elemt.value);
+    });
+
+    const csv = ExportCSV.createCsvClients(
+      //@ts-ignore
+      collectionFields,
+      this.clients
+    );
+    ExportCSV.sendCsvDownload("clients.csv", csv);
   }
 }
 </script>

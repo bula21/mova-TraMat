@@ -12,13 +12,13 @@
           v-model="quantity"
           :rules="quanityRules"
           required
-          label="Anzahl Personen"
+          label="Anzahl Personen*"
         />
       </v-col>
       <v-col cols="4">
         <v-select
           v-model="selectedTypeOfPeople"
-          label="Typ Personen"
+          label="Typ Personen*"
           :items="typeOfPeople"
           :rules="requiredRules"
           required
@@ -35,7 +35,7 @@
       <v-col cols="3">
         <v-text-field
           v-model="quantityOfLuagge"
-          label="Anz. Gepäckstücke"
+          label="Anz. Gepäckstücke*"
           :rules="quanityRules"
           hint="Falls kein Gepäck 0 eintragen"
           persistent-hint
@@ -47,7 +47,7 @@
           v-model="goodsDescripttion"
           :rules="requiredRules"
           rows="2"
-          label="Beschreibung Gepäckstücke"
+          label="Beschreibung Gepäckstücke*"
           row-height="7"
           hint="Falls kein Gepäck bitte vermerken"
           persistent-hint
@@ -64,7 +64,7 @@
           hint="Falls kein Gepäck 0 eintragen"
           persistent-hint
           required
-          label="Länge (cm)"
+          label="Länge (cm)*"
         />
       </v-col>
       <v-col
@@ -77,7 +77,7 @@
           hint="Falls kein Gepäck 0 eintragen"
           persistent-hint
           required
-          label="Breite (cm)"
+          label="Breite (cm)*"
         />
       </v-col>
       <v-col
@@ -90,7 +90,7 @@
           hint="Falls kein Gepäck 0 eintragen"
           persistent-hint
           required
-          label="Höhe (cm)"
+          label="Höhe (cm)*"
         />
       </v-col>
       <v-col cols="3">
@@ -100,7 +100,7 @@
           hint="Falls kein Gepäck 0 eintragen"
           persistent-hint
           required
-          label="Gewicht (kg)"
+          label="Gewicht (kg)*"
         />
       </v-col>
     </v-row>

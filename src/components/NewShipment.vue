@@ -25,7 +25,7 @@
         >
           mdi-truck
         </v-icon>
-        Sendung Erfassen
+        Transport Erfassen
       </h2>
     </v-row>
     <v-row class="my-1">
@@ -192,16 +192,16 @@
             >
               <v-card
                 flat
-                max-width="600px"
+                max-width="1000px"
               >
                 <h3 class="mt-5">
                   Lieferadresse*
                 </h3>
                 <v-row class="mt-0">
                   <v-col
-                    :lg="6"
-                    :md="6"
-                    :sm="6"
+                    :lg="4"
+                    :md="4"
+                    :sm="4"
                   >
                     <v-text-field
                       v-model="deliveryID"
@@ -231,7 +231,12 @@
                   </v-col>
                 </v-row>
                 <v-row class="mt-n7">
-                  <v-col>
+                  <v-col
+                    :lg="6"
+                    :md="6"
+                    :xs="12"
+                    :sm="12"
+                  >
                     <v-textarea
                       v-model="deliveryAddress"
                       label="Lieferadresse"
@@ -240,6 +245,46 @@
                       readonly
                       :rules="idRulesText"
                     />
+                  </v-col>
+                  <v-col
+                    :lg="3"
+                    :md="3"
+                    :xs="3"
+                    :sm="3"
+                  >
+                    <v-text-field
+                      v-model="anlagenID"
+                      label="Anlagen ID"
+                      outlined
+                      hint="Falls vorhanden"
+                      persistent-hint
+                      @change="triggerUdatePickupID('anlagen')"
+                    />
+                    <v-text-field
+                      v-model="rasterLagerplatz"
+                      label="Raster Lagerplatz"
+                      hint="Falls vorhanden Bsp. 54H"
+                      :rules="notRequired ? rasterLagerplatzRules : []"
+                      :required="!notRequired"
+                      persistent-hint
+                      outlined
+                      @change="triggerUpdateRaster()"
+                    />
+                  </v-col>
+                  <v-col
+                    :lg="3"
+                    :md="3"
+                    :xs="3"
+                    :sm="3"
+                  >
+                    <v-subheader class="ml-n3">
+                      {{ anlagenDescription }}
+                    </v-subheader>
+                    <v-spacer class="mt-13" />
+                    <a
+                      href="https://bula21.sharepoint.com/:b:/g/ET8U9pIWlRZBr8TBRva8LoMBt6yWOMfQcqZbztSiLokZ-g?e=bSO2KO"
+                      target="_blank"
+                    >Raster Lagerplatz</a>
                   </v-col>
                 </v-row>
               </v-card>
@@ -624,7 +669,6 @@
                 v-model="pickupAddress"
                 label="Ladeadresse"
                 filled
-                auto-grow
                 readonly
               />
             </v-col>
@@ -640,7 +684,6 @@
                 v-model="principalAddress"
                 label="Auftraggeber"
                 filled
-                auto-grow
                 readonly
               />
             </v-col>
@@ -658,8 +701,14 @@
                 v-model="deliveryAddress"
                 label="Lieferadresse"
                 filled
-                auto-grow
                 readonly
+              />
+              <v-textarea
+                v-model="overViewAnlage"
+                label="Anlage ID / Raster Lagerplatz"
+                filled
+                readonly
+                rows="2"
               />
             </v-col>
           </v-col>
@@ -828,6 +877,12 @@ export default class NewShipment extends Vue {
   // @ts-ignore
   private principalID: number = null;
   // @ts-ignore
+  private anlagenID: number = null;
+  // @ts-ignore
+  private anlagenDescription = "--";
+  // @ts-ignore
+  private rasterLagerplatz = "";
+  // @ts-ignore
   private principalAddress = "";
   // @ts-ignore
   private orderType = [
@@ -886,7 +941,21 @@ export default class NewShipment extends Vue {
       /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v) ||
       "Wert ungültig (Format hh:mm)",
   ];
-
+  // @ts-ignore
+  private notRequired = true;
+  // @ts-ignore
+  private rasterLagerplatzRules = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (this.currentOrder.receiver?.type === 1) {
+        this.notRequired = false;
+        return !!v || "Wert ist erforderlich";
+      } else {
+        this.notRequired = true;
+        return true;
+      }
+    }
+  ];
   // @ts-ignore
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1247,6 +1316,8 @@ export default class NewShipment extends Vue {
         delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+        anlage: order.anlage,
+        raster_lagerplatz: order.rasterLagerplatz,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1320,6 +1391,8 @@ export default class NewShipment extends Vue {
         delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+        anlage: order.anlage,
+        raster_lagerplatz: order.rasterLagerplatz,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1381,6 +1454,8 @@ export default class NewShipment extends Vue {
         delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+        anlage: order.anlage,
+        raster_lagerplatz: order.rasterLagerplatz,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1415,6 +1490,39 @@ export default class NewShipment extends Vue {
     this.$refs.formFirst.reset();
     // @ts-ignore
     this.$refs.formSecond.reset();
+
+
+    // @ts-ignore
+    this.searchClient = new Client();
+    // @ts-ignore
+    this.pickupID = null;
+    // @ts-ignore
+    this.pickupAddress = "";
+    // @ts-ignore
+    this.deliveryID = null;
+    // @ts-ignore
+    this.deliveryAddress = "";
+    // @ts-ignore
+    this.principalID = null;
+    // @ts-ignore
+    this.anlagenID = null;
+    // @ts-ignore
+    this.anlagenDescription = "--";
+    // @ts-ignore
+    this.rasterLagerplatz = "";
+    // @ts-ignore
+    this.principalAddress = "";
+    // @ts-ignore
+    this.remarksTrpOrder = "";
+    // @ts-ignore
+    this.datePickup = new Date().toISOString().substring(0, 10);
+    // @ts-ignore
+    this.dateDelivery = new Date().toISOString().substring(0, 10);
+    // @ts-ignore
+    this.pickupTime = "00:00";
+    // @ts-ignore
+    this.deliveryTime = "00:00";
+    this.currentOrder = new Order();
   }
 
   // @ts-ignore
@@ -1514,6 +1622,12 @@ export default class NewShipment extends Vue {
   }
 
   // @ts-ignore
+  private triggerUpdateRaster(): void {
+    const upade = this.rasterLagerplatz;
+    this.currentOrder.rasterLagerplatz = upade;
+  }
+
+  // @ts-ignore
   private async triggerUdatePickupID(kindOfUpdate: string): void {
     let resp;
 
@@ -1598,6 +1712,32 @@ export default class NewShipment extends Vue {
           this.pickupAddress = "Kunden ID nicht vorhanden";
         }
         break;
+
+      case "anlagen":
+        try {
+          resp = await DirectusAPI.directusAPI.getItems("anlage", {
+            filter: {
+              anlagen_id: {
+                eq: this.anlagenID,
+              },
+            },
+          });
+        } catch {
+          this.anlagenDescription = "Analgen ID nicht vorhanden";
+        }
+        if (resp?.data[0]) {
+          //@ts-ignore
+          this.anlagenDescription = resp.data[0].anlagenname + ", " + resp.data[0].standort;
+          //@ts-ignore
+          this.rasterLagerplatz = resp.data[0].standortcode;
+          //@ts-ignore
+          this.currentOrder.anlage = resp.data[0].id;
+          //@ts-ignore
+          this.currentOrder.rasterLagerplatz = resp.data[0].standortcode;
+        } else {
+          this.anlagenDescription = "Analgen ID nicht vorhanden";
+        }
+        break;
     }
   }
 
@@ -1646,6 +1786,14 @@ export default class NewShipment extends Vue {
 
   set orderDetails(v: string) {
     this.orderDetails = v;
+  }
+
+  get overViewAnlage(): string {
+    return "Anlagen ID: " + this.anlagenID + "\nRaster Lagerplatz: " + this.rasterLagerplatz;
+  }
+
+  set overViewAnlage(v: string) {
+    this.overViewAnlage = v;
   }
 }
 </script>

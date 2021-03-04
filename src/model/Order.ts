@@ -10,9 +10,9 @@ class Order {
     created_on?: Date;
     modified_by?: number;
     remarks?: string;
-    people = [new PositionPeople()]
+    people = [new PositionPeople()];
     goods = [new PositionGoods];
-    construction = [new PositionConstruction()]
+    construction = [new PositionConstruction()];
     state?: string;
     shipper?: Client;
     receiver?: Client;
@@ -20,6 +20,8 @@ class Order {
     delivery_date?: Date;
     pick_up_date?: Date;
     tour?: number;
+    anlage?: number;
+    rasterLagerplatz?: string;
 
 
     constructor(id?: number, modified_on?: Date, created_on?: Date, modified_by?: number,
@@ -30,7 +32,9 @@ class Order {
         principal?: Client,
         delivery_date?: Date,
         pick_up_date?: Date,
-        tour?: number) {
+        tour?: number,
+        anlage?: number,
+        rasterLagerplatz?: string) {
         this.id = id;
         this.modified_on = modified_on;
         this.created_on = created_on;
@@ -43,6 +47,8 @@ class Order {
         this.delivery_date = delivery_date;
         this.pick_up_date = pick_up_date;
         this.tour = tour;
+        this.anlage = anlage;
+        this.rasterLagerplatz = rasterLagerplatz;
     }
 
     public calcCBM(): number {

@@ -114,10 +114,10 @@
               Wenn du noch Fragen hast oder Probleme beim Login, melde dich
               einfach via Slack unter
               <a
-                href="https://bulacafe21.slack.com/archives/CN44F51JM"
+                href="https://bulacafe21.slack.com/archives/C01Q6N2HL2X"
                 target="_blank"
               >
-                #20_log_21_trp_requests</a>
+                #20_log_21_trp_tramat_request</a>
               .
             </v-card-text>
             <v-divider />

@@ -19,6 +19,22 @@
               outlined
               text
               color="blue"
+              @click="dialog = true"
+            >
+              Hilfe
+              <v-icon
+                right
+                dark
+              >
+                mdi-face-agent
+              </v-icon>
+            </v-btn>
+            <v-btn
+              class="mr-3"
+              rounded
+              outlined
+              text
+              color="blue"
               @click="openTap()"
             >
               Open tap
@@ -29,7 +45,6 @@
                 mdi-plus
               </v-icon>
             </v-btn>
-
             <v-btn
               rounded
               outlined
@@ -126,6 +141,49 @@
         </v-navigation-drawer>
       </nav>
       <router-view />
+      <!-- help PopUp-->
+      <div class="text-center">
+        <v-dialog
+          v-model="dialog"
+          width="600"
+        >
+          <v-card>
+            <v-card-title class="headline grey lighten-2">
+              Hilfe / Support TraMat
+            </v-card-title>
+            <v-card-text>
+              <br>
+              <b> Wiki & Dokumentation </b>
+              <br>
+              TraMat, LOGomat & LOGdb - Wiki & FAQ -
+              <a
+                href="https://avanti.bula21.ch/x/ugrJAQ"
+                target="_blank"
+              >https://avanti.bula21.ch/x/ugrJAQ</a>
+              <br> <br>
+              <b> Kontakt </b>
+              <br>
+              Fragen via Slack <a
+                href="https://bulacafe21.slack.com/archives/C01Q6N2HL2X"
+                target="_blank"
+              >
+                #20_log_21_trp_tramat_request.</a>
+              <br><br>
+            </v-card-text>
+            <v-divider />
+            <v-card-actions>
+              <v-spacer />
+              <v-btn
+                color="primary"
+                text
+                @click="dialog = false"
+              >
+                Thanks, I got it!
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </div>
     </v-main>
   </v-app>
 </template>
@@ -142,6 +200,9 @@ export default class NavigationMenu extends Vue {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   private group = null;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  private dialog = false;
 
   async logOut(): Promise<void> {
     try {

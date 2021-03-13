@@ -353,6 +353,48 @@
               </v-card>
             </v-col>
           </v-row>
+          <v-row class="mt-n4">
+            <v-col
+              :lg="3"
+              :md="3"
+              :xs="3"
+              :sm="3"
+            >
+              <v-text-field
+                v-model="anlagenID"
+                label="Anlagen ID"
+                outlined
+                hint="Falls vorhanden"
+                persistent-hint
+                @change="triggerUdatePickupID('anlagen')"
+              />
+              <v-text-field
+                v-model="rasterLagerplatz"
+                label="Raster Lagerplatz"
+                hint="Falls vorhanden Bsp. 54H"
+                :rules="notRequired ? rasterLagerplatzRules : []"
+                :required="!notRequired"
+                persistent-hint
+                outlined
+                @change="triggerUpdateRaster()"
+              />
+            </v-col>
+            <v-col
+              :lg="3"
+              :md="3"
+              :xs="3"
+              :sm="3"
+            >
+              <v-subheader class="ml-n3">
+                {{ anlagenDescription }}
+              </v-subheader>
+              <v-spacer class="mt-13" />
+              <a
+                href="https://bula21.sharepoint.com/:b:/g/ET8U9pIWlRZBr8TBRva8LoMBt6yWOMfQcqZbztSiLokZ-g?e=bSO2KO"
+                target="_blank"
+              >Raster Lagerplatz</a>
+            </v-col>
+          </v-row>
           <v-row>
             <v-col
               :lg="8"
@@ -844,6 +886,12 @@ export default class SearchShipment extends Vue {
   // @ts-ignore
   private deliveryPhone = "";
   // @ts-ignore
+  private anlagenID: number = null;
+  // @ts-ignore
+  private anlagenDescription = "--";
+  // @ts-ignore
+  private rasterLagerplatz = "";
+  // @ts-ignore
   private menuDatePickup = false;
   // @ts-ignore
   private menuDateDelivery = false;
@@ -874,13 +922,27 @@ export default class SearchShipment extends Vue {
       /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v) ||
       "Wert ungültig (Format hh:mm)",
   ];
-
   // @ts-ignore
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: string) => {
       return !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig";
     },
+  ];
+  // @ts-ignore
+  private notRequired = true;
+  // @ts-ignore
+  private rasterLagerplatzRules = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (this.editedOrder.receiver?.type === 1) {
+        this.notRequired = false;
+        return !!v || "Wert ist erforderlich";
+      } else {
+        this.notRequired = true;
+        return true;
+      }
+    }
   ];
 
   private forceRerenderPrint(): void {
@@ -1012,7 +1074,7 @@ export default class SearchShipment extends Vue {
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-              100 +
+            100 +
             cbm;
           pos++;
           posDescription =
@@ -1029,7 +1091,7 @@ export default class SearchShipment extends Vue {
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-              100 +
+            100 +
             cbm;
           pos++;
           posDescription =
@@ -1376,7 +1438,7 @@ export default class SearchShipment extends Vue {
         // @ts-ignore
         filter,
         limit: this.limit,
-        fields: ["*.*.*"],
+        fields: ["*.*.*.*"],
       });
 
       response.data.forEach((value) => {
@@ -1431,6 +1493,21 @@ export default class SearchShipment extends Vue {
       );
       //@ts-ignore
       convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
+
+      try {
+        //@ts-ignore
+        convertedOrder.anlage = this.editedOrder.anlage.id;
+      } catch {
+        convertedOrder.anlage = 0;
+      }
+
+      try {
+        //@ts-ignore
+        convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
+      } catch {
+        convertedOrder.rasterLagerplatz = "";
+      }
+
       convertedOrder.principal = new Client();
       convertedOrder.principal.id = this.editedOrder.principal?.id;
       //@ts-ignore
@@ -1596,6 +1673,25 @@ export default class SearchShipment extends Vue {
       );
       //@ts-ignore
       convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
+      //@ts-ignore
+      convertedOrder.anlage = this.editedOrder.anlage.id;
+
+      DirectusAPI.directusAPI.getItems("anlage", {
+        filter: {
+          id: {
+            eq: convertedOrder.anlage,
+          },
+        },
+      }).then((resp) => {
+        //@ts-ignore
+        this.anlagenID = resp.data[0].anlagen_id;
+      });
+
+      //@ts-ignore
+      convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
+      //@ts-ignore
+      this.anlagenDescription = this.editedOrder.anlage.anlagenname + ", " + this.editedOrder.anlage.standort;
+
       convertedOrder.principal = new Client();
       convertedOrder.principal.id = this.editedOrder.principal?.id;
       //@ts-ignore
@@ -1714,6 +1810,8 @@ export default class SearchShipment extends Vue {
       this.deliveryID = this.editedOrder.receiver.id;
       //@ts-ignore
       this.deliveryAddress = this.printAdress(this.editedOrder.receiver);
+      //@ts-ignore
+      this.rasterLagerplatz = this.editedOrder.rasterLagerplatz;
       //@ts-ignore
       this.principalID = this.editedOrder.principal?.id;
       //@ts-ignore
@@ -1875,6 +1973,8 @@ export default class SearchShipment extends Vue {
           delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+          anlage: order.anlage,
+          raster_lagerplatz: order.rasterLagerplatz,
         }
       );
 
@@ -1987,6 +2087,8 @@ export default class SearchShipment extends Vue {
           delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+          anlage: order.anlage,
+          raster_lagerplatz: order.rasterLagerplatz,
         }
       );
 
@@ -2082,6 +2184,8 @@ export default class SearchShipment extends Vue {
           delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+          anlage: order.anlage,
+          raster_lagerplatz: order.rasterLagerplatz,
         }
       );
 
@@ -2349,6 +2453,32 @@ export default class SearchShipment extends Vue {
           this.pickupAddress = "Kunden ID nicht vorhanden";
         }
         break;
+
+      case "anlagen":
+        try {
+          resp = await DirectusAPI.directusAPI.getItems("anlage", {
+            filter: {
+              anlagen_id: {
+                eq: this.anlagenID,
+              },
+            },
+          });
+        } catch {
+          this.anlagenDescription = "Analgen ID nicht vorhanden";
+        }
+        if (resp?.data[0]) {
+          //@ts-ignore
+          this.anlagenDescription = resp.data[0].anlagenname + ", " + resp.data[0].standort;
+          //@ts-ignore
+          this.rasterLagerplatz = resp.data[0].standortcode;
+          //@ts-ignore
+          this.editedOrder.anlage = resp.data[0].id;
+          //@ts-ignore
+          this.editedOrder.rasterLagerplatz = resp.data[0].standortcode;
+        } else {
+          this.anlagenDescription = "Analgen ID nicht vorhanden";
+        }
+        break;
     }
   }
 
@@ -2397,6 +2527,12 @@ export default class SearchShipment extends Vue {
   private triggerUpdateRemarks(): void {
     const upade = this.remarksTrpOrder;
     this.editedOrder.remarks = upade;
+  }
+
+  // @ts-ignore
+  private triggerUpdateRaster(): void {
+    const upade = this.rasterLagerplatz;
+    this.editedOrder.rasterLagerplatz = upade;
   }
 
   // @ts-ignore

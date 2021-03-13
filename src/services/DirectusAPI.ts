@@ -2,16 +2,14 @@ import DirectusSDK from "@directus/sdk-js";
 import store from "@/store";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const BASE_URL = "https://log.bula21.ch/";
-const PROJECT = "LOGdb";
 
 //https://web.archive.org/web/20201028134719/https://docs.directus.io/guides/js-sdk.html
 class DirectusAPI {
 
     private directusSDK: DirectusSDK;
     public STORAGE_KEY = "directus-sdk-js";
+    public BASE_URL = "https://log.bula21.ch/";
+    public PROJECT = "LOGdb";
 
     constructor() {
         /**
@@ -35,9 +33,9 @@ class DirectusAPI {
           storage?: IStorageAPI;
         **/
         this.directusSDK = new DirectusSDK({
-            url: BASE_URL,
+            url: this.BASE_URL,
             mode: "jwt",
-            project: PROJECT,
+            project: this.PROJECT,
             persist: true,
             // eslint-disable-next-line
             // @ts-ignore
@@ -67,8 +65,8 @@ class DirectusAPI {
                 **/
                 email: email,
                 password: password,
-                url: BASE_URL,
-                project: PROJECT,
+                url: this.BASE_URL,
+                project: this.PROJECT,
                 persist: true,
             });
             store.commit("loginSuccess");

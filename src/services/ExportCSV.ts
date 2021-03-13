@@ -34,6 +34,13 @@ class ExportCSV {
                 x.modified_by = newRow;
             }
 
+            if (x.anlage) {
+                //@ts-ignore
+                const newRow = x.anlage.id;
+                //@ts-ignore
+                x.anlage = newRow;
+            }
+
             if (x.state) {
                 //@ts-ignore
                 const newState = x.state.state;

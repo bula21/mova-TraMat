@@ -216,8 +216,10 @@ export default class NavigationMenu extends Vue {
     const newTap = await window.open(window.location.href);
 
     setTimeout(async () => {
-      await newTap?.postMessage(await localStorage.getItem(DirectusAPI.STORAGE_KEY), window.location.protocol + "//" + window.location.host);
-    }, 3000);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      await newTap?.postMessage(await [JSON.parse(sessionStorage.getItem(DirectusAPI.STORAGE_KEY)).token,DirectusAPI.directusAPI.config.localExp], window.location.protocol + "//" + window.location.host);
+    }, 2000);
   }
 }
 </script>

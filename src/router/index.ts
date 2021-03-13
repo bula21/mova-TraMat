@@ -7,9 +7,13 @@ Vue.use(VueRouter);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ensureLoggedIn(to: Route, from: Route, next: { (to?: string | false | void | Location | ((vm: Vue) => any) | undefined): void; (): void; }) {
+  
     if (!(to.matched.some(record => record.meta.public))) {
+
         if (DirectusAPI.directusAPI.config.token) {
+
             if (DirectusAPI.directusAPI.config.localExp !== undefined && DirectusAPI.directusAPI.config.localExp > Date.now()) {
+
                 next();
             } else {
                 next({
@@ -29,9 +33,13 @@ function ensureLoggedIn(to: Route, from: Route, next: { (to?: string | false | v
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function redirectLoggedIn(to: Route, from: Route, next: { (to?: string | false | void | Location | ((vm: Vue) => any) | undefined): void; (): void; }) {
+
     if (to.matched.some(record => record.meta.disableIfLoggedIn)) {
+
         if (DirectusAPI.directusAPI.config.token) {
+
             if (DirectusAPI.directusAPI.config.localExp !== undefined && DirectusAPI.directusAPI.config.localExp > Date.now()) {
+
                 next({
                     name: "home",
                 });

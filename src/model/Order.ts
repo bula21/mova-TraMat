@@ -22,6 +22,7 @@ class Order {
     tour?: number;
     anlage?: number;
     rasterLagerplatz?: string;
+    delivery_only?: boolean;
 
 
     constructor(id?: number, modified_on?: Date, created_on?: Date, modified_by?: number,
@@ -34,7 +35,8 @@ class Order {
         pick_up_date?: Date,
         tour?: number,
         anlage?: number,
-        rasterLagerplatz?: string) {
+        rasterLagerplatz?: string,
+        delivery_only?: boolean) {
         this.id = id;
         this.modified_on = modified_on;
         this.created_on = created_on;
@@ -49,6 +51,7 @@ class Order {
         this.tour = tour;
         this.anlage = anlage;
         this.rasterLagerplatz = rasterLagerplatz;
+        this.delivery_only = delivery_only;
     }
 
     public calcCBM(): number {

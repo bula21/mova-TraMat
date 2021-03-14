@@ -657,9 +657,9 @@
             </div>
           </v-col>
         </v-row>
-        <v-divider />
+        <v-divider class="mt-4" />
         <!-- remarks order-->
-        <v-row class="mt-n7">
+        <v-row class="mt-n2">
           <v-col
             :lg="8"
             :md="8"
@@ -678,7 +678,18 @@
             </v-col>
           </v-col>
         </v-row>
-        <v-divider />
+        <v-row class="mt-n10">
+          <v-col class="ml-2 ">
+            <v-checkbox
+              v-model="onlyDelivery"
+              label="Nur Anlieferung (kein Transport durch BuLa)"
+              color="red"
+              hide-details
+              @change="triggerUpdateDeliveryOnly()"
+            />
+          </v-col>
+        </v-row>
+        <v-divider class="mt-4" />
         <!-- actions order-->
         <v-card-actions class="mt-1">
           <v-spacer />
@@ -874,6 +885,8 @@ export default class SearchShipment extends Vue {
   private typePeopleFromDesToId = new Map();
   // @ts-ts-ignore
   private stateTypeArray: string[] = [];
+  //@ts-ignore
+  private onlyDelivery = false;
   // @ts-ignore
   private state = "";
   // @ts-ignore
@@ -1083,7 +1096,7 @@ export default class SearchShipment extends Vue {
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-              100 +
+            100 +
             cbm;
           pos++;
           posDescription =
@@ -1100,7 +1113,7 @@ export default class SearchShipment extends Vue {
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-              100 +
+            100 +
             cbm;
           pos++;
           posDescription =
@@ -1560,6 +1573,7 @@ export default class SearchShipment extends Vue {
       //@ts-ignore
       convertedOrder.modified_by = this.editedOrder.modified_by.id;
       convertedOrder.remarks = this.editedOrder.remarks;
+      convertedOrder.delivery_only = this.editedOrder.delivery_only;
       convertedOrder.people = [];
       this.editedOrder.people.forEach((element) => {
         convertedOrder.people.push(
@@ -1753,6 +1767,7 @@ export default class SearchShipment extends Vue {
       //@ts-ignore
       convertedOrder.modified_by = this.editedOrder.modified_by.id;
       convertedOrder.remarks = this.editedOrder.remarks;
+      convertedOrder.delivery_only = this.editedOrder.delivery_only;
       convertedOrder.people = [];
       this.editedOrder.people.forEach((element) => {
         convertedOrder.people.push(
@@ -1857,6 +1872,8 @@ export default class SearchShipment extends Vue {
       this.deliveryTime = format(this.editedOrder.delivery_date, "HH:mm");
       // @ts-ignore
       this.remarksTrpOrder = this.editedOrder.remarks;
+      // @ts-ignore
+      this.onlyDelivery = this.editedOrder.delivery_only;
       this.state = this.stateTypeFromIdToState.get(this.editedOrder.state);
 
       if (this.editedOrder.goods.length > 0) {
@@ -2022,6 +2039,7 @@ export default class SearchShipment extends Vue {
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
           anlage: order.anlage,
           raster_lagerplatz: order.rasterLagerplatz,
+          delivery_only: order.delivery_only,
         }
       );
 
@@ -2136,6 +2154,7 @@ export default class SearchShipment extends Vue {
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
           anlage: order.anlage,
           raster_lagerplatz: order.rasterLagerplatz,
+          delivery_only: order.delivery_only,
         }
       );
 
@@ -2233,6 +2252,7 @@ export default class SearchShipment extends Vue {
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
           anlage: order.anlage,
           raster_lagerplatz: order.rasterLagerplatz,
+          delivery_only: order.delivery_only,
         }
       );
 
@@ -2581,6 +2601,12 @@ export default class SearchShipment extends Vue {
   private triggerUpdateRaster(): void {
     const upade = this.rasterLagerplatz;
     this.editedOrder.rasterLagerplatz = upade;
+  }
+
+  // @ts-ignore
+  private triggerUpdateDeliveryOnly(): void {
+    const upade = this.onlyDelivery;
+    this.editedOrder.delivery_only = upade;
   }
 
   // @ts-ignore

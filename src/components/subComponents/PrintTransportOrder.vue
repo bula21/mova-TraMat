@@ -148,6 +148,16 @@ export default class PrintTransportOrder extends Vue {
     const borderLeft = 1.2;
     let pageNr = 1;
 
+    if (this.order.delivery_only) {
+      //check and mark if only delivery
+      pdf.setFontSize(32);
+      pdf.setTextColor(255, 0, 0);
+      //@ts-ignore
+      pdf.text("Nur Anlieferung / kein Transport durch BuLa", borderLeft+0.5, 4.5,null, -45);
+    }
+
+    pdf.setTextColor(0, 0, 0);
+
     //document creation DIN A4 21,0 cm x 29,7 cm
     pdf.setFontSize(9);
     pdf.setFont("Helvetica", "normal");

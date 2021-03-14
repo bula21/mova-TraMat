@@ -34,6 +34,14 @@ class ExportCSV {
                 x.modified_by = newRow;
             }
 
+            //@ts-ignore
+            if (x.owner) {
+                //@ts-ignore
+                const newRow = x.owner.first_name + " " + x.owner.last_name;
+                //@ts-ignore
+                x.owner = newRow;
+            }
+
             if (x.anlage) {
                 //@ts-ignore
                 const newRow = x.anlage.id;

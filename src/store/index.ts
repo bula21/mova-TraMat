@@ -7,6 +7,11 @@ export default new Vuex.Store({
   state: {
     userStatus: "",
     searchOption: "undefined",
+    Email: "",
+    authorisation: "",
+    authorisationDescript: "",
+    firstAndLastName: "",
+    abbreviation:"",
   },
   mutations: {
     loginSuccess(state) {
@@ -31,6 +36,21 @@ export default new Vuex.Store({
     },
     changeSearchToEmpty(state) {
       state.searchOption = "undefined";
+    },
+    updateAuthorisation(state, payload) {
+      state.authorisation = payload;
+    },
+    updateAuthorisationDescript(state, payload) {
+      state.authorisationDescript = payload;
+    },
+    updateEmail(state, payload) {
+      state.Email = payload;
+    },
+    updatefirstAndLastName(state, payload) {
+      state.firstAndLastName = payload;
+    },
+    updateAbbreviation(state, payload) {
+      state.abbreviation = payload;
     },
   },
   actions: {

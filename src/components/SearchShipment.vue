@@ -756,6 +756,11 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Dialog Warn Permissions-->
+    <DialogPermissions
+      :dialog-warn-permissions="warnPermissions"
+      @closePermissions="closePermissions()"
+    />
     <!-- Dialog Print -->
     <v-dialog
       v-model="dialogPrint"
@@ -790,6 +795,7 @@ import PositionPeople from "@/model/PositionPeople";
 import PositionConstruction from "@/model/PositionConstruction";
 import Client from "@/model/Client";
 import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
+import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
 
 @Component({
   components: {
@@ -800,6 +806,7 @@ import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
     NewShipmentConstruction,
     SearchCustomer,
     PrintTransportOrder,
+    DialogPermissions,
   },
 })
 export default class SearchShipment extends Vue {
@@ -837,6 +844,8 @@ export default class SearchShipment extends Vue {
   private dialogSearchClient = false;
   // @ts-ignore
   private dialogWarnOrder = false;
+  // @ts-ignore
+  private warnPermissions = false;
   // @ts-ignore
   private titleDialogOrder = "";
   // @ts-ignore
@@ -942,7 +951,7 @@ export default class SearchShipment extends Vue {
         this.notRequired = true;
         return true;
       }
-    }
+    },
   ];
 
   private forceRerenderPrint(): void {
@@ -1074,7 +1083,7 @@ export default class SearchShipment extends Vue {
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-            100 +
+              100 +
             cbm;
           pos++;
           posDescription =
@@ -1091,7 +1100,7 @@ export default class SearchShipment extends Vue {
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-            100 +
+              100 +
             cbm;
           pos++;
           posDescription =
@@ -1452,6 +1461,19 @@ export default class SearchShipment extends Vue {
 
   //@ts-ignore
   private printItem(item: Order): void {
+    if (
+      this.$store.state.authorisation === "Public" ||
+      this.$store.state.authorisation === "Lagerbauten" ||
+      this.$store.state.authorisation === "Dienstleiter/in" ||
+      this.$store.state.authorisation === "Besteller/in" ||
+      this.$store.state.authorisation === "Ressortleitung" ||
+      this.$store.state.authorisation === "Bereichsleitung Infra" ||
+      this.$store.state.authorisation === "Lagerplatz"
+    ) {
+      this.warnPermissions = true;
+      return;
+    }
+
     this.forceRerenderPrint();
     this.printOrder = new Order();
     this.editedItem = new Order();
@@ -1673,24 +1695,33 @@ export default class SearchShipment extends Vue {
       );
       //@ts-ignore
       convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
-      //@ts-ignore
-      convertedOrder.anlage = this.editedOrder.anlage.id;
 
-      DirectusAPI.directusAPI.getItems("anlage", {
-        filter: {
-          id: {
-            eq: convertedOrder.anlage,
-          },
-        },
-      }).then((resp) => {
+      try {
         //@ts-ignore
-        this.anlagenID = resp.data[0].anlagen_id;
-      });
+        convertedOrder.anlage = this.editedOrder.anlage.id;
 
-      //@ts-ignore
-      convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
-      //@ts-ignore
-      this.anlagenDescription = this.editedOrder.anlage.anlagenname + ", " + this.editedOrder.anlage.standort;
+        DirectusAPI.directusAPI
+          .getItems("anlage", {
+            filter: {
+              id: {
+                eq: convertedOrder.anlage,
+              },
+            },
+          })
+          .then((resp) => {
+            //@ts-ignore
+            this.anlagenID = resp.data[0].anlagen_id;
+          });
+      } catch {
+        convertedOrder.anlage = 0;
+      }
+
+      try {
+        //@ts-ignore
+        convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
+      } catch {
+        convertedOrder.rasterLagerplatz = "";
+      }
 
       convertedOrder.principal = new Client();
       convertedOrder.principal.id = this.editedOrder.principal?.id;
@@ -1845,13 +1876,29 @@ export default class SearchShipment extends Vue {
         this.type = this.orderType[2];
       }
       this.dialog = true;
+      if (
+        this.$store.state.authorisation === "Public" ||
+        this.$store.state.authorisation === "Lagerbauten" ||
+        this.$store.state.authorisation === "Dienstleiter/in" ||
+        this.$store.state.authorisation === "Besteller/in" ||
+        this.$store.state.authorisation === "Ressortleitung" ||
+        this.$store.state.authorisation === "Bereichsleitung Infra" ||
+        this.$store.state.authorisation === "Lagerplatz"
+      ) {
+        this.warnPermissions = true;
+      }
     }
   }
 
   // @ts-ignore
-  private closePrint() {
+  private closePrint(): void {
     this.printOrder = new Order();
     this.dialogPrint = false;
+  }
+
+  // @ts-ignore
+  private closePermissions(): void {
+    this.warnPermissions = false;
   }
 
   // @ts-ignore
@@ -2467,8 +2514,9 @@ export default class SearchShipment extends Vue {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
         }
         if (resp?.data[0]) {
-          //@ts-ignore
-          this.anlagenDescription = resp.data[0].anlagenname + ", " + resp.data[0].standort;
+          this.anlagenDescription =
+            //@ts-ignore
+            resp.data[0].anlagenname + ", " + resp.data[0].standort;
           //@ts-ignore
           this.rasterLagerplatz = resp.data[0].standortcode;
           //@ts-ignore

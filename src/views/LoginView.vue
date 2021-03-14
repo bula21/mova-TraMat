@@ -118,7 +118,12 @@
                 target="_blank"
               >
                 #20_log_21_trp_tramat_request</a>
-              .
+              oder löse ein Ticket über den 
+              <a
+                href="https://voila.bula21.ch/servicedesk/customer/portal/8"
+                target="_blank"
+              >
+                Service Desk</a>.
             </v-card-text>
             <v-divider />
             <v-card-actions>

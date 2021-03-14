@@ -353,6 +353,48 @@
               </v-card>
             </v-col>
           </v-row>
+          <v-row class="mt-n4">
+            <v-col
+              :lg="3"
+              :md="3"
+              :xs="3"
+              :sm="3"
+            >
+              <v-text-field
+                v-model="anlagenID"
+                label="Anlagen ID"
+                outlined
+                hint="Falls vorhanden"
+                persistent-hint
+                @change="triggerUdatePickupID('anlagen')"
+              />
+              <v-text-field
+                v-model="rasterLagerplatz"
+                label="Raster Lagerplatz"
+                hint="Falls vorhanden Bsp. 54H"
+                :rules="notRequired ? rasterLagerplatzRules : []"
+                :required="!notRequired"
+                persistent-hint
+                outlined
+                @change="triggerUpdateRaster()"
+              />
+            </v-col>
+            <v-col
+              :lg="3"
+              :md="3"
+              :xs="3"
+              :sm="3"
+            >
+              <v-subheader class="ml-n3">
+                {{ anlagenDescription }}
+              </v-subheader>
+              <v-spacer class="mt-13" />
+              <a
+                href="https://bula21.sharepoint.com/:b:/g/ET8U9pIWlRZBr8TBRva8LoMBt6yWOMfQcqZbztSiLokZ-g?e=bSO2KO"
+                target="_blank"
+              >Raster Lagerplatz</a>
+            </v-col>
+          </v-row>
           <v-row>
             <v-col
               :lg="8"
@@ -615,9 +657,9 @@
             </div>
           </v-col>
         </v-row>
-        <v-divider />
+        <v-divider class="mt-4" />
         <!-- remarks order-->
-        <v-row class="mt-n7">
+        <v-row class="mt-n2">
           <v-col
             :lg="8"
             :md="8"
@@ -636,7 +678,18 @@
             </v-col>
           </v-col>
         </v-row>
-        <v-divider />
+        <v-row class="mt-n10">
+          <v-col class="ml-2 ">
+            <v-checkbox
+              v-model="onlyDelivery"
+              label="Nur Anlieferung (kein Transport durch BuLa)"
+              color="red"
+              hide-details
+              @change="triggerUpdateDeliveryOnly()"
+            />
+          </v-col>
+        </v-row>
+        <v-divider class="mt-4" />
         <!-- actions order-->
         <v-card-actions class="mt-1">
           <v-spacer />
@@ -714,6 +767,11 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Dialog Warn Permissions-->
+    <DialogPermissions
+      :dialog-warn-permissions="warnPermissions"
+      @closePermissions="closePermissions()"
+    />
     <!-- Dialog Print -->
     <v-dialog
       v-model="dialogPrint"
@@ -748,6 +806,7 @@ import PositionPeople from "@/model/PositionPeople";
 import PositionConstruction from "@/model/PositionConstruction";
 import Client from "@/model/Client";
 import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
+import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
 
 @Component({
   components: {
@@ -758,6 +817,7 @@ import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
     NewShipmentConstruction,
     SearchCustomer,
     PrintTransportOrder,
+    DialogPermissions,
   },
 })
 export default class SearchShipment extends Vue {
@@ -796,6 +856,8 @@ export default class SearchShipment extends Vue {
   // @ts-ignore
   private dialogWarnOrder = false;
   // @ts-ignore
+  private warnPermissions = false;
+  // @ts-ignore
   private titleDialogOrder = "";
   // @ts-ignore
   private textDialogOrder = "";
@@ -823,6 +885,8 @@ export default class SearchShipment extends Vue {
   private typePeopleFromDesToId = new Map();
   // @ts-ts-ignore
   private stateTypeArray: string[] = [];
+  //@ts-ignore
+  private onlyDelivery = false;
   // @ts-ignore
   private state = "";
   // @ts-ignore
@@ -843,6 +907,12 @@ export default class SearchShipment extends Vue {
   private principalAddress = "";
   // @ts-ignore
   private deliveryPhone = "";
+  // @ts-ignore
+  private anlagenID: number = null;
+  // @ts-ignore
+  private anlagenDescription = "--";
+  // @ts-ignore
+  private rasterLagerplatz = "";
   // @ts-ignore
   private menuDatePickup = false;
   // @ts-ignore
@@ -874,12 +944,26 @@ export default class SearchShipment extends Vue {
       /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v) ||
       "Wert ungültig (Format hh:mm)",
   ];
-
   // @ts-ignore
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: string) => {
       return !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig";
+    },
+  ];
+  // @ts-ignore
+  private notRequired = true;
+  // @ts-ignore
+  private rasterLagerplatzRules = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (this.editedOrder.receiver?.type === 1) {
+        this.notRequired = false;
+        return !!v || "Wert ist erforderlich";
+      } else {
+        this.notRequired = true;
+        return true;
+      }
     },
   ];
 
@@ -1012,7 +1096,7 @@ export default class SearchShipment extends Vue {
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-              100 +
+            100 +
             cbm;
           pos++;
           posDescription =
@@ -1029,7 +1113,7 @@ export default class SearchShipment extends Vue {
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-              100 +
+            100 +
             cbm;
           pos++;
           posDescription =
@@ -1376,7 +1460,7 @@ export default class SearchShipment extends Vue {
         // @ts-ignore
         filter,
         limit: this.limit,
-        fields: ["*.*.*"],
+        fields: ["*.*.*.*"],
       });
 
       response.data.forEach((value) => {
@@ -1390,6 +1474,19 @@ export default class SearchShipment extends Vue {
 
   //@ts-ignore
   private printItem(item: Order): void {
+    if (
+      this.$store.state.authorisation === "Public" ||
+      this.$store.state.authorisation === "Lagerbauten" ||
+      this.$store.state.authorisation === "Dienstleiter/in" ||
+      this.$store.state.authorisation === "Besteller/in" ||
+      this.$store.state.authorisation === "Ressortleitung" ||
+      this.$store.state.authorisation === "Bereichsleitung Infra" ||
+      this.$store.state.authorisation === "Lagerplatz"
+    ) {
+      this.warnPermissions = true;
+      return;
+    }
+
     this.forceRerenderPrint();
     this.printOrder = new Order();
     this.editedItem = new Order();
@@ -1431,6 +1528,21 @@ export default class SearchShipment extends Vue {
       );
       //@ts-ignore
       convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
+
+      try {
+        //@ts-ignore
+        convertedOrder.anlage = this.editedOrder.anlage.id;
+      } catch {
+        convertedOrder.anlage = 0;
+      }
+
+      try {
+        //@ts-ignore
+        convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
+      } catch {
+        convertedOrder.rasterLagerplatz = "";
+      }
+
       convertedOrder.principal = new Client();
       convertedOrder.principal.id = this.editedOrder.principal?.id;
       //@ts-ignore
@@ -1461,6 +1573,7 @@ export default class SearchShipment extends Vue {
       //@ts-ignore
       convertedOrder.modified_by = this.editedOrder.modified_by.id;
       convertedOrder.remarks = this.editedOrder.remarks;
+      convertedOrder.delivery_only = this.editedOrder.delivery_only;
       convertedOrder.people = [];
       this.editedOrder.people.forEach((element) => {
         convertedOrder.people.push(
@@ -1596,6 +1709,34 @@ export default class SearchShipment extends Vue {
       );
       //@ts-ignore
       convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
+
+      try {
+        //@ts-ignore
+        convertedOrder.anlage = this.editedOrder.anlage.id;
+
+        DirectusAPI.directusAPI
+          .getItems("anlage", {
+            filter: {
+              id: {
+                eq: convertedOrder.anlage,
+              },
+            },
+          })
+          .then((resp) => {
+            //@ts-ignore
+            this.anlagenID = resp.data[0].anlagen_id;
+          });
+      } catch {
+        convertedOrder.anlage = 0;
+      }
+
+      try {
+        //@ts-ignore
+        convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
+      } catch {
+        convertedOrder.rasterLagerplatz = "";
+      }
+
       convertedOrder.principal = new Client();
       convertedOrder.principal.id = this.editedOrder.principal?.id;
       //@ts-ignore
@@ -1626,6 +1767,7 @@ export default class SearchShipment extends Vue {
       //@ts-ignore
       convertedOrder.modified_by = this.editedOrder.modified_by.id;
       convertedOrder.remarks = this.editedOrder.remarks;
+      convertedOrder.delivery_only = this.editedOrder.delivery_only;
       convertedOrder.people = [];
       this.editedOrder.people.forEach((element) => {
         convertedOrder.people.push(
@@ -1715,6 +1857,8 @@ export default class SearchShipment extends Vue {
       //@ts-ignore
       this.deliveryAddress = this.printAdress(this.editedOrder.receiver);
       //@ts-ignore
+      this.rasterLagerplatz = this.editedOrder.rasterLagerplatz;
+      //@ts-ignore
       this.principalID = this.editedOrder.principal?.id;
       //@ts-ignore
       this.principalAddress = this.printAdress(this.editedOrder.principal);
@@ -1728,6 +1872,8 @@ export default class SearchShipment extends Vue {
       this.deliveryTime = format(this.editedOrder.delivery_date, "HH:mm");
       // @ts-ignore
       this.remarksTrpOrder = this.editedOrder.remarks;
+      // @ts-ignore
+      this.onlyDelivery = this.editedOrder.delivery_only;
       this.state = this.stateTypeFromIdToState.get(this.editedOrder.state);
 
       if (this.editedOrder.goods.length > 0) {
@@ -1747,13 +1893,29 @@ export default class SearchShipment extends Vue {
         this.type = this.orderType[2];
       }
       this.dialog = true;
+      if (
+        this.$store.state.authorisation === "Public" ||
+        this.$store.state.authorisation === "Lagerbauten" ||
+        this.$store.state.authorisation === "Dienstleiter/in" ||
+        this.$store.state.authorisation === "Besteller/in" ||
+        this.$store.state.authorisation === "Ressortleitung" ||
+        this.$store.state.authorisation === "Bereichsleitung Infra" ||
+        this.$store.state.authorisation === "Lagerplatz"
+      ) {
+        this.warnPermissions = true;
+      }
     }
   }
 
   // @ts-ignore
-  private closePrint() {
+  private closePrint(): void {
     this.printOrder = new Order();
     this.dialogPrint = false;
+  }
+
+  // @ts-ignore
+  private closePermissions(): void {
+    this.warnPermissions = false;
   }
 
   // @ts-ignore
@@ -1875,6 +2037,9 @@ export default class SearchShipment extends Vue {
           delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+          anlage: order.anlage,
+          raster_lagerplatz: order.rasterLagerplatz,
+          delivery_only: order.delivery_only,
         }
       );
 
@@ -1987,6 +2152,9 @@ export default class SearchShipment extends Vue {
           delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+          anlage: order.anlage,
+          raster_lagerplatz: order.rasterLagerplatz,
+          delivery_only: order.delivery_only,
         }
       );
 
@@ -2082,6 +2250,9 @@ export default class SearchShipment extends Vue {
           delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+          anlage: order.anlage,
+          raster_lagerplatz: order.rasterLagerplatz,
+          delivery_only: order.delivery_only,
         }
       );
 
@@ -2349,6 +2520,33 @@ export default class SearchShipment extends Vue {
           this.pickupAddress = "Kunden ID nicht vorhanden";
         }
         break;
+
+      case "anlagen":
+        try {
+          resp = await DirectusAPI.directusAPI.getItems("anlage", {
+            filter: {
+              anlagen_id: {
+                eq: this.anlagenID,
+              },
+            },
+          });
+        } catch {
+          this.anlagenDescription = "Analgen ID nicht vorhanden";
+        }
+        if (resp?.data[0]) {
+          this.anlagenDescription =
+            //@ts-ignore
+            resp.data[0].anlagenname + ", " + resp.data[0].standort;
+          //@ts-ignore
+          this.rasterLagerplatz = resp.data[0].standortcode;
+          //@ts-ignore
+          this.editedOrder.anlage = resp.data[0].id;
+          //@ts-ignore
+          this.editedOrder.rasterLagerplatz = resp.data[0].standortcode;
+        } else {
+          this.anlagenDescription = "Analgen ID nicht vorhanden";
+        }
+        break;
     }
   }
 
@@ -2397,6 +2595,18 @@ export default class SearchShipment extends Vue {
   private triggerUpdateRemarks(): void {
     const upade = this.remarksTrpOrder;
     this.editedOrder.remarks = upade;
+  }
+
+  // @ts-ignore
+  private triggerUpdateRaster(): void {
+    const upade = this.rasterLagerplatz;
+    this.editedOrder.rasterLagerplatz = upade;
+  }
+
+  // @ts-ignore
+  private triggerUpdateDeliveryOnly(): void {
+    const upade = this.onlyDelivery;
+    this.editedOrder.delivery_only = upade;
   }
 
   // @ts-ignore

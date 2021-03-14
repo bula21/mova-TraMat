@@ -27,7 +27,14 @@ export default class App extends Vue {
     window.addEventListener("message", (event) => {
       // Do we trust the sender of this message?  (might be
       // different from what we originally opened, for example).
-      if (event.origin !== window.location.protocol + "//" + window.location.host) return;
+
+      if (
+        event.origin === window.location.protocol + "//" + window.location.host
+      ) {
+        // all good
+      } else {
+        return;
+      }
 
       const matchToken = /^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/;
       let token: string;

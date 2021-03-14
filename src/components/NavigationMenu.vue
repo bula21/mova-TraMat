@@ -163,11 +163,17 @@
               <br> <br>
               <b> Kontakt </b>
               <br>
-              Fragen via Slack <a
+              Bitte Fragen an: <a
                 href="https://bulacafe21.slack.com/archives/C01Q6N2HL2X"
                 target="_blank"
               >
-                #20_log_21_trp_tramat_request.</a>
+                #20_log_21_trp_tramat_request</a>
+              oder löse ein Ticket über den 
+              <a
+                href="https://voila.bula21.ch/servicedesk/customer/portal/8"
+                target="_blank"
+              >
+                Service Desk</a>.
               <br><br>
             </v-card-text>
             <v-divider />
@@ -216,8 +222,14 @@ export default class NavigationMenu extends Vue {
     const newTap = await window.open(window.location.href);
 
     setTimeout(async () => {
-      await newTap?.postMessage(await localStorage.getItem(DirectusAPI.STORAGE_KEY), window.location.protocol + "//" + window.location.host);
-    }, 3000);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+
+      await newTap?.postMessage(
+        await sessionStorage.getItem(DirectusAPI.STORAGE_KEY),
+        window.location.protocol + "//" + window.location.host
+      );
+    }, 2000);
   }
 }
 </script>

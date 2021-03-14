@@ -334,6 +334,11 @@
         </v-icon>
       </v-btn>
     </div>
+    <!-- Dialog Warn Permissions-->
+    <DialogPermissions
+      :dialog-warn-permissions="warnPermissions"
+      @closePermissions="closePermissions()"
+    />
   </v-container>
 </template>
 
@@ -343,12 +348,19 @@ import { Component, Vue } from "vue-property-decorator";
 import Client from "../model/Client";
 import { format } from "fecha";
 import ExportCSV from "@/services/ExportCSV";
+import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
 
-@Component
+@Component({
+  components: {
+    DialogPermissions,
+  },
+})
 export default class NewShipment extends Vue {
   /* eslint-disable @typescript-eslint/ban-ts-comment */
   // @ts-ignore
   private dialog = false;
+  // @ts-ignore
+  private warnPermissions = false;
   private editing = false;
   // @ts-ignore
   private valid = true;
@@ -559,6 +571,18 @@ export default class NewShipment extends Vue {
       this.dialog = true;
       this.editing = true;
 
+      if (
+        this.$store.state.authorisation === "Public" ||
+        this.$store.state.authorisation === "Lagerbauten" ||
+        this.$store.state.authorisation === "Dienstleiter/in" ||
+        this.$store.state.authorisation === "Besteller/in" ||
+        this.$store.state.authorisation === "Ressortleitung" ||
+        this.$store.state.authorisation === "Bereichsleitung Infra" ||
+        this.$store.state.authorisation === "Lagerplatz"
+      ) {
+        this.warnPermissions = true;
+      }
+
       // @ts-ignore
       if (this.editedItem.type === "external") {
         this.typeNewCustomer = "extern";
@@ -571,6 +595,19 @@ export default class NewShipment extends Vue {
 
   private async persistClient(client: Client): Promise<void> {
     if (this.editing) {
+      if (
+        this.$store.state.authorisation === "Public" ||
+        this.$store.state.authorisation === "Lagerbauten" ||
+        this.$store.state.authorisation === "Dienstleiter/in" ||
+        this.$store.state.authorisation === "Besteller/in" ||
+        this.$store.state.authorisation === "Ressortleitung" ||
+        this.$store.state.authorisation === "Bereichsleitung Infra" ||
+        this.$store.state.authorisation === "Lagerplatz"
+      ) {
+        this.warnPermissions = true;
+        return;
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await DirectusAPI.directusAPI.updateItem("trp_client", client.id!, {
         type: client.type,
@@ -656,6 +693,11 @@ export default class NewShipment extends Vue {
       return client;
     }
     return client;
+  }
+
+  // @ts-ignore
+  private closePermissions(): void {
+    this.warnPermissions = false;
   }
 
   //@ts-ignore

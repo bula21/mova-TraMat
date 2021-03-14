@@ -650,6 +650,22 @@
         </v-row>
         <v-row class="mt-n7">
           <v-col
+            :lg="4"
+            :md="4"
+            :sm="4"
+            :xs="4"
+          >
+            <v-checkbox
+              v-model="onlyDelivery"
+              label="Nur Anlieferung (kein Transport durch BuLa)"
+              color="red"
+              hide-details
+              @change="triggerUpdateDeliveryOnly()"
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col
             :lg="8"
             :md="8"
             :sm="11"
@@ -904,6 +920,8 @@ export default class NewShipment extends Vue {
   private pickupTime = "00:00";
   // @ts-ignore
   private deliveryTime = "00:00";
+  // @ts-ignore
+  private onlyDelivery = false;
   // @ts-ignore
   private remarksTrpOrder = "";
   private currentOrder = new Order();
@@ -1318,6 +1336,7 @@ export default class NewShipment extends Vue {
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
         anlage: order.anlage,
         raster_lagerplatz: order.rasterLagerplatz,
+        delivery_only: order.delivery_only,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1393,6 +1412,7 @@ export default class NewShipment extends Vue {
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
         anlage: order.anlage,
         raster_lagerplatz: order.rasterLagerplatz,
+        delivery_only: order.delivery_only,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1456,6 +1476,7 @@ export default class NewShipment extends Vue {
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
         anlage: order.anlage,
         raster_lagerplatz: order.rasterLagerplatz,
+        delivery_only: order.delivery_only,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1522,6 +1543,8 @@ export default class NewShipment extends Vue {
     this.pickupTime = "00:00";
     // @ts-ignore
     this.deliveryTime = "00:00";
+    // @ts-ignore
+    this.onlyDelivery = false;
     this.currentOrder = new Order();
   }
 
@@ -1625,6 +1648,12 @@ export default class NewShipment extends Vue {
   private triggerUpdateRaster(): void {
     const upade = this.rasterLagerplatz;
     this.currentOrder.rasterLagerplatz = upade;
+  }
+
+  // @ts-ignore
+  private triggerUpdateDeliveryOnly(): void {
+    const upade = this.onlyDelivery;
+    this.currentOrder.delivery_only = upade;
   }
 
   // @ts-ignore

@@ -1092,11 +1092,12 @@ export default class SearchShipment extends Vue {
       if (value.people.length > 0) {
         value.people.forEach((value) => {
           // @ts-ignore
-          weight = value.weight + weight;
+          weight = value.weight * value.quantity_of_luggage + weight;
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-            100 +
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            100 * value.quantity_of_luggage! +
             cbm;
           pos++;
           posDescription =
@@ -1108,12 +1109,13 @@ export default class SearchShipment extends Vue {
       } else if (value.goods.length > 0) {
         value.goods.forEach((value) => {
           // @ts-ignore
-          weight = value.gross_weight + weight;
+          weight = value.gross_weight * value.quantity + weight;
 
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-            100 +
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            100 * value.quantity! +
             cbm;
           pos++;
           posDescription =
@@ -1125,7 +1127,7 @@ export default class SearchShipment extends Vue {
       } else if (value.construction.length > 0) {
         value.construction.forEach((value) => {
           // @ts-ignore
-          weight = value.weight + weight;
+          weight = value.weight * value.quantity + weight;
           // @ts-ignore
           cbm = 0;
           pos++;

@@ -282,7 +282,7 @@
                     </v-subheader>
                     <v-spacer class="mt-13" />
                     <a
-                      href="https://bula21.sharepoint.com/:b:/g/ET8U9pIWlRZBr8TBRva8LoMBt6yWOMfQcqZbztSiLokZ-g?e=bSO2KO"
+                      href="https://bula21.sharepoint.com/:f:/g/EqVc5B0NQUVJpOB4kHgj6UYBhcennFmyHEstYhyTEkYbcA?e=HE4Yc2"
                       target="_blank"
                     >Raster Lagerplatz</a>
                   </v-col>

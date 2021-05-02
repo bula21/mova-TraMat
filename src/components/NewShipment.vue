@@ -657,7 +657,7 @@
           >
             <v-checkbox
               v-model="onlyDelivery"
-              label="Nur Anlieferung (kein Transport durch BuLa)"
+              label="Nur Anlieferung / Abholung (kein Transport durch BuLa!)"
               color="red"
               hide-details
               @change="triggerUpdateDeliveryOnly()"

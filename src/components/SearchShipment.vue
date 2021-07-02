@@ -1540,7 +1540,7 @@ export default class SearchShipment extends Vue {
 
       try {
         //@ts-ignore
-        convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
+        convertedOrder.rasterLagerplatz = this.editedOrder.raster_lagerplatz;
       } catch {
         convertedOrder.rasterLagerplatz = "";
       }
@@ -1711,7 +1711,7 @@ export default class SearchShipment extends Vue {
       );
       //@ts-ignore
       convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
-
+      
       try {
         //@ts-ignore
         convertedOrder.anlage = this.editedOrder.anlage.id;
@@ -1730,11 +1730,13 @@ export default class SearchShipment extends Vue {
           });
       } catch {
         convertedOrder.anlage = 0;
+        //@ts-ignore
+        this.anlagenID = null;
       }
-
+      
       try {
         //@ts-ignore
-        convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
+        convertedOrder.rasterLagerplatz = this.editedOrder.raster_lagerplatz;
       } catch {
         convertedOrder.rasterLagerplatz = "";
       }
@@ -2308,6 +2310,7 @@ export default class SearchShipment extends Vue {
       this.dialogWarnOrder = true;
       return;
     }
+
     await this.search();
     this.dialog = false;
     // @ts-ignore
@@ -2534,6 +2537,10 @@ export default class SearchShipment extends Vue {
           });
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
+          //@ts-ignore
+          this.anlagenID = null;
+          //@ts-ignore
+          this.editedOrder.anlage = null;
         }
         if (resp?.data[0]) {
           this.anlagenDescription =
@@ -2547,6 +2554,10 @@ export default class SearchShipment extends Vue {
           this.editedOrder.rasterLagerplatz = resp.data[0].standortcode;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
+          //@ts-ignore
+          this.anlagenID = null;
+          //@ts-ignore
+          this.editedOrder.anlage = null;
         }
         break;
     }

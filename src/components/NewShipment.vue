@@ -1753,6 +1753,10 @@ export default class NewShipment extends Vue {
           });
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
+          //@ts-ignore
+          this.anlagenID = null;
+          //@ts-ignore
+          this.currentOrder.anlage = null;
         }
         if (resp?.data[0]) {
           //@ts-ignore
@@ -1765,6 +1769,10 @@ export default class NewShipment extends Vue {
           this.currentOrder.rasterLagerplatz = resp.data[0].standortcode;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
+          //@ts-ignore
+          this.anlagenID = null;
+          //@ts-ignore
+          this.currentOrder.anlage = null;
         }
         break;
     }

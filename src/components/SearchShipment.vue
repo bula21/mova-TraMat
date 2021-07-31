@@ -962,36 +962,26 @@ export default class SearchShipment extends Vue {
   async mounted() {
     window.addEventListener("keyup", this.handleEnter);
 
-    const fetchStates = await DirectusAPI.directusAPI.getItems("trp_state");
+    const fetchStates = await DirectusAPI.fetchTrpState();
 
-    fetchStates.data.forEach((value) => {
-      // @ts-ignore
+    fetchStates.forEach((value) => {
       this.stateTypeFromIdToState.set(value.id, value.state);
-      // @ts-ignore
       this.stateTypeFromStateToId.set(value.state, value.id);
-      // @ts-ignore
       this.stateTypeArray.push(value.state);
     });
 
-    const featchPackaging = await DirectusAPI.directusAPI.getItems(
-      "trp_packing_unit"
-    );
-    featchPackaging.data.forEach((value) => {
+    const featchPackaging = await DirectusAPI.fetchPackaging();
+
+    featchPackaging.forEach((value) => {
       this.packagingUntisFromDesToId.set(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         value.abbreviation + "=" + value.description,
-        // @ts-ignore
         value.id
       );
     });
 
-    const typPeopleResp = await DirectusAPI.directusAPI.getItems(
-      "trp_typ_people"
-    );
-    typPeopleResp.data.forEach((value) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+    const typPeopleResp = await DirectusAPI.fetchTrpTypePeople();
+    
+    typPeopleResp.forEach((value) => {
       this.typePeopleFromDesToId.set(value.description, value.id);
     });
   }

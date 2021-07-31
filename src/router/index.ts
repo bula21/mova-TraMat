@@ -10,9 +10,9 @@ function ensureLoggedIn(to: Route, from: Route, next: { (to?: string | false | v
   
     if (!(to.matched.some(record => record.meta.public))) {
 
-        if (DirectusAPI.directusAPI.config.token) {
+        if (DirectusAPI.getToken()) {
 
-            if (DirectusAPI.directusAPI.config.localExp !== undefined && DirectusAPI.directusAPI.config.localExp > Date.now()) {
+            if (DirectusAPI.getlocalExp() > Date.now()) {
 
                 next();
             } else {
@@ -36,9 +36,9 @@ function redirectLoggedIn(to: Route, from: Route, next: { (to?: string | false |
 
     if (to.matched.some(record => record.meta.disableIfLoggedIn)) {
 
-        if (DirectusAPI.directusAPI.config.token) {
+        if (DirectusAPI.getToken()) {
 
-            if (DirectusAPI.directusAPI.config.localExp !== undefined && DirectusAPI.directusAPI.config.localExp > Date.now()) {
+            if (DirectusAPI.getlocalExp() > Date.now()) {
 
                 next({
                     name: "home",

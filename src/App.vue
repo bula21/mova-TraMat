@@ -17,7 +17,7 @@ export default class App extends Vue {
     super();
     window.addEventListener("storage", (event) => {
       if (event.key === "LOGOUT") {
-        DirectusAPI.directusAPI.config.reset();
+        DirectusAPI.reset();
         localStorage.clear();
         sessionStorage.clear();
         router.push({ name: "login" });

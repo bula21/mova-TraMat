@@ -44,7 +44,10 @@
         </v-progress-linear>
       </v-col>
     </v-row>
-    <v-window v-model="step">
+    <v-window 
+      :key="componentKey"
+      v-model="step"
+    >
       <v-window-item :value="1">
         <v-form
           ref="formFirst"
@@ -926,6 +929,8 @@ export default class NewShipment extends Vue {
   private remarksTrpOrder = "";
   private currentOrder = new Order();
   // @ts-ignore
+  private componentKey = 0;
+  // @ts-ignore
   //formFirst
   private validFormFirst = true;
   // @ts-ignore
@@ -1252,10 +1257,8 @@ export default class NewShipment extends Vue {
           try {
             await this.persistOrder(this.currentOrder);
           } catch {
-            this.titleDialogOrder = "Unerwarteter Fehler";
-            this.textDialogOrder =
-              "Bitte versuche es später nocheinmal oder melde den Fehler via Slack #20_log_21_trp_requests.";
-            this.dialogWarnOrder = true;
+            this.titleDialogOrder = "Fehler";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";            this.dialogWarnOrder = true;
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
@@ -1275,9 +1278,8 @@ export default class NewShipment extends Vue {
           try {
             await this.persistOrder(this.currentOrder);
           } catch {
-            this.titleDialogOrder = "Unerwarteter Fehler";
-            this.textDialogOrder =
-              "Bitte versuche es später nocheinmal oder melde den Fehler via Slack #20_log_21_trp_requests.";
+            this.titleDialogOrder = "Fehler";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
@@ -1298,9 +1300,8 @@ export default class NewShipment extends Vue {
           try {
             await this.persistOrder(this.currentOrder);
           } catch {
-            this.titleDialogOrder = "Unerwarteter Fehler";
-            this.textDialogOrder =
-              "Bitte versuche es später nocheinmal oder melde den Fehler via Slack #20_log_21_trp_requests.";
+            this.titleDialogOrder = "Fehler";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
@@ -1394,7 +1395,7 @@ export default class NewShipment extends Vue {
         });
       }
     }
-
+    
     // people
     if (this.type === this.orderType[1]) {
       const newOrder = await DirectusAPI.directusAPI.createItem("trp_order", {
@@ -1546,6 +1547,13 @@ export default class NewShipment extends Vue {
     // @ts-ignore
     this.onlyDelivery = false;
     this.currentOrder = new Order();
+    this.forceReRender();
+    this.triggerUpdateDatePickUp();
+    this.triggerUpdateDateDelivery();
+  }
+
+  private forceReRender(): void {
+    this.componentKey += 1;
   }
 
   // @ts-ignore

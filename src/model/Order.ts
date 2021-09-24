@@ -13,7 +13,7 @@ class Order {
     people = [new PositionPeople()];
     goods = [new PositionGoods];
     construction = [new PositionConstruction()];
-    state?: string;
+    state?: number;
     shipper?: Client;
     receiver?: Client;
     principal?: Client;
@@ -27,7 +27,7 @@ class Order {
 
     constructor(id?: number, modified_on?: Date, created_on?: Date, modified_by?: number,
         remarks?: string,
-        state?: string,
+        state?: number,
         shipper?: Client,
         receiver?: Client,
         principal?: Client,

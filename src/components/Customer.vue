@@ -578,6 +578,7 @@ export default class NewShipment extends Vue {
         this.$store.state.authorisation === "Besteller/in" ||
         this.$store.state.authorisation === "Ressortleitung" ||
         this.$store.state.authorisation === "Bereichsleitung Infra" ||
+        this.$store.state.authorisation === "Programmmaterial" ||
         this.$store.state.authorisation === "Lagerplatz"
       ) {
         this.warnPermissions = true;

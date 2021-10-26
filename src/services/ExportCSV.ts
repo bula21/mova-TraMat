@@ -34,6 +34,14 @@ class ExportCSV {
                 x.modified_by = newRow;
             }
 
+            //@ts-ignore
+            if (x.owner) {
+                //@ts-ignore
+                const newRow = x.owner.first_name + " " + x.owner.last_name;
+                //@ts-ignore
+                x.owner = newRow;
+            }
+
             if (x.anlage) {
                 //@ts-ignore
                 const newRow = x.anlage.id;
@@ -166,11 +174,11 @@ class ExportCSV {
             // @ts-ignore
             order.people.forEach((value) => {
                 // @ts-ignore
-                weight = value.weight + weight;
+                weight = value.weight * value.quantity_of_luggage + weight;
                 cbm =
                     // @ts-ignore
                     ((((value.length / 100) * value.height) / 100) * value.width) /
-                    100 +
+                    100 * value.quantity_of_luggage +
                     cbm;
             });
             // @ts-ignore
@@ -181,12 +189,12 @@ class ExportCSV {
             // @ts-ignore
             order.goods.forEach((value) => {
                 // @ts-ignore
-                weight = value.gross_weight + weight;
+                weight = value.gross_weight * value.quantity + weight;
 
                 cbm =
                     // @ts-ignore
                     ((((value.length / 100) * value.height) / 100) * value.width) /
-                    100 +
+                    100 * value.quantity +
                     cbm;
             });
             // @ts-ignore
@@ -198,7 +206,7 @@ class ExportCSV {
             // @ts-ignore
             order.construction.forEach((value) => {
                 // @ts-ignore
-                weight = value.weight + weight;
+                weight = value.weight * value.quantity + weight;
                 // @ts-ignore
                 cbm = 0;
             });

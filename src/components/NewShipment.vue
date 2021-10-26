@@ -44,7 +44,10 @@
         </v-progress-linear>
       </v-col>
     </v-row>
-    <v-window v-model="step">
+    <v-window 
+      :key="componentKey"
+      v-model="step"
+    >
       <v-window-item :value="1">
         <v-form
           ref="formFirst"
@@ -282,7 +285,7 @@
                     </v-subheader>
                     <v-spacer class="mt-13" />
                     <a
-                      href="https://bula21.sharepoint.com/:b:/g/ET8U9pIWlRZBr8TBRva8LoMBt6yWOMfQcqZbztSiLokZ-g?e=bSO2KO"
+                      href="https://bula21.sharepoint.com/:f:/g/EqVc5B0NQUVJpOB4kHgj6UYBhcennFmyHEstYhyTEkYbcA?e=HE4Yc2"
                       target="_blank"
                     >Raster Lagerplatz</a>
                   </v-col>
@@ -650,6 +653,22 @@
         </v-row>
         <v-row class="mt-n7">
           <v-col
+            :lg="4"
+            :md="4"
+            :sm="4"
+            :xs="4"
+          >
+            <v-checkbox
+              v-model="onlyDelivery"
+              label="Nur Anlieferung / Abholung (kein Transport durch BuLa!)"
+              color="red"
+              hide-details
+              @change="triggerUpdateDeliveryOnly()"
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col
             :lg="8"
             :md="8"
             :sm="11"
@@ -905,8 +924,12 @@ export default class NewShipment extends Vue {
   // @ts-ignore
   private deliveryTime = "00:00";
   // @ts-ignore
+  private onlyDelivery = false;
+  // @ts-ignore
   private remarksTrpOrder = "";
   private currentOrder = new Order();
+  // @ts-ignore
+  private componentKey = 0;
   // @ts-ignore
   //formFirst
   private validFormFirst = true;
@@ -1234,10 +1257,8 @@ export default class NewShipment extends Vue {
           try {
             await this.persistOrder(this.currentOrder);
           } catch {
-            this.titleDialogOrder = "Unerwarteter Fehler";
-            this.textDialogOrder =
-              "Bitte versuche es später nocheinmal oder melde den Fehler via Slack #20_log_21_trp_requests.";
-            this.dialogWarnOrder = true;
+            this.titleDialogOrder = "Fehler";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";            this.dialogWarnOrder = true;
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
@@ -1257,9 +1278,8 @@ export default class NewShipment extends Vue {
           try {
             await this.persistOrder(this.currentOrder);
           } catch {
-            this.titleDialogOrder = "Unerwarteter Fehler";
-            this.textDialogOrder =
-              "Bitte versuche es später nocheinmal oder melde den Fehler via Slack #20_log_21_trp_requests.";
+            this.titleDialogOrder = "Fehler";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
@@ -1280,9 +1300,8 @@ export default class NewShipment extends Vue {
           try {
             await this.persistOrder(this.currentOrder);
           } catch {
-            this.titleDialogOrder = "Unerwarteter Fehler";
-            this.textDialogOrder =
-              "Bitte versuche es später nocheinmal oder melde den Fehler via Slack #20_log_21_trp_requests.";
+            this.titleDialogOrder = "Fehler";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
@@ -1318,6 +1337,7 @@ export default class NewShipment extends Vue {
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
         anlage: order.anlage,
         raster_lagerplatz: order.rasterLagerplatz,
+        delivery_only: order.delivery_only,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1375,7 +1395,7 @@ export default class NewShipment extends Vue {
         });
       }
     }
-
+    
     // people
     if (this.type === this.orderType[1]) {
       const newOrder = await DirectusAPI.directusAPI.createItem("trp_order", {
@@ -1393,6 +1413,7 @@ export default class NewShipment extends Vue {
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
         anlage: order.anlage,
         raster_lagerplatz: order.rasterLagerplatz,
+        delivery_only: order.delivery_only,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1456,6 +1477,7 @@ export default class NewShipment extends Vue {
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
         anlage: order.anlage,
         raster_lagerplatz: order.rasterLagerplatz,
+        delivery_only: order.delivery_only,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1522,7 +1544,16 @@ export default class NewShipment extends Vue {
     this.pickupTime = "00:00";
     // @ts-ignore
     this.deliveryTime = "00:00";
+    // @ts-ignore
+    this.onlyDelivery = false;
     this.currentOrder = new Order();
+    this.forceReRender();
+    this.triggerUpdateDatePickUp();
+    this.triggerUpdateDateDelivery();
+  }
+
+  private forceReRender(): void {
+    this.componentKey += 1;
   }
 
   // @ts-ignore
@@ -1628,6 +1659,12 @@ export default class NewShipment extends Vue {
   }
 
   // @ts-ignore
+  private triggerUpdateDeliveryOnly(): void {
+    const upade = this.onlyDelivery;
+    this.currentOrder.delivery_only = upade;
+  }
+
+  // @ts-ignore
   private async triggerUdatePickupID(kindOfUpdate: string): void {
     let resp;
 
@@ -1724,6 +1761,10 @@ export default class NewShipment extends Vue {
           });
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
+          //@ts-ignore
+          this.anlagenID = null;
+          //@ts-ignore
+          this.currentOrder.anlage = null;
         }
         if (resp?.data[0]) {
           //@ts-ignore
@@ -1736,6 +1777,10 @@ export default class NewShipment extends Vue {
           this.currentOrder.rasterLagerplatz = resp.data[0].standortcode;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
+          //@ts-ignore
+          this.anlagenID = null;
+          //@ts-ignore
+          this.currentOrder.anlage = null;
         }
         break;
     }

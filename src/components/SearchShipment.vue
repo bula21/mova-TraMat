@@ -657,9 +657,9 @@
             </div>
           </v-col>
         </v-row>
-        <v-divider />
+        <v-divider class="mt-4" />
         <!-- remarks order-->
-        <v-row class="mt-n7">
+        <v-row class="mt-n2">
           <v-col
             :lg="8"
             :md="8"
@@ -678,7 +678,18 @@
             </v-col>
           </v-col>
         </v-row>
-        <v-divider />
+        <v-row class="mt-n10">
+          <v-col class="ml-2 ">
+            <v-checkbox
+              v-model="onlyDelivery"
+              label="Nur Anlieferung (kein Transport durch BuLa)"
+              color="red"
+              hide-details
+              @change="triggerUpdateDeliveryOnly()"
+            />
+          </v-col>
+        </v-row>
+        <v-divider class="mt-4" />
         <!-- actions order-->
         <v-card-actions class="mt-1">
           <v-spacer />
@@ -874,6 +885,8 @@ export default class SearchShipment extends Vue {
   private typePeopleFromDesToId = new Map();
   // @ts-ts-ignore
   private stateTypeArray: string[] = [];
+  //@ts-ignore
+  private onlyDelivery = false;
   // @ts-ignore
   private state = "";
   // @ts-ignore
@@ -1069,11 +1082,12 @@ export default class SearchShipment extends Vue {
       if (value.people.length > 0) {
         value.people.forEach((value) => {
           // @ts-ignore
-          weight = value.weight + weight;
+          weight = value.weight * value.quantity_of_luggage + weight;
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-              100 +
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            100 * value.quantity_of_luggage! +
             cbm;
           pos++;
           posDescription =
@@ -1085,12 +1099,13 @@ export default class SearchShipment extends Vue {
       } else if (value.goods.length > 0) {
         value.goods.forEach((value) => {
           // @ts-ignore
-          weight = value.gross_weight + weight;
+          weight = value.gross_weight * value.quantity + weight;
 
           cbm =
             // @ts-ignore
             ((((value.length / 100) * value.height) / 100) * value.width) /
-              100 +
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            100 * value.quantity! +
             cbm;
           pos++;
           posDescription =
@@ -1102,7 +1117,7 @@ export default class SearchShipment extends Vue {
       } else if (value.construction.length > 0) {
         value.construction.forEach((value) => {
           // @ts-ignore
-          weight = value.weight + weight;
+          weight = value.weight * value.quantity + weight;
           // @ts-ignore
           cbm = 0;
           pos++;
@@ -1458,6 +1473,7 @@ export default class SearchShipment extends Vue {
       this.$store.state.authorisation === "Besteller/in" ||
       this.$store.state.authorisation === "Ressortleitung" ||
       this.$store.state.authorisation === "Bereichsleitung Infra" ||
+      this.$store.state.authorisation === "Programmmaterial" ||
       this.$store.state.authorisation === "Lagerplatz"
     ) {
       this.warnPermissions = true;
@@ -1515,7 +1531,7 @@ export default class SearchShipment extends Vue {
 
       try {
         //@ts-ignore
-        convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
+        convertedOrder.rasterLagerplatz = this.editedOrder.raster_lagerplatz;
       } catch {
         convertedOrder.rasterLagerplatz = "";
       }
@@ -1550,6 +1566,7 @@ export default class SearchShipment extends Vue {
       //@ts-ignore
       convertedOrder.modified_by = this.editedOrder.modified_by.id;
       convertedOrder.remarks = this.editedOrder.remarks;
+      convertedOrder.delivery_only = this.editedOrder.delivery_only;
       convertedOrder.people = [];
       this.editedOrder.people.forEach((element) => {
         convertedOrder.people.push(
@@ -1685,7 +1702,7 @@ export default class SearchShipment extends Vue {
       );
       //@ts-ignore
       convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
-
+      
       try {
         //@ts-ignore
         convertedOrder.anlage = this.editedOrder.anlage.id;
@@ -1700,15 +1717,24 @@ export default class SearchShipment extends Vue {
           })
           .then((resp) => {
             //@ts-ignore
+            if (resp.data.length > 0){
+            //@ts-ignore
             this.anlagenID = resp.data[0].anlagen_id;
+            } else{
+            convertedOrder.anlage = 0;
+            //@ts-ignore
+            this.anlagenID = null;
+            }
           });
       } catch {
         convertedOrder.anlage = 0;
+        //@ts-ignore
+        this.anlagenID = null;
       }
-
+      
       try {
         //@ts-ignore
-        convertedOrder.rasterLagerplatz = this.editedOrder.anlage.standortcode;
+        convertedOrder.rasterLagerplatz = this.editedOrder.raster_lagerplatz;
       } catch {
         convertedOrder.rasterLagerplatz = "";
       }
@@ -1743,6 +1769,7 @@ export default class SearchShipment extends Vue {
       //@ts-ignore
       convertedOrder.modified_by = this.editedOrder.modified_by.id;
       convertedOrder.remarks = this.editedOrder.remarks;
+      convertedOrder.delivery_only = this.editedOrder.delivery_only;
       convertedOrder.people = [];
       this.editedOrder.people.forEach((element) => {
         convertedOrder.people.push(
@@ -1847,6 +1874,8 @@ export default class SearchShipment extends Vue {
       this.deliveryTime = format(this.editedOrder.delivery_date, "HH:mm");
       // @ts-ignore
       this.remarksTrpOrder = this.editedOrder.remarks;
+      // @ts-ignore
+      this.onlyDelivery = this.editedOrder.delivery_only;
       this.state = this.stateTypeFromIdToState.get(this.editedOrder.state);
 
       if (this.editedOrder.goods.length > 0) {
@@ -1873,9 +1902,12 @@ export default class SearchShipment extends Vue {
         this.$store.state.authorisation === "Besteller/in" ||
         this.$store.state.authorisation === "Ressortleitung" ||
         this.$store.state.authorisation === "Bereichsleitung Infra" ||
+        this.$store.state.authorisation === "Programmmaterial" ||
         this.$store.state.authorisation === "Lagerplatz"
       ) {
-        this.warnPermissions = true;
+        if (this.state === "scheduled" || this.state === "checked"){
+          this.warnPermissions = true;
+        }
       }
     }
   }
@@ -1919,9 +1951,9 @@ export default class SearchShipment extends Vue {
           try {
             await this.persistOrder(this.editedOrder);
           } catch {
-            this.titleDialogOrder = "Unerwarteter Fehler";
+            this.titleDialogOrder = "Fehler";
             this.textDialogOrder =
-              "Bitte versuche es später nocheinmal oder melde den Fehler via Slack #20_log_21_trp_requests.";
+              "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen. Ansonsten versuche es bitte später erneut und melde den Fehler via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
@@ -1942,9 +1974,9 @@ export default class SearchShipment extends Vue {
           try {
             await this.persistOrder(this.editedOrder);
           } catch {
-            this.titleDialogOrder = "Unerwarteter Fehler";
+            this.titleDialogOrder = "Fehler";
             this.textDialogOrder =
-              "Bitte versuche es später nocheinmal oder melde den Fehler via Slack #20_log_21_trp_requests.";
+              "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen. Ansonsten versuche es bitte später erneut und melde den Fehler via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
@@ -1965,9 +1997,9 @@ export default class SearchShipment extends Vue {
           try {
             await this.persistOrder(this.editedOrder);
           } catch {
-            this.titleDialogOrder = "Unerwarteter Fehler";
+            this.titleDialogOrder = "Fehler";
             this.textDialogOrder =
-              "Bitte versuche es später nocheinmal oder melde den Fehler via Slack #20_log_21_trp_requests.";
+              "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen. Ansonsten versuche es bitte später erneut und melde den Fehler via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
@@ -1999,7 +2031,7 @@ export default class SearchShipment extends Vue {
         order.id!,
         {
           remarks: order.remarks,
-          state: this.stateTypeFromStateToId.get(order.state),
+          state: order.state,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           shipper: order.shipper!.id,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -2012,6 +2044,8 @@ export default class SearchShipment extends Vue {
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
           anlage: order.anlage,
           raster_lagerplatz: order.rasterLagerplatz,
+          delivery_only: order.delivery_only,
+          statusdirectus: this.stateTypeFromIdToState.get(order.state),
         }
       );
 
@@ -2080,6 +2114,7 @@ export default class SearchShipment extends Vue {
               dangerous_goods: dangerous_goods[i],
               // @ts-ignore
               order: updateOrder.data.id,
+              statusdirectus: this.stateTypeFromIdToState.get(order.state),
             }
           );
         } else {
@@ -2097,6 +2132,7 @@ export default class SearchShipment extends Vue {
             dangerous_goods: dangerous_goods[i],
             // @ts-ignore
             order: updateOrder.data.id,
+            statusdirectus: this.stateTypeFromIdToState.get(order.state),
           });
         }
       }
@@ -2113,7 +2149,7 @@ export default class SearchShipment extends Vue {
         order.id!,
         {
           remarks: order.remarks,
-          state: this.stateTypeFromStateToId.get(order.state),
+          state: order.state,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           shipper: order.shipper!.id,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -2126,6 +2162,8 @@ export default class SearchShipment extends Vue {
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
           anlage: order.anlage,
           raster_lagerplatz: order.rasterLagerplatz,
+          delivery_only: order.delivery_only,
+          statusdirectus: this.stateTypeFromIdToState.get(order.state),
         }
       );
 
@@ -2180,6 +2218,7 @@ export default class SearchShipment extends Vue {
               weight: weight[i],
               // @ts-ignore
               order: updateOrder.data.id,
+              statusdirectus: this.stateTypeFromIdToState.get(order.state),
             }
           );
         } else {
@@ -2194,6 +2233,7 @@ export default class SearchShipment extends Vue {
             weight: weight[i],
             // @ts-ignore
             order: updateOrder.data.id,
+            statusdirectus: this.stateTypeFromIdToState.get(order.state),
           });
         }
       }
@@ -2203,14 +2243,14 @@ export default class SearchShipment extends Vue {
       order.construction.length > 0 &&
       !(order.goods.length > 0) &&
       !(order.people.length > 0)
-    ) {
+    ) {   
       const updateOrder = await DirectusAPI.directusAPI.updateItem(
         "trp_order",
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         order.id!,
         {
           remarks: order.remarks,
-          state: this.stateTypeFromStateToId.get(order.state),
+          state: order.state,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           shipper: order.shipper!.id,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -2223,6 +2263,8 @@ export default class SearchShipment extends Vue {
           pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
           anlage: order.anlage,
           raster_lagerplatz: order.rasterLagerplatz,
+          delivery_only: order.delivery_only,
+          statusdirectus: this.stateTypeFromIdToState.get(order.state),
         }
       );
 
@@ -2245,7 +2287,6 @@ export default class SearchShipment extends Vue {
         weight.push(value.weight);
         description.push(value.description);
       });
-
       for (let i = 0; order.construction.length > i; i++) {
         if (idPos[i] !== 0) {
           await DirectusAPI.directusAPI.updateItem(
@@ -2257,6 +2298,7 @@ export default class SearchShipment extends Vue {
               description: description[i],
               // @ts-ignore
               order: updateOrder.data.id,
+              statusdirectus: this.stateTypeFromIdToState.get(order.state),
             }
           );
         } else {
@@ -2266,6 +2308,7 @@ export default class SearchShipment extends Vue {
             description: description[i],
             // @ts-ignore
             order: updateOrder.data.id,
+            statusdirectus: this.stateTypeFromIdToState.get(order.state),
           });
         }
       }
@@ -2276,6 +2319,7 @@ export default class SearchShipment extends Vue {
       this.dialogWarnOrder = true;
       return;
     }
+
     await this.search();
     this.dialog = false;
     // @ts-ignore
@@ -2502,6 +2546,10 @@ export default class SearchShipment extends Vue {
           });
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
+          //@ts-ignore
+          this.anlagenID = null;
+          //@ts-ignore
+          this.editedOrder.anlage = null;
         }
         if (resp?.data[0]) {
           this.anlagenDescription =
@@ -2515,6 +2563,10 @@ export default class SearchShipment extends Vue {
           this.editedOrder.rasterLagerplatz = resp.data[0].standortcode;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
+          //@ts-ignore
+          this.anlagenID = null;
+          //@ts-ignore
+          this.editedOrder.anlage = null;
         }
         break;
     }
@@ -2544,7 +2596,7 @@ export default class SearchShipment extends Vue {
   // @ts-ignore
   private triggerUpdateState(): void {
     const update = this.state;
-    this.editedOrder.state = update;
+    this.editedOrder.state = this.stateTypeFromStateToId.get(update);
   }
 
   // @ts-ignore
@@ -2571,6 +2623,12 @@ export default class SearchShipment extends Vue {
   private triggerUpdateRaster(): void {
     const upade = this.rasterLagerplatz;
     this.editedOrder.rasterLagerplatz = upade;
+  }
+
+  // @ts-ignore
+  private triggerUpdateDeliveryOnly(): void {
+    const upade = this.onlyDelivery;
+    this.editedOrder.delivery_only = upade;
   }
 
   // @ts-ignore

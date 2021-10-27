@@ -356,10 +356,7 @@ import DialogPermissions from "@/components/subComponents/DialogPermissions.vue"
   },
 })
 export default class NewShipment extends Vue {
-  /* eslint-disable @typescript-eslint/ban-ts-comment */
-  // @ts-ignore
   private dialog = false;
-  // @ts-ignore
   private warnPermissions = false;
   private editing = false;
   // @ts-ignore

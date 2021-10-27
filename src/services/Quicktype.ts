@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-empty */
 /* eslint-disable no-prototype-builtins */
@@ -55,6 +56,7 @@ export class Convert {
     }
 }
 
+// eslint-disable-next-line quotes
 function invalidValue(typ: any, val: any, key: any = ''): never {
     if (key) {
         throw Error(`Invalid value for key "${key}". Expected type ${JSON.stringify(typ)} but got ${JSON.stringify(val)}`);
@@ -79,7 +81,7 @@ function jsToJSONProps(typ: any): any {
     }
     return typ.jsToJSON;
 }
-
+// eslint-disable-next-line quotes
 function transform(val: any, typ: any, getProps: any, key: any = ''): any {
     function transformPrimitive(typ: string, val: any): any {
         if (typeof typ === typeof val) return val;
@@ -170,7 +172,7 @@ function uncast<T>(val: T, typ: any): any {
 function a(typ: any) {
     return { arrayItems: typ };
 }
-
+// @ts-ignore
 function u(...typs: any[]) {
     return { unionMembers: typs };
 }
@@ -178,7 +180,7 @@ function u(...typs: any[]) {
 function o(props: any[], additional: any) {
     return { props, additional };
 }
-
+// @ts-ignore
 function m(additional: any) {
     return { props: [], additional };
 }

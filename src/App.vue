@@ -10,7 +10,7 @@ import router from "./router";
 import DirectusAPI from "./services/DirectusAPI";
 
 @Component({
-  components: {},
+  components: {}
 })
 export default class App extends Vue {
   constructor() {

@@ -11,28 +11,17 @@ import DirectusAPI from "@/services/DirectusAPI";
 
 @Component({
   components: {
-    NavigationMenu,
-  },
+    NavigationMenu
+  }
 })
 export default class MainView extends Vue {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private firstAndLastName = "";
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private Email = "";
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private authorisation = "";
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private authorisationDescript = "";
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private abbreviation = "AA";
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async mounted() {
+  async mounted(): Promise<void> {
     const auth = await DirectusAPI.fetchAuthorisation();
     this.authorisation = auth[0];
     this.authorisationDescript = auth[1];
@@ -49,7 +38,6 @@ export default class MainView extends Vue {
     this.$store.commit("updatefirstAndLastName", this.firstAndLastName);
     this.$store.commit("updatefirstAndLastName", this.firstAndLastName);
     this.$store.commit("updateAbbreviation", this.abbreviation);
-
   }
 }
 </script>

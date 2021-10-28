@@ -93,7 +93,7 @@ export default class Scheduling extends Vue {
     {
       text: "Order ID",
       align: "start",
-      value: "id",
+      value: "id"
     },
     { text: "Status", value: "state" },
     { text: "delivery_date", value: "delivery_date" },
@@ -109,7 +109,7 @@ export default class Scheduling extends Vue {
     { text: "Gewicht kg", value: "weight" },
     { text: "M^3", value: "cbm" },
     { text: "Positionen", value: "pos" },
-    { text: "Beschreibung Pos.", value: "posDescription" },
+    { text: "Beschreibung Pos.", value: "posDescription" }
   ];
 }
 </script>

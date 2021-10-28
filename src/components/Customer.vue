@@ -179,7 +179,7 @@
           <v-select
             v-model="type"
             label="Kunden Typ"
-            :items="customerTypes"
+            :items="customerTypesSearch"
             dense
             outlined
             class="mt-3"
@@ -346,70 +346,57 @@
 import DirectusAPI from "@/services/DirectusAPI";
 import { Component, Vue } from "vue-property-decorator";
 import Client from "../model/Client";
+import ClientType from "../model/ClientType";
+import ClientDisplay from "../model/ClientDisplay";
 import { format } from "fecha";
 import ExportCSV from "@/services/ExportCSV";
 import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
+import { TrpTypeClient } from "@/services/Quicktype";
+import { DIRECTUS_ROLES } from "@/components/Const";
 
 @Component({
   components: {
-    DialogPermissions,
-  },
+    DialogPermissions
+  }
 })
 export default class NewShipment extends Vue {
   private dialog = false;
   private warnPermissions = false;
   private editing = false;
-  // @ts-ignore
   private valid = true;
-  // @ts-ignore
   private name = "";
-  // @ts-ignore
   private street = "";
-  // @ts-ignore
   private zip = "";
-  // @ts-ignore
   private place = "";
-  // @ts-ignore
   private phone = "";
-  // @ts-ignore
   private email = "";
-  // @ts-ignore
   private id = "";
-  // @ts-ignore
   private type = "";
-  // @ts-ignore
   private typeNewCustomer = "";
-  // @ts-ignore
-  private customerTypesNew = ["mova", "extern"];
-  // @ts-ignore
-  private customerTypes = ["mova", "extern", "ohne Typ suchen"];
-  // @ts-ignore
+  private customerTypes: TrpTypeClient[] = [];
+  private customerTypesNew: string[] = [];
+  private customerTypesSearch: string[] = [];
   private editedItem = new Client();
-  // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private clients: any = [{}];
-  // @ts-ignore
   private limit = 100;
-  // @ts-ignore
   private limitTypes = [-1, 5, 50, 100, 200];
-  // @ts-ignore
   private nameRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich",
+    (v: any) => !!v || "Wert ist erforderlich"
   ];
-  // @ts-ignore
+
   private zipRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
-      /([1-468][0-9]|[57][0-7]|9[0-6])[0-9]{2}/.test(v) || "PLZ ist ungültig",
+      /([1-468][0-9]|[57][0-7]|9[0-6])[0-9]{2}/.test(v) || "PLZ ist ungültig"
   ];
-  // @ts-ignore
+
   private phoneRules = [
-    // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    (v: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
       if (v) {
         if (v.length > 0) {
           return (
@@ -417,35 +404,35 @@ export default class NewShipment extends Vue {
               v
             ) || "Telefonnummer ist ungültig"
           );
+        } else {
+          return true;
         }
       } else {
         return true;
       }
-    },
+    }
   ];
 
-  // @ts-ignore
   private emailRules = [
-    // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     (v: string) => {
       if (v) {
         if (v.length > 0) {
           return /.+@.+\..+/.test(v) || "E-mail ist ungültig";
+        } else {
+          return true;
         }
       } else {
         return true;
       }
-    },
+    }
   ];
 
-  // @ts-ignore
   private headers = [
     { text: "Actions", value: "actions", sortable: false },
     {
       text: "Kunden ID",
       align: "start",
-      value: "id",
+      value: "id"
     },
     { text: "Typ", value: "type" },
     { text: "Firma/Name", value: "name" },
@@ -456,16 +443,21 @@ export default class NewShipment extends Vue {
     { text: "Email", value: "email" },
     { text: "modified_on", value: "modified_on" },
     { text: "created_on", value: "created_on" },
-    { text: "modified_by", value: "modified_by" },
+    { text: "modified_by", value: "modified_by" }
   ];
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  mounted() {
+  async mounted(): Promise<void> {
     window.addEventListener("keyup", this.handleEnter);
+
+    this.customerTypes = await DirectusAPI.fetchTrpTypeClient();
+    this.customerTypes.forEach((clientType) => {
+      this.customerTypesNew.push(clientType.acronym);
+    });
+    this.customerTypesSearch = this.customerTypesNew;
+    this.customerTypesSearch.push("ohne Typ suchen");
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  destroyed() {
+  destroyed(): void {
     window.removeEventListener("keyup", this.handleEnter);
   }
 
@@ -489,26 +481,24 @@ export default class NewShipment extends Vue {
     await clientsTable.forEach((value: Client) => {
       this.clients.push({
         id: value.id,
-        // @ts-ignore
-        type: value.type.acronym,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        type: value.type!.acronym,
         name: value.name,
         street: value.street,
         place: value.place,
         zipcode: value.zipcode,
         phone: value.phone,
         email: value.email,
-        // @ts-ignore
-        modified_on: format(new Date(value.modified_on), "YYYY-MM-DD HH:mm"),
-        // @ts-ignore
-        created_on: format(new Date(value.created_on), "YYYY-MM-DD HH:mm"),
-        modified_by:
-          // @ts-ignore
-          value.modified_by.first_name + " " + value.modified_by.last_name,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        modified_on: format(new Date(value.modifiedOn!), "YYYY-MM-DD HH:mm"),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        created_on: format(new Date(value.createdOn!), "YYYY-MM-DD HH:mm"),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        modified_by: value.modifiedBy!.firstName + " " + value.modifiedBy!.lastName
       });
     });
   }
 
-  // @ts-ignore
   private formTitle(): string {
     let text = "";
 
@@ -519,74 +509,65 @@ export default class NewShipment extends Vue {
     }
     return text;
   }
-  // @ts-ignore
+
   private async save(): Promise<void> {
-    // @ts-ignore
-    if (this.$refs.form.validate()) {
-      switch (this.typeNewCustomer) {
-        case "mova":
-          this.editedItem.type = 1;
-          break;
-        case "extern":
-          this.editedItem.type = 2;
-          break;
-        default:
-          this.editedItem.type = 2;
-          break;
-      }
+    if ((this.$refs.form as Vue & { validate: () => boolean; }).validate()) {
+      this.editedItem.type = new ClientType();
+      this.editedItem.type.id = this.customerTypes.find((typeClient) => (
+        typeClient.acronym === this.typeNewCustomer
+      ))?.id;
 
       await this.$nextTick(async () => {
         await this.persistClient(this.editedItem);
-        // @ts-ignore
-        this.editedItem.type = this.typeNewCustomer;
+        this.editedItem.type = new ClientType();
         this.editedItem = new Client();
         this.typeNewCustomer = "";
-        // @ts-ignore
-        this.$refs.form.resetValidation();
+        (this.$refs.form as Vue & { resetValidation: () => void; }).resetValidation();
         this.dialog = false;
         this.editing = false;
       });
     }
   }
 
-  // @ts-ignore
   private close(): void {
     this.dialog = false;
     this.$nextTick(() => {
       this.editedItem = new Client();
       this.typeNewCustomer = "";
       this.editing = false;
-      // @ts-ignore
-      this.$refs.form.resetValidation();
+      (this.$refs.form as Vue & { resetValidation: () => void; }).resetValidation();
     });
   }
 
-  // @ts-ignore
-  private editItem(item: Client): void {
+  private editItem(item: ClientDisplay): void {
     if (item.id) {
-      this.editedItem = item;
+      this.editedItem.id = item.id;
+      this.editedItem.type = new ClientType();
+      this.editedItem.type.acronym = item.type;
+      this.editedItem.name = item.name;
+      this.editedItem.street = item.street;
+      this.editedItem.place = item.place;
+      this.editedItem.phone = item.phone;
+      this.editedItem.zipcode = item.zipcode;
+      this.editedItem.email = item.email;
+
       this.dialog = true;
       this.editing = true;
 
       if (
-        this.$store.state.authorisation === "Public" ||
-        this.$store.state.authorisation === "Lagerbauten" ||
-        this.$store.state.authorisation === "Dienstleiter/in" ||
-        this.$store.state.authorisation === "Besteller/in" ||
-        this.$store.state.authorisation === "Ressortleitung" ||
-        this.$store.state.authorisation === "Bereichsleitung Infra" ||
-        this.$store.state.authorisation === "Programmmaterial" ||
-        this.$store.state.authorisation === "Lagerplatz"
+        this.$store.state.authorisation === DIRECTUS_ROLES.Public ||
+        this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten ||
+        this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"] ||
+        this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
+        this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
+        this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"] ||
+        this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
+        this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
       ) {
         this.warnPermissions = true;
       }
-
-      // @ts-ignore
-      if (this.editedItem.type === "external") {
-        this.typeNewCustomer = "extern";
-      } else {
-        // @ts-ignore
-        this.typeNewCustomer = this.editedItem.type;
+      if (this.editedItem.type.acronym) {
+        this.typeNewCustomer = this.editedItem.type.acronym;
       }
     }
   }
@@ -594,43 +575,26 @@ export default class NewShipment extends Vue {
   private async persistClient(client: Client): Promise<void> {
     if (this.editing) {
       if (
-        this.$store.state.authorisation === "Public" ||
-        this.$store.state.authorisation === "Lagerbauten" ||
-        this.$store.state.authorisation === "Dienstleiter/in" ||
-        this.$store.state.authorisation === "Besteller/in" ||
-        this.$store.state.authorisation === "Ressortleitung" ||
-        this.$store.state.authorisation === "Bereichsleitung Infra" ||
-        this.$store.state.authorisation === "Lagerplatz"
+        this.$store.state.authorisation === DIRECTUS_ROLES.Public ||
+        this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten ||
+        this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"] ||
+        this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
+        this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
+        this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"] ||
+        this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
+        this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
       ) {
         this.warnPermissions = true;
         return;
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await DirectusAPI.directusAPI.updateItem("trp_client", client.id!, {
-        type: client.type,
-        name: client.name,
-        street: client.street,
-        place: client.place,
-        zipcode: client.zipcode,
-        phone: client.phone,
-        email: client.email,
-      });
+      await DirectusAPI.updateTrpClient(client);
     } else {
-      await DirectusAPI.directusAPI.createItem("trp_client", {
-        type: client.type,
-        name: client.name,
-        street: client.street,
-        place: client.place,
-        zipcode: client.zipcode,
-        phone: client.phone,
-        email: client.email,
-      });
+      await DirectusAPI.createTrpClient(client);
     }
   }
 
   private async search(): Promise<Client[]> {
-    let client: Client[] = [];
+    const client: Client[] = [];
 
     const data = new Map();
     data.set("id", this.id);
@@ -642,7 +606,7 @@ export default class NewShipment extends Vue {
     data.set("email", this.email);
     data.set("type", this.type);
 
-    let filteredData = new Map();
+    const filteredData = new Map();
 
     data.forEach((value, key) => {
       if (value) {
@@ -652,9 +616,8 @@ export default class NewShipment extends Vue {
 
     if (filteredData.size > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let filter: any = {};
+      const filter: any = {};
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       await filteredData.forEach((value, key) => {
         if (key !== "id" || key !== "type") {
           filter[key] = { like: value };
@@ -663,56 +626,32 @@ export default class NewShipment extends Vue {
           filter[key] = value;
         }
         if (key === "type") {
-          switch (value) {
-            case "mova":
-              filter[key] = 1;
-              break;
-            case "extern":
-              filter[key] = 2;
-              break;
-            case "ohne Typ suchen":
-              break;
-            default:
-              break;
-          }
+          filter[key] = this.customerTypes.find((typeClient) => (
+            typeClient.acronym === value))?.id;
         }
       });
-
-      let response = await DirectusAPI.directusAPI.getItems("trp_client", {
-        filter,
-        limit: this.limit,
-        fields: ["*", "modified_by.*.*", "type.*.*"],
-      });
-
-      await response.data.forEach((value) => {
-        let currentClient = Object.assign(new Client(), value);
-        client?.push(currentClient);
-      });
-      return client;
+      return await DirectusAPI.getTrpClients(filter, this.limit);
     }
     return client;
   }
 
-  // @ts-ignore
   private closePermissions(): void {
     this.warnPermissions = false;
   }
 
-  //@ts-ignore
   private exportCustomers(): void {
     if (!(this.clients.length > 0 && this.clients[0].id)) {
       return;
     }
 
-    //@ts-ignore
-    const collectionFields = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const collectionFields: any[] = [];
 
     this.headers.forEach((elemt) => {
       collectionFields.push(elemt.value);
     });
 
     const csv = ExportCSV.createCsvClients(
-      //@ts-ignore
       collectionFields,
       this.clients
     );

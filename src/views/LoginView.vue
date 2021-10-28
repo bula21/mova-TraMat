@@ -118,7 +118,7 @@
                 target="_blank"
               >
                 #20_log_21_trp_tramat_request</a>
-              oder löse ein Ticket über den 
+              oder löse ein Ticket über den
               <a
                 href="https://voila.bula21.ch/servicedesk/customer/portal/8"
                 target="_blank"
@@ -149,25 +149,17 @@ import DirectusAPI from "../services/DirectusAPI";
 
 @Component
 export default class LoginView extends Vue {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private showPassword = false;
   private password = "";
   private username = "";
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private errorMessage = "";
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private dialog = false;
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  mounted() {
+  mounted(): void {
     window.addEventListener("keyup", this.handleEnter);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  destroyed() {
+  destroyed(): void {
     window.removeEventListener("keyup", this.handleEnter);
   }
 

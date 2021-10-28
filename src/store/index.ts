@@ -11,7 +11,7 @@ export default new Vuex.Store({
     authorisation: "",
     authorisationDescript: "",
     firstAndLastName: "",
-    abbreviation:"",
+    abbreviation: ""
   },
   mutations: {
     loginSuccess(state) {
@@ -51,7 +51,7 @@ export default new Vuex.Store({
     },
     updateAbbreviation(state, payload) {
       state.abbreviation = payload;
-    },
+    }
   },
   actions: {
   },

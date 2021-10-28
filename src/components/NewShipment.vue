@@ -44,7 +44,7 @@
         </v-progress-linear>
       </v-col>
     </v-row>
-    <v-window 
+    <v-window
       :key="componentKey"
       v-model="step"
     >
@@ -863,8 +863,8 @@ const countOfSteps = 3;
     SearchCustomer,
     NewShipmentGoods,
     NewShipmentPeople,
-    NewShipmentConstruction,
-  },
+    NewShipmentConstruction
+  }
 })
 export default class NewShipment extends Vue {
   /* eslint-disable @typescript-eslint/ban-ts-comment */
@@ -907,8 +907,9 @@ export default class NewShipment extends Vue {
   private orderType = [
     "Warentransport",
     "Personentransport",
-    "Bauleistung mit Fahrzeug",
+    "Bauleistung mit Fahrzeug"
   ];
+
   // @ts-ignore
   private type = "";
   // @ts-ignore
@@ -931,39 +932,42 @@ export default class NewShipment extends Vue {
   // @ts-ignore
   private componentKey = 0;
   // @ts-ignore
-  //formFirst
+  // formFirst
   private validFormFirst = true;
   // @ts-ignore
-  //formSecond
+  // formSecond
   private validFormSecond = true;
   // @ts-ignore
-  //formGoods
+  // formGoods
   private validFormGoods = [true];
   // @ts-ignore
-  //formPeople
+  // formPeople
   private validFormPeople = [true];
   // @ts-ignore
-  //formConst
+  // formConst
   private validFormConst = [true];
   private packagingUntis = new Map();
   private typePeople = new Map();
   // @ts-ignore
   private idRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich",
+    (v: any) => !!v || "Wert ist erforderlich"
   ];
+
   // @ts-ignore
   private orderTypeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich",
+    (v: any) => !!v || "Wert ist erforderlich"
   ];
+
   // @ts-ignore
   private timeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
       /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v) ||
-      "Wert ungültig (Format hh:mm)",
+      "Wert ungültig (Format hh:mm)"
   ];
+
   // @ts-ignore
   private notRequired = true;
   // @ts-ignore
@@ -979,12 +983,13 @@ export default class NewShipment extends Vue {
       }
     }
   ];
+
   // @ts-ignore
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: string) => {
       return !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig";
-    },
+    }
   ];
 
   // @ts-ignore
@@ -1054,6 +1059,7 @@ export default class NewShipment extends Vue {
       this.back();
     }
   }
+
   // @ts-ignore
   private genereateDetails(): string {
     let orderDetails = "";
@@ -1258,7 +1264,7 @@ export default class NewShipment extends Vue {
             await this.persistOrder(this.currentOrder);
           } catch {
             this.titleDialogOrder = "Fehler";
-            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";            this.dialogWarnOrder = true;
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests."; this.dialogWarnOrder = true;
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
@@ -1320,11 +1326,11 @@ export default class NewShipment extends Vue {
   }
 
   private async persistOrder(order: Order) {
-    //goods
+    // goods
     if (this.type === this.orderType[0]) {
       const newOrder = await DirectusAPI.directusAPI.createItem("trp_order", {
         remarks: order.remarks,
-        state: 1, //means new shipment
+        state: 1, // means new shipment
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         shipper: order.shipper!.id,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -1337,31 +1343,31 @@ export default class NewShipment extends Vue {
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
         anlage: order.anlage,
         raster_lagerplatz: order.rasterLagerplatz,
-        delivery_only: order.delivery_only,
+        delivery_only: order.delivery_only
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let quantity: any[] = [];
+      const quantity: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let packing_unit: any[] = [];
+      const packing_unit: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let goods_description: any[] = [];
+      const goods_description: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let marking: any[] = [];
+      const marking: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let length: any[] = [];
+      const length: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let height: any[] = [];
+      const height: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let width: any[] = [];
+      const width: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let gross_weight: any[] = [];
+      const gross_weight: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let net_weight: any[] = [];
+      const net_weight: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let value_chf: any[] = [];
+      const value_chf: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let dangerous_goods: any[] = [];
+      const dangerous_goods: any[] = [];
 
       order.goods.forEach((value) => {
         quantity.push(value.quantity);
@@ -1391,16 +1397,16 @@ export default class NewShipment extends Vue {
           value_chf: value_chf[i],
           dangerous_goods: dangerous_goods[i],
           // @ts-ignore
-          order: newOrder.data.id,
+          order: newOrder.data.id
         });
       }
     }
-    
+
     // people
     if (this.type === this.orderType[1]) {
       const newOrder = await DirectusAPI.directusAPI.createItem("trp_order", {
         remarks: order.remarks,
-        state: 1, //means new shipment
+        state: 1, // means new shipment
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         shipper: order.shipper!.id,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -1413,25 +1419,25 @@ export default class NewShipment extends Vue {
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
         anlage: order.anlage,
         raster_lagerplatz: order.rasterLagerplatz,
-        delivery_only: order.delivery_only,
+        delivery_only: order.delivery_only
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let quantityPeople: any[] = [];
+      const quantityPeople: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let typePeople: any[] = [];
+      const typePeople: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let quantityLuagge: any[] = [];
+      const quantityLuagge: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let descriptionLuagge: any[] = [];
+      const descriptionLuagge: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let length: any[] = [];
+      const length: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let height: any[] = [];
+      const height: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let width: any[] = [];
+      const width: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let weight: any[] = [];
+      const weight: any[] = [];
 
       order.people.forEach((value) => {
         quantityPeople.push(value.quantity_of_people);
@@ -1455,7 +1461,7 @@ export default class NewShipment extends Vue {
           width: width[i],
           weight: weight[i],
           // @ts-ignore
-          order: newOrder.data.id,
+          order: newOrder.data.id
         });
       }
     }
@@ -1464,7 +1470,7 @@ export default class NewShipment extends Vue {
     if (this.type === this.orderType[2]) {
       const newOrder = await DirectusAPI.directusAPI.createItem("trp_order", {
         remarks: order.remarks,
-        state: 1, //means new shipment
+        state: 1, // means new shipment
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         shipper: order.shipper!.id,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -1477,15 +1483,15 @@ export default class NewShipment extends Vue {
         pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
         anlage: order.anlage,
         raster_lagerplatz: order.rasterLagerplatz,
-        delivery_only: order.delivery_only,
+        delivery_only: order.delivery_only
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let quantity: any[] = [];
+      const quantity: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let weight: any[] = [];
+      const weight: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let description: any[] = [];
+      const description: any[] = [];
 
       order.construction.forEach((value) => {
         quantity.push(value.quantity);
@@ -1499,7 +1505,7 @@ export default class NewShipment extends Vue {
           weight: weight[i],
           description: description[i],
           // @ts-ignore
-          order: newOrder.data.id,
+          order: newOrder.data.id
         });
       }
     }
@@ -1512,7 +1518,6 @@ export default class NewShipment extends Vue {
     this.$refs.formFirst.reset();
     // @ts-ignore
     this.$refs.formSecond.reset();
-
 
     // @ts-ignore
     this.searchClient = new Client();
@@ -1677,9 +1682,9 @@ export default class NewShipment extends Vue {
           resp = await DirectusAPI.directusAPI.getItems("trp_client", {
             filter: {
               id: {
-                eq: this.deliveryID,
-              },
-            },
+                eq: this.deliveryID
+              }
+            }
           });
         } catch {
           this.deliveryAddress = "Kunden ID nicht vorhanden";
@@ -1701,9 +1706,9 @@ export default class NewShipment extends Vue {
           resp = await DirectusAPI.directusAPI.getItems("trp_client", {
             filter: {
               id: {
-                eq: this.principalID,
-              },
-            },
+                eq: this.principalID
+              }
+            }
           });
         } catch {
           this.principalAddress = "Kunden ID nicht vorhanden";
@@ -1732,9 +1737,9 @@ export default class NewShipment extends Vue {
           resp = await DirectusAPI.directusAPI.getItems("trp_client", {
             filter: {
               id: {
-                eq: this.pickupID,
-              },
-            },
+                eq: this.pickupID
+              }
+            }
           });
         } catch {
           this.pickupAddress = "Kunden ID nicht vorhanden";
@@ -1755,31 +1760,31 @@ export default class NewShipment extends Vue {
           resp = await DirectusAPI.directusAPI.getItems("anlage", {
             filter: {
               anlagen_id: {
-                eq: this.anlagenID,
-              },
-            },
+                eq: this.anlagenID
+              }
+            }
           });
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          //@ts-ignore
+          // @ts-ignore
           this.anlagenID = null;
-          //@ts-ignore
+          // @ts-ignore
           this.currentOrder.anlage = null;
         }
         if (resp?.data[0]) {
-          //@ts-ignore
+          // @ts-ignore
           this.anlagenDescription = resp.data[0].anlagenname + ", " + resp.data[0].standort;
-          //@ts-ignore
+          // @ts-ignore
           this.rasterLagerplatz = resp.data[0].standortcode;
-          //@ts-ignore
+          // @ts-ignore
           this.currentOrder.anlage = resp.data[0].id;
-          //@ts-ignore
+          // @ts-ignore
           this.currentOrder.rasterLagerplatz = resp.data[0].standortcode;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          //@ts-ignore
+          // @ts-ignore
           this.anlagenID = null;
-          //@ts-ignore
+          // @ts-ignore
           this.currentOrder.anlage = null;
         }
         break;

@@ -89,7 +89,6 @@ import { Component, Vue } from "vue-property-decorator";
 
 @Component
 export default class Account extends Vue {
-
   get abbreviation(): string {
     return this.$store.state.abbreviation;
   }
@@ -106,7 +105,7 @@ export default class Account extends Vue {
     return this.$store.state.authorisationDescript;
   }
 
-  get Email(): string{
+  get Email(): string {
     return this.$store.state.Email;
   }
 }

@@ -20,7 +20,7 @@
     >
       <v-col cols="4">
         <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
-          Neue Transportaufträge
+          Status: New
         </h5>
         <v-progress-circular
           class="mt-4"
@@ -35,7 +35,7 @@
       </v-col>
       <v-col cols="4">
         <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
-          Undisponierte Transportaufträge
+          Status: Checked
         </h5>
         <v-progress-circular
           class="mt-4"
@@ -50,7 +50,7 @@
       </v-col>
       <v-col cols="4">
         <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
-          Geplante Transportaufträge
+          Statis:  Transportaufträge
         </h5>
         <v-progress-circular
           class="mt-4"
@@ -73,12 +73,8 @@ import { Component, Vue } from "vue-property-decorator";
 
 @Component
 export default class Home extends Vue {
-  /* eslint-disable @typescript-eslint/ban-ts-comment */
-  // @ts-ignore
   private newOrders = 0;
-  // @ts-ignore
   private currentOrder = 0;
-  // @ts-ignore
   private inProcessOrders = 0;
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

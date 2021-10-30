@@ -855,6 +855,7 @@ import PositionGoods from "@/model/PositionGoods";
 import PositionPeople from "@/model/PositionPeople";
 import PositionConstruction from "@/model/PositionConstruction";
 import { format } from "fecha";
+import { ORDER_TYPE } from "./Const";
 
 const countOfSteps = 3;
 
@@ -867,100 +868,60 @@ const countOfSteps = 3;
   }
 })
 export default class NewShipment extends Vue {
-  /* eslint-disable @typescript-eslint/ban-ts-comment */
-  // @ts-ignore
   private dialog = false;
-  // @ts-ignore
   private dialogWarn = false;
-  // @ts-ignore
   private dialogWarnOrder = false;
-  // @ts-ignore
   private titleDialogOrder = "";
-  // @ts-ignore
   private textDialogOrder = "";
   private progress = 0.0;
   private step = 1;
   private orderPositionsGoods = [NewShipmentGoods];
   private orderPositionsPeople = [NewShipmentPeople];
   private orderPositionsConstruction = [NewShipmentConstruction];
-  // @ts-ignore
   private searchClient = new Client();
-  // @ts-ignore
-  private pickupID: number = null;
-  // @ts-ignore
+  private pickupID = 0;
   private pickupAddress = "";
-  // @ts-ignore
-  private deliveryID: number = null;
-  // @ts-ignore
+  private deliveryID = 0;
   private deliveryAddress = "";
-  // @ts-ignore
-  private principalID: number = null;
-  // @ts-ignore
-  private anlagenID: number = null;
-  // @ts-ignore
+  private principalID = 0;
+  private anlagenID = 0;
   private anlagenDescription = "--";
-  // @ts-ignore
   private rasterLagerplatz = "";
-  // @ts-ignore
   private principalAddress = "";
-  // @ts-ignore
-  private orderType = [
-    "Warentransport",
-    "Personentransport",
-    "Bauleistung mit Fahrzeug"
-  ];
-
-  // @ts-ignore
+  private orderType: string[] = [];
   private type = "";
-  // @ts-ignore
   private menuDatePickup = false;
-  // @ts-ignore
   private menuDateDelivery = false;
-  // @ts-ignore
   private datePickup = new Date().toISOString().substring(0, 10);
-  // @ts-ignore
   private dateDelivery = new Date().toISOString().substring(0, 10);
-  // @ts-ignore
   private pickupTime = "00:00";
-  // @ts-ignore
   private deliveryTime = "00:00";
-  // @ts-ignore
   private onlyDelivery = false;
-  // @ts-ignore
   private remarksTrpOrder = "";
   private currentOrder = new Order();
-  // @ts-ignore
   private componentKey = 0;
-  // @ts-ignore
   // formFirst
   private validFormFirst = true;
-  // @ts-ignore
   // formSecond
   private validFormSecond = true;
-  // @ts-ignore
   // formGoods
   private validFormGoods = [true];
-  // @ts-ignore
   // formPeople
   private validFormPeople = [true];
-  // @ts-ignore
   // formConst
   private validFormConst = [true];
   private packagingUntis = new Map();
   private typePeople = new Map();
-  // @ts-ignore
   private idRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich"
   ];
 
-  // @ts-ignore
   private orderTypeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich"
   ];
 
-  // @ts-ignore
   private timeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
@@ -968,9 +929,7 @@ export default class NewShipment extends Vue {
       "Wert ungültig (Format hh:mm)"
   ];
 
-  // @ts-ignore
   private notRequired = true;
-  // @ts-ignore
   private rasterLagerplatzRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => {
@@ -984,7 +943,6 @@ export default class NewShipment extends Vue {
     }
   ];
 
-  // @ts-ignore
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: string) => {
@@ -992,7 +950,7 @@ export default class NewShipment extends Vue {
     }
   ];
 
-  // @ts-ignore
+
   private marginButtons() {
     switch (this.$vuetify.breakpoint.name) {
       case "xs":
@@ -1008,8 +966,7 @@ export default class NewShipment extends Vue {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async mounted() {
+  async mounted(): Promise<void> {
     window.addEventListener("keyup", this.handleEnter);
 
     const upadePick = this.datePickup + " " + this.pickupTime;
@@ -1020,29 +977,23 @@ export default class NewShipment extends Vue {
     this.currentOrder.delivery_date = upadeDateTimeDeli;
     this.currentOrder.goods[0].dangerous_goods = false;
 
-    const data = await DirectusAPI.directusAPI.getItems("trp_packing_unit");
-    data.data.forEach((value) => {
+    const data = await DirectusAPI.fetchPackaging();
+    data.forEach((value) => {
       this.packagingUntis.set(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         value.abbreviation + "=" + value.description,
-        // @ts-ignore
         value.id
       );
     });
 
-    const typPeopleResp = await DirectusAPI.directusAPI.getItems(
-      "trp_typ_people"
-    );
-    typPeopleResp.data.forEach((value) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+    const typPeopleResp = await DirectusAPI.fetchTrpTypePeople();
+    typPeopleResp.forEach((value) => {
       this.typePeople.set(value.description, value.id);
     });
+
+    this.orderType.push(ORDER_TYPE["Bauleistung mit Fahrzeug"], ORDER_TYPE.Warentransport, ORDER_TYPE.Personentransport);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  destroyed() {
+  destroyed(): void {
     window.removeEventListener("keyup", this.handleEnter);
   }
 
@@ -1060,12 +1011,11 @@ export default class NewShipment extends Vue {
     }
   }
 
-  // @ts-ignore
   private genereateDetails(): string {
     let orderDetails = "";
 
     switch (this.type) {
-      case this.orderType[0]:
+      case ORDER_TYPE.Warentransport:
         orderDetails = this.printOrderDetails(
           this.currentOrder.delivery_date,
           this.currentOrder.pick_up_date,
@@ -1074,7 +1024,7 @@ export default class NewShipment extends Vue {
         );
         break;
 
-      case this.orderType[1]:
+      case ORDER_TYPE.Personentransport:
         orderDetails = this.printOrderDetails(
           this.currentOrder.delivery_date,
           this.currentOrder.pick_up_date,
@@ -1084,7 +1034,7 @@ export default class NewShipment extends Vue {
         );
         break;
 
-      case this.orderType[2]:
+      case ORDER_TYPE["Bauleistung mit Fahrzeug"]:
         orderDetails = this.printOrderDetails(
           this.currentOrder.delivery_date,
           this.currentOrder.pick_up_date,
@@ -1103,8 +1053,8 @@ export default class NewShipment extends Vue {
   }
 
   printOrderDetails(
-    delivery_date: Date | undefined,
-    pick_up_date: Date | undefined,
+    deliveryDate: Date | undefined,
+    pickupDate: Date | undefined,
     remarks: string | undefined,
     goods?: PositionGoods[] | undefined,
     people?: PositionPeople[] | undefined,
@@ -1114,17 +1064,16 @@ export default class NewShipment extends Vue {
     const newLine = "\n";
 
     try {
-      // @ts-ignore
       details =
-        "Ladetermin: " + pick_up_date?.toLocaleString().substring(0, 16) + "\n";
-      // @ts-ignore
+        "Ladetermin: " + pickupDate?.toLocaleString().substring(0, 16) + "\n";
+
       details =
         details +
         "Liefertermin: " +
-        // @ts-ignore
-        delivery_date.toLocaleString().substring(0, 16) +
+
+        deliveryDate?.toLocaleString().substring(0, 16) +
         "\n";
-      // @ts-ignore
+
       details = details + "Sendungstyp: " + this.type + "\n";
     } catch {
       details = "Ladetermin: " + "\n";
@@ -1134,7 +1083,7 @@ export default class NewShipment extends Vue {
 
     let posDetails = "";
 
-    if (this.orderType[0] === this.type && !!goods) {
+    if (ORDER_TYPE.Warentransport === this.type && !!goods) {
       goods.forEach((element, idx) => {
         posDetails =
           posDetails +
@@ -1176,7 +1125,7 @@ export default class NewShipment extends Vue {
       });
     }
 
-    if (this.orderType[1] === this.type && !!people) {
+    if (ORDER_TYPE.Personentransport === this.type && !!people) {
       people.forEach((element, idx) => {
         posDetails =
           posDetails +
@@ -1209,7 +1158,7 @@ export default class NewShipment extends Vue {
       });
     }
 
-    if (this.orderType[2] === this.type && !!construction) {
+    if (ORDER_TYPE["Bauleistung mit Fahrzeug"] === this.type && !!construction) {
       construction.forEach((element, idx) => {
         posDetails =
           posDetails +
@@ -1235,27 +1184,25 @@ export default class NewShipment extends Vue {
     return details;
   }
 
-  // @ts-ignore
+
   private next(): void {
     this.step++;
   }
 
-  // @ts-ignore
+
   private back(): void {
     this.step--;
   }
 
-  // @ts-ignore
-  private async submit(): void {
-    // @ts-ignore
-    this.$refs.formFirst.validate();
-    // @ts-ignore
-    this.$refs.formSecond.validate();
+
+  private async submit(): Promise<void> {
+    (this.$refs.formFirst as Vue & { validate: () => boolean; }).validate();
+    (this.$refs.formSecond as Vue & { validate: () => boolean; }).validate();
 
     let newVal = true;
 
     if (this.validFormFirst && this.validFormSecond) {
-      if (this.type === this.orderType[0]) {
+      if (this.type === ORDER_TYPE.Warentransport) {
         this.validFormGoods.forEach((value) => {
           newVal = newVal && value;
         });
@@ -1264,7 +1211,8 @@ export default class NewShipment extends Vue {
             await this.persistOrder(this.currentOrder);
           } catch {
             this.titleDialogOrder = "Fehler";
-            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests."; this.dialogWarnOrder = true;
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
+            this.dialogWarnOrder = true;
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
@@ -1276,7 +1224,7 @@ export default class NewShipment extends Vue {
 
       newVal = true;
 
-      if (this.type === this.orderType[1]) {
+      if (this.type === ORDER_TYPE.Personentransport) {
         this.validFormPeople.forEach((value) => {
           newVal = newVal && value;
         });
@@ -1298,7 +1246,7 @@ export default class NewShipment extends Vue {
 
       newVal = true;
 
-      if (this.type === this.orderType[2]) {
+      if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
         this.validFormConst.forEach((value) => {
           newVal = newVal && value;
         });
@@ -1327,7 +1275,7 @@ export default class NewShipment extends Vue {
 
   private async persistOrder(order: Order) {
     // goods
-    if (this.type === this.orderType[0]) {
+    if (this.type === ORDER_TYPE.Personentransport) {
       const newOrder = await DirectusAPI.directusAPI.createItem("trp_order", {
         remarks: order.remarks,
         state: 1, // means new shipment
@@ -1396,7 +1344,7 @@ export default class NewShipment extends Vue {
           net_weight: net_weight[i],
           value_chf: value_chf[i],
           dangerous_goods: dangerous_goods[i],
-          // @ts-ignore
+
           order: newOrder.data.id
         });
       }
@@ -1460,7 +1408,7 @@ export default class NewShipment extends Vue {
           height: height[i],
           width: width[i],
           weight: weight[i],
-          // @ts-ignore
+
           order: newOrder.data.id
         });
       }
@@ -1504,7 +1452,7 @@ export default class NewShipment extends Vue {
           quantity: quantity[i],
           weight: weight[i],
           description: description[i],
-          // @ts-ignore
+
           order: newOrder.data.id
         });
       }
@@ -1514,42 +1462,42 @@ export default class NewShipment extends Vue {
       "Merci für deinen Auftrag. Eine Auftragsbestätigung folgt sobald wie möglich.";
     this.dialogWarnOrder = true;
     this.step = 1;
-    // @ts-ignore
+
     this.$refs.formFirst.reset();
-    // @ts-ignore
+
     this.$refs.formSecond.reset();
 
-    // @ts-ignore
+
     this.searchClient = new Client();
-    // @ts-ignore
+
     this.pickupID = null;
-    // @ts-ignore
+
     this.pickupAddress = "";
-    // @ts-ignore
+
     this.deliveryID = null;
-    // @ts-ignore
+
     this.deliveryAddress = "";
-    // @ts-ignore
+
     this.principalID = null;
-    // @ts-ignore
+
     this.anlagenID = null;
-    // @ts-ignore
+
     this.anlagenDescription = "--";
-    // @ts-ignore
+
     this.rasterLagerplatz = "";
-    // @ts-ignore
+
     this.principalAddress = "";
-    // @ts-ignore
+
     this.remarksTrpOrder = "";
-    // @ts-ignore
+
     this.datePickup = new Date().toISOString().substring(0, 10);
-    // @ts-ignore
+
     this.dateDelivery = new Date().toISOString().substring(0, 10);
-    // @ts-ignore
+
     this.pickupTime = "00:00";
-    // @ts-ignore
+
     this.deliveryTime = "00:00";
-    // @ts-ignore
+
     this.onlyDelivery = false;
     this.currentOrder = new Order();
     this.forceReRender();
@@ -1561,9 +1509,9 @@ export default class NewShipment extends Vue {
     this.componentKey += 1;
   }
 
-  // @ts-ignore
+
   private async searchCustomer(searchOption: string): Promise<void> {
-    // @ts-ignore
+
     this.$refs.formFirst.resetValidation();
     if (searchOption) {
       this.$nextTick(async () => {
@@ -1590,7 +1538,7 @@ export default class NewShipment extends Vue {
     return adress;
   }
 
-  // @ts-ignore
+
   private async updateSearchClients(client: Client) {
     this.searchClient = client;
 
@@ -1637,43 +1585,43 @@ export default class NewShipment extends Vue {
     });
   }
 
-  // @ts-ignore
+
   private triggerUpdateDatePickUp(): void {
     const upade = this.datePickup + " " + this.pickupTime;
     const upadeDateTime = new Date(upade);
     this.currentOrder.pick_up_date = upadeDateTime;
   }
 
-  // @ts-ignore
+
   private triggerUpdateDateDelivery(): void {
     const upade = this.dateDelivery + " " + this.deliveryTime;
     const upadeDateTime = new Date(upade);
     this.currentOrder.delivery_date = upadeDateTime;
   }
 
-  // @ts-ignore
+
   private triggerUpdateRemarks(): void {
     const upade = this.remarksTrpOrder;
     this.currentOrder.remarks = upade;
   }
 
-  // @ts-ignore
+
   private triggerUpdateRaster(): void {
     const upade = this.rasterLagerplatz;
     this.currentOrder.rasterLagerplatz = upade;
   }
 
-  // @ts-ignore
+
   private triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
     this.currentOrder.delivery_only = upade;
   }
 
-  // @ts-ignore
+
   private async triggerUdatePickupID(kindOfUpdate: string): void {
     let resp;
 
-    // @ts-ignore
+
     this.$refs.formFirst.resetValidation();
 
     switch (kindOfUpdate) {
@@ -1766,25 +1714,25 @@ export default class NewShipment extends Vue {
           });
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          // @ts-ignore
+
           this.anlagenID = null;
-          // @ts-ignore
+
           this.currentOrder.anlage = null;
         }
         if (resp?.data[0]) {
-          // @ts-ignore
+
           this.anlagenDescription = resp.data[0].anlagenname + ", " + resp.data[0].standort;
-          // @ts-ignore
+
           this.rasterLagerplatz = resp.data[0].standortcode;
-          // @ts-ignore
+
           this.currentOrder.anlage = resp.data[0].id;
-          // @ts-ignore
+
           this.currentOrder.rasterLagerplatz = resp.data[0].standortcode;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          // @ts-ignore
+
           this.anlagenID = null;
-          // @ts-ignore
+
           this.currentOrder.anlage = null;
         }
         break;

@@ -200,14 +200,8 @@ import { Component, Vue } from "vue-property-decorator";
 
 @Component
 export default class NavigationMenu extends Vue {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private drawer = false;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private group = null;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   private dialog = false;
 
   async logOut(): Promise<void> {
@@ -222,9 +216,6 @@ export default class NavigationMenu extends Vue {
     const newTap = await window.open(window.location.href);
 
     setTimeout(async () => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-
       await newTap?.postMessage(
         await sessionStorage.getItem(DirectusAPI.STORAGE_KEY),
         window.location.protocol + "//" + window.location.host

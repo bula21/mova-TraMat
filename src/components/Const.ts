@@ -4,14 +4,20 @@ export const SEARCH_CATEGORIES = ["Order ID", "Status", "Liefertermin", "Ladeter
   "Ladeadresse PLZ", "Lieferadresse PLZ"];
 
 export enum DIRECTUS_ROLES {
-  "Administrator",
-  "Public",
-  "Lagerbauten",
-  "Dienstleiter/in",
-  "Besteller/in",
-  "Ressortleitung",
-  "Bereichsleitung Infra",
-  "Lagerplatz",
-  "Transport MA",
-  "Programmmaterial"
+  "Administrator"="Administrator",
+  "Public"="Public",
+  "Lagerbauten"="Lagerbauten",
+  "Dienstleiter/in"="Dienstleiter/in",
+  "Besteller/in"="Besteller/in",
+  "Ressortleitung"="Ressortleitung",
+  "Bereichsleitung Infra"="Bereichsleitung Infra",
+  "Lagerplatz"="Lagerplatz",
+  "Transport MA"="Transport MA",
+  "Programmmaterial"="Programmmaterial"
+}
+
+export enum ORDER_TYPE {
+  "Warentransport"="Warentransport",
+  "Personentransport"="Personentransport",
+  "Bauleistung mit Fahrzeug"="Bauleistung mit Fahrzeug"
 }

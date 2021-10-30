@@ -176,6 +176,32 @@ class DirectusAPI {
       email: client.email
     });
   }
+  
+  public async getTrpOrder(filter: any, limit: number): Promise<TrpClient[]> {
+    const resp = await this.directusSDK.getItems("trp_client", {
+      filter,
+      limit: limit,
+      fields: ["*", "modified_by.*.*", "type.*.*"]
+    });
+    const clients: TrpClient[] = ConvertTrpClient.toTrpClient(JSON.stringify(resp.data));
+    return clients;
+  }
+  
+  
+  public async createTrpOrder(order: Order): Promise<void> {
+    await this.directusSDK.createItem("trp_order", {
+      remarks: order.remarks,
+      state: 1, // means new shipment
+      shipper: order.shipper!.id,
+      receiver: order.receiver!.id,
+      principal: order.principal!.id,
+      delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
+      pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
+      anlage: order.anlage,
+      raster_lagerplatz: order.rasterLagerplatz,
+      delivery_only: order.delivery_only
+    });
+  }
 
   public getToken(): string | undefined {
     return this.directusSDK.config.token;

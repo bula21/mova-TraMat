@@ -85,9 +85,6 @@ import { Component, Vue } from "vue-property-decorator";
 
 @Component
 export default class Scheduling extends Vue {
-  /* eslint-disable @typescript-eslint/ban-ts-comment */
-
-  // @ts-ignore
   private headers = [
     { text: "Actions", value: "actions", sortable: false },
     {

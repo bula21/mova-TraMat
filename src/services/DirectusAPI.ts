@@ -1,9 +1,9 @@
 import DirectusSDK from "@directus/sdk-js";
 import store from "@/store";
+import { format } from "fecha";
 import { Convert, Packaging, TransportState, TrpTypeClient, TrpTypePeople } from "./Quicktype";
 import { ConvertTrpClient, TrpClient } from "./TrpClient";
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+import { ConvertTrpOrder, TrpOrder } from "./TrpOrder";
 
 // https://web.archive.org/web/20201028134719/https://docs.directus.io/guides/js-sdk.html
 class DirectusAPI {
@@ -116,17 +116,6 @@ class DirectusAPI {
     return [user.data.first_name, user.data.last_name, user.data.email];
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async getTrpClients(filter: any, limit: number): Promise<TrpClient[]> {
-    const resp = await this.directusSDK.getItems("trp_client", {
-      filter,
-      limit: limit,
-      fields: ["*", "modified_by.*.*", "type.*.*"]
-    });
-    const clients: TrpClient[] = ConvertTrpClient.toTrpClient(JSON.stringify(resp.data));
-    return clients;
-  }
-
   public async fetchTrpState(): Promise<TransportState[]> {
     const fetchStates = await this.directusSDK.getItems("trp_state");
     const transpState: TransportState[] = Convert.toTransportState(JSON.stringify(fetchStates.data));
@@ -151,6 +140,17 @@ class DirectusAPI {
     return trpTypeClient;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async getTrpClients(filter: any, limit: number): Promise<TrpClient[]> {
+    const resp = await this.directusSDK.getItems("trp_client", {
+      filter,
+      limit: limit,
+      fields: ["*", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "type.*.*"]
+    });
+    const clients: TrpClient[] = ConvertTrpClient.toTrpClient(JSON.stringify(resp.data));
+    return clients;
+  }
+
   public async updateTrpClient(client: TrpClient): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await this.directusSDK.updateItem("trp_client", client.id!, {
@@ -165,7 +165,6 @@ class DirectusAPI {
   }
 
   public async createTrpClient(client: TrpClient): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await this.directusSDK.createItem("trp_client", {
       type: client.type?.id,
       name: client.name,
@@ -176,30 +175,31 @@ class DirectusAPI {
       email: client.email
     });
   }
-  
-  public async getTrpOrder(filter: any, limit: number): Promise<TrpClient[]> {
-    const resp = await this.directusSDK.getItems("trp_client", {
+
+  public async getTrpOrder(filter: any, limit: number): Promise<TrpOrder[]> {
+    const resp = await this.directusSDK.getItems("trp_order", {
       filter,
       limit: limit,
-      fields: ["*", "modified_by.*.*", "type.*.*"]
+      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "receiver.*", "receiver.type.*", "principal.*", "principal.type.*", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*"]
     });
-    const clients: TrpClient[] = ConvertTrpClient.toTrpClient(JSON.stringify(resp.data));
-    return clients;
+    const orders: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
+    return orders;
   }
-  
-  
-  public async createTrpOrder(order: Order): Promise<void> {
+
+  public async createTrpOrder(order: TrpOrder): Promise<void> {
     await this.directusSDK.createItem("trp_order", {
       remarks: order.remarks,
       state: 1, // means new shipment
-      shipper: order.shipper!.id,
-      receiver: order.receiver!.id,
-      principal: order.principal!.id,
-      delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
-      pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
-      anlage: order.anlage,
+      shipper: order.shipper?.id,
+      receiver: order.receiver?.id,
+      principal: order.principal?.id,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      delivery_date: format(order.deliveryDate!, "YYYY-MM-DD HH:mm:ss"),
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      pick_up_date: format(order.pickUpDate!, "YYYY-MM-DD HH:mm:ss"),
+      anlage: order.anlage?.id,
       raster_lagerplatz: order.rasterLagerplatz,
-      delivery_only: order.delivery_only
+      delivery_only: order.deliveryOnly
     });
   }
 

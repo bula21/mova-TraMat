@@ -1276,23 +1276,7 @@ export default class NewShipment extends Vue {
   private async persistOrder(order: Order) {
     // goods
     if (this.type === ORDER_TYPE.Personentransport) {
-      const newOrder = await DirectusAPI.directusAPI.createItem("trp_order", {
-        remarks: order.remarks,
-        state: 1, // means new shipment
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        shipper: order.shipper!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        receiver: order.receiver!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        principal: order.principal!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
-        anlage: order.anlage,
-        raster_lagerplatz: order.rasterLagerplatz,
-        delivery_only: order.delivery_only
-      });
+      const newOrder = await DirectusAPI.createTrpOrder(order);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const quantity: any[] = [];

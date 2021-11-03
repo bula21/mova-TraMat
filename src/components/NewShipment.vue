@@ -537,16 +537,16 @@
                   :is="posGoods"
                   :currenpos="currentOrder.goods[indxGoods]"
                   :quantity.sync="currentOrder.goods[indxGoods].quantity"
-                  :brutto-weight.sync="currentOrder.goods[indxGoods].gross_weight"
-                  :netto-weight.sync="currentOrder.goods[indxGoods].net_weight"
-                  :goods-descripttion.sync="currentOrder.goods[indxGoods].goods_description"
+                  :brutto-weight.sync="currentOrder.goods[indxGoods].grossWeight"
+                  :netto-weight.sync="currentOrder.goods[indxGoods].netWeight"
+                  :goods-descripttion.sync="currentOrder.goods[indxGoods].goodsDescription"
                   :length.sync="currentOrder.goods[indxGoods].length"
                   :width.sync="currentOrder.goods[indxGoods].width"
                   :height.sync="currentOrder.goods[indxGoods].height"
                   :marking.sync="currentOrder.goods[indxGoods].marking"
-                  :value-c-h-f.sync="currentOrder.goods[indxGoods].value_chf"
-                  :dangerous-goods.sync="currentOrder.goods[indxGoods].dangerous_goods"
-                  :packing-unit-selected.sync="currentOrder.goods[indxGoods].packing_unit"
+                  :value-c-h-f.sync="currentOrder.goods[indxGoods].valueChf"
+                  :dangerous-goods.sync="currentOrder.goods[indxGoods].dangerousGoods"
+                  :packing-unit-selected.sync="currentOrder.goods[indxGoods].packingUnit"
                   :valid-form-goods.sync="validFormGoods[indxGoods]"
                 />
               </div>
@@ -559,14 +559,14 @@
                 <component
                   :is="posPeople"
                   :currenpos="currentOrder.people[indxPeople]"
-                  :quantity.sync="currentOrder.people[indxPeople].quantity_of_people"
+                  :quantity.sync="currentOrder.people[indxPeople].quantityOfPeople"
                   :brutto-weight.sync="currentOrder.people[indxPeople].weight"
-                  :quantity-of-luagge.sync="currentOrder.people[indxPeople].quantity_of_luggage"
-                  :goods-descripttion.sync="currentOrder.people[indxPeople].description_of_luagge"
+                  :quantity-of-luagge.sync="currentOrder.people[indxPeople].quantityOfLuggage"
+                  :goods-descripttion.sync="currentOrder.people[indxPeople].descriptionOfLuagge"
                   :length.sync="currentOrder.people[indxPeople].length"
                   :width.sync="currentOrder.people[indxPeople].width"
                   :height.sync="currentOrder.people[indxPeople].height"
-                  :selected-type-of-people.sync="currentOrder.people[indxPeople].type_people"
+                  :selected-type-of-people.sync="currentOrder.people[indxPeople].typePeople"
                   :valid-form-people.sync="validFormPeople[indxPeople]"
                 />
               </div>
@@ -850,12 +850,13 @@ import NewShipmentPeople from "@/components/subComponents/NewShipmentPeople.vue"
 import NewShipmentConstruction from "@/components/subComponents/NewShipmentConstruction.vue";
 import Client from "@/model/Client";
 import Order from "@/model/Order";
+import Anlage from "@/model/Anlage";
 import DirectusAPI from "@/services/DirectusAPI";
 import PositionGoods from "@/model/PositionGoods";
 import PositionPeople from "@/model/PositionPeople";
 import PositionConstruction from "@/model/PositionConstruction";
-import { format } from "fecha";
-import { ORDER_TYPE } from "./Const";
+import { ORDER_TYPE, TRP_TYP_CLIENT } from "./Const";
+import { AnlageClass } from "@/services/TrpOrder";
 
 const countOfSteps = 3;
 
@@ -868,6 +869,7 @@ const countOfSteps = 3;
   }
 })
 export default class NewShipment extends Vue {
+  /* eslint-disable @typescript-eslint/no-non-null-assertion */
   private dialog = false;
   private dialogWarn = false;
   private dialogWarnOrder = false;
@@ -886,7 +888,7 @@ export default class NewShipment extends Vue {
   private principalID = 0;
   private anlagenID = 0;
   private anlagenDescription = "--";
-  private rasterLagerplatz = "";
+  private rasterLagerplatz : string | null = "";
   private principalAddress = "";
   private orderType: string[] = [];
   private type = "";
@@ -933,7 +935,7 @@ export default class NewShipment extends Vue {
   private rasterLagerplatzRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => {
-      if (this.currentOrder.receiver?.type === 1) {
+      if (this.currentOrder.receiver?.type === TRP_TYP_CLIENT.mova) {
         this.notRequired = false;
         return !!v || "Wert ist erforderlich";
       } else {
@@ -971,11 +973,14 @@ export default class NewShipment extends Vue {
 
     const upadePick = this.datePickup + " " + this.pickupTime;
     const upadeDateTimePick = new Date(upadePick);
-    this.currentOrder.pick_up_date = upadeDateTimePick;
+    this.currentOrder.pickUpDate = upadeDateTimePick;
     const upadeDeli = this.dateDelivery + " " + this.deliveryTime;
     const upadeDateTimeDeli = new Date(upadeDeli);
-    this.currentOrder.delivery_date = upadeDateTimeDeli;
-    this.currentOrder.goods[0].dangerous_goods = false;
+    this.currentOrder.deliveryDate = upadeDateTimeDeli;
+    this.currentOrder.goods = [new PositionGoods()];
+    this.currentOrder.goods[0].dangerousGoods = false;
+    this.currentOrder.people = [new PositionPeople()];
+    this.currentOrder.construction = [new PositionConstruction()];
 
     const data = await DirectusAPI.fetchPackaging();
     data.forEach((value) => {
@@ -1017,8 +1022,8 @@ export default class NewShipment extends Vue {
     switch (this.type) {
       case ORDER_TYPE.Warentransport:
         orderDetails = this.printOrderDetails(
-          this.currentOrder.delivery_date,
-          this.currentOrder.pick_up_date,
+          this.currentOrder.deliveryDate,
+          this.currentOrder.pickUpDate,
           this.currentOrder.remarks,
           this.currentOrder.goods
         );
@@ -1026,8 +1031,8 @@ export default class NewShipment extends Vue {
 
       case ORDER_TYPE.Personentransport:
         orderDetails = this.printOrderDetails(
-          this.currentOrder.delivery_date,
-          this.currentOrder.pick_up_date,
+          this.currentOrder.deliveryDate,
+          this.currentOrder.pickUpDate,
           this.currentOrder.remarks,
           this.currentOrder.goods,
           this.currentOrder.people
@@ -1036,8 +1041,8 @@ export default class NewShipment extends Vue {
 
       case ORDER_TYPE["Bauleistung mit Fahrzeug"]:
         orderDetails = this.printOrderDetails(
-          this.currentOrder.delivery_date,
-          this.currentOrder.pick_up_date,
+          this.currentOrder.deliveryDate,
+          this.currentOrder.pickUpDate,
           this.currentOrder.remarks,
           this.currentOrder.goods,
           this.currentOrder.people,
@@ -1055,7 +1060,7 @@ export default class NewShipment extends Vue {
   printOrderDetails(
     deliveryDate: Date | undefined,
     pickupDate: Date | undefined,
-    remarks: string | undefined,
+    remarks: string | null | undefined,
     goods?: PositionGoods[] | undefined,
     people?: PositionPeople[] | undefined,
     construction?: PositionConstruction[] | undefined
@@ -1095,22 +1100,22 @@ export default class NewShipment extends Vue {
           element.quantity +
           newLine +
           "Verpackungseinheit: " +
-          element.packing_unit +
+          element.packingUnit +
           newLine +
           "Brutto Gewicht: " +
-          element.gross_weight +
+          element.grossWeight +
           newLine +
           "Netto Gewicht: " +
-          element.net_weight +
+          element.netWeight +
           newLine +
           "Warenbeschreibung: " +
-          element.goods_description +
+          element.goodsDescription +
           newLine +
           "Warenwert: " +
-          element.value_chf +
+          element.valueChf +
           newLine +
           "Gefahrgut: " +
-          element.dangerous_goods +
+          element.dangerousGoods +
           newLine +
           "Markierung: " +
           element.marking +
@@ -1134,16 +1139,16 @@ export default class NewShipment extends Vue {
           "*******" +
           newLine +
           "Anzahl: " +
-          element.quantity_of_people +
+          element.quantityOfPeople +
           newLine +
           "Typ Personen: " +
-          element.type_people +
+          element.typePeople +
           newLine +
           "Anzahl Gepäck Stk.: " +
-          element.quantity_of_luggage +
+          element.quantityOfLuggage +
           newLine +
           "Warenbeschreibung: " +
-          element.description_of_luagge +
+          element.descriptionOfLuagge +
           newLine +
           "Gewicht: " +
           element.weight +
@@ -1275,213 +1280,56 @@ export default class NewShipment extends Vue {
 
   private async persistOrder(order: Order) {
     // goods
-    if (this.type === ORDER_TYPE.Personentransport) {
+    if (this.type === ORDER_TYPE.Warentransport) {
       const newOrder = await DirectusAPI.createTrpOrder(order);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const quantity: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const packing_unit: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const goods_description: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const marking: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const length: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const height: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const width: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const gross_weight: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const net_weight: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const value_chf: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dangerous_goods: any[] = [];
-
-      order.goods.forEach((value) => {
-        quantity.push(value.quantity);
-        goods_description.push(value.goods_description);
-        packing_unit.push(this.packagingUntis.get(value.packing_unit));
-        marking.push(value.marking);
-        length.push(value.length);
-        height.push(value.height);
-        width.push(value.width);
-        gross_weight.push(value.gross_weight);
-        net_weight.push(value.net_weight);
-        value_chf.push(value.value_chf);
-        dangerous_goods.push(value.dangerous_goods);
-      });
-
-      for (let i = 0; order.goods.length > i; i++) {
-        await DirectusAPI.directusAPI.createItem("trp_order_goods", {
-          quantity: quantity[i],
-          packing_unit: packing_unit[i],
-          goods_description: goods_description[i],
-          marking: marking[i],
-          length: length[i],
-          height: height[i],
-          width: width[i],
-          gross_weight: gross_weight[i],
-          net_weight: net_weight[i],
-          value_chf: value_chf[i],
-          dangerous_goods: dangerous_goods[i],
-
-          order: newOrder.data.id
-        });
+      for (let i = 0; order.goods!.length > i; i++) {
+        await DirectusAPI.createGoodsPos(order.goods![i], newOrder.id!);
       }
     }
 
     // people
-    if (this.type === this.orderType[1]) {
-      const newOrder = await DirectusAPI.directusAPI.createItem("trp_order", {
-        remarks: order.remarks,
-        state: 1, // means new shipment
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        shipper: order.shipper!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        receiver: order.receiver!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        principal: order.principal!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
-        anlage: order.anlage,
-        raster_lagerplatz: order.rasterLagerplatz,
-        delivery_only: order.delivery_only
-      });
+    if (this.type === ORDER_TYPE.Personentransport) {
+      const newOrder = await DirectusAPI.createTrpOrder(order);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const quantityPeople: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const typePeople: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const quantityLuagge: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const descriptionLuagge: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const length: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const height: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const width: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const weight: any[] = [];
-
-      order.people.forEach((value) => {
-        quantityPeople.push(value.quantity_of_people);
-        typePeople.push(this.typePeople.get(value.type_people));
-        quantityLuagge.push(value.quantity_of_luggage);
-        descriptionLuagge.push(value.description_of_luagge);
-        length.push(value.length);
-        height.push(value.height);
-        width.push(value.width);
-        weight.push(value.weight);
-      });
-
-      for (let i = 0; order.people.length > i; i++) {
-        await DirectusAPI.directusAPI.createItem("trp_order_people", {
-          quantity_of_people: quantityPeople[i],
-          type_people: typePeople[i],
-          quantity_of_luggage: quantityLuagge[i],
-          description_of_luagge: descriptionLuagge[i],
-          length: length[i],
-          height: height[i],
-          width: width[i],
-          weight: weight[i],
-
-          order: newOrder.data.id
-        });
+      for (let i = 0; order.people!.length > i; i++) {
+        await DirectusAPI.createPeoplePos(order.people![i], newOrder.id!);
       }
     }
 
     // construction
-    if (this.type === this.orderType[2]) {
-      const newOrder = await DirectusAPI.directusAPI.createItem("trp_order", {
-        remarks: order.remarks,
-        state: 1, // means new shipment
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        shipper: order.shipper!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        receiver: order.receiver!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        principal: order.principal!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
-        anlage: order.anlage,
-        raster_lagerplatz: order.rasterLagerplatz,
-        delivery_only: order.delivery_only
-      });
+    if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
+      const newOrder = await DirectusAPI.createTrpOrder(order);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const quantity: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const weight: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const description: any[] = [];
-
-      order.construction.forEach((value) => {
-        quantity.push(value.quantity);
-        weight.push(value.weight);
-        description.push(value.description);
-      });
-
-      for (let i = 0; order.construction.length > i; i++) {
-        await DirectusAPI.directusAPI.createItem("trp_order_construction", {
-          quantity: quantity[i],
-          weight: weight[i],
-          description: description[i],
-
-          order: newOrder.data.id
-        });
+      for (let i = 0; order.construction!.length > i; i++) {
+        await DirectusAPI.createConstPos(order.construction![i], newOrder.id!);
       }
     }
+
     this.titleDialogOrder = "Sendung erfolgreich erfasst";
     this.textDialogOrder =
       "Merci für deinen Auftrag. Eine Auftragsbestätigung folgt sobald wie möglich.";
     this.dialogWarnOrder = true;
     this.step = 1;
 
-    this.$refs.formFirst.reset();
-
-    this.$refs.formSecond.reset();
-
+    (this.$refs.formFirst as Vue & { reset: () => void; }).reset();
+    (this.$refs.formSecond as Vue & { reset: () => void; }).reset();
 
     this.searchClient = new Client();
-
-    this.pickupID = null;
-
+    this.pickupID = 0;
     this.pickupAddress = "";
-
-    this.deliveryID = null;
-
+    this.deliveryID = 0;
     this.deliveryAddress = "";
-
-    this.principalID = null;
-
-    this.anlagenID = null;
-
+    this.principalID = 0;
+    this.anlagenID = 0;
     this.anlagenDescription = "--";
-
     this.rasterLagerplatz = "";
-
     this.principalAddress = "";
-
     this.remarksTrpOrder = "";
-
     this.datePickup = new Date().toISOString().substring(0, 10);
-
     this.dateDelivery = new Date().toISOString().substring(0, 10);
-
     this.pickupTime = "00:00";
-
     this.deliveryTime = "00:00";
-
     this.onlyDelivery = false;
     this.currentOrder = new Order();
     this.forceReRender();
@@ -1493,10 +1341,8 @@ export default class NewShipment extends Vue {
     this.componentKey += 1;
   }
 
-
   private async searchCustomer(searchOption: string): Promise<void> {
-
-    this.$refs.formFirst.resetValidation();
+    (this.$refs.formFirst as Vue & { resetValidation: () => void; }).resetValidation();
     if (searchOption) {
       this.$nextTick(async () => {
         this.$store.commit("changeSearchOption", searchOption);
@@ -1522,34 +1368,29 @@ export default class NewShipment extends Vue {
     return adress;
   }
 
-
   private async updateSearchClients(client: Client) {
     this.searchClient = client;
 
     switch (this.$store.state.searchOption) {
       case "delivery":
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.deliveryID = this.searchClient.id!;
         this.deliveryAddress = this.printAdress(client);
         this.currentOrder.receiver = client;
         break;
       case "principal":
-        if (this.searchClient.type === 1) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (this.searchClient.type?.id === TRP_TYP_CLIENT.mova) {
           this.principalID = this.searchClient.id!;
           this.principalAddress = this.printAdress(client);
           this.currentOrder.principal = client;
           break;
         } else {
           this.dialogWarn = true;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this.principalID = this.searchClient.id!;
           this.principalAddress = this.printAdress(client);
           this.currentOrder.principal = client;
           break;
         }
       case "pickup":
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.pickupID = this.searchClient.id!;
         this.pickupAddress = this.printAdress(client);
         this.currentOrder.shipper = client;
@@ -1569,62 +1410,55 @@ export default class NewShipment extends Vue {
     });
   }
 
-
   private triggerUpdateDatePickUp(): void {
     const upade = this.datePickup + " " + this.pickupTime;
     const upadeDateTime = new Date(upade);
-    this.currentOrder.pick_up_date = upadeDateTime;
+    this.currentOrder.pickUpDate = upadeDateTime;
   }
-
 
   private triggerUpdateDateDelivery(): void {
     const upade = this.dateDelivery + " " + this.deliveryTime;
     const upadeDateTime = new Date(upade);
-    this.currentOrder.delivery_date = upadeDateTime;
+    this.currentOrder.deliveryDate = upadeDateTime;
   }
-
 
   private triggerUpdateRemarks(): void {
     const upade = this.remarksTrpOrder;
     this.currentOrder.remarks = upade;
   }
 
-
   private triggerUpdateRaster(): void {
     const upade = this.rasterLagerplatz;
     this.currentOrder.rasterLagerplatz = upade;
   }
 
-
   private triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
-    this.currentOrder.delivery_only = upade;
+    this.currentOrder.deliveryOnly = upade;
   }
 
+  private async triggerUdatePickupID(kindOfUpdate: string): Promise<void> {
+    let resp: Client[] = [];
+    let resp2: AnlageClass[] = [];
 
-  private async triggerUdatePickupID(kindOfUpdate: string): void {
-    let resp;
-
-
-    this.$refs.formFirst.resetValidation();
+    (this.$refs.formFirst as Vue & { resetValidation: () => void; }).resetValidation();
 
     switch (kindOfUpdate) {
       case "delivery":
         try {
-          resp = await DirectusAPI.directusAPI.getItems("trp_client", {
+          resp = await DirectusAPI.getTrpClients({
             filter: {
               id: {
                 eq: this.deliveryID
               }
             }
-          });
+          }, 5);
         } catch {
           this.deliveryAddress = "Kunden ID nicht vorhanden";
         }
 
-        if (resp?.data[0]) {
-          this.searchClient = Object.assign(new Client(), resp.data[0]);
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (resp[0].id!) {
+          this.searchClient = resp[0];
           this.deliveryID = this.searchClient.id!;
           this.deliveryAddress = this.printAdress(this.searchClient);
           this.currentOrder.receiver = this.searchClient;
@@ -1635,26 +1469,24 @@ export default class NewShipment extends Vue {
 
       case "principal":
         try {
-          resp = await DirectusAPI.directusAPI.getItems("trp_client", {
+          resp = await DirectusAPI.getTrpClients({
             filter: {
               id: {
                 eq: this.principalID
               }
             }
-          });
+          }, 5);
         } catch {
           this.principalAddress = "Kunden ID nicht vorhanden";
         }
 
-        if (resp?.data[0]) {
-          this.searchClient = Object.assign(new Client(), resp.data[0]);
-          if (this.searchClient.type === 1) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (resp[0].id!) {
+          this.searchClient = resp[0];
+          if (this.searchClient.type === TRP_TYP_CLIENT.mova) {
             this.principalID = this.searchClient.id!;
             this.principalAddress = this.printAdress(this.searchClient);
           } else {
             this.dialogWarn = true;
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.principalID = this.searchClient.id!;
             this.principalAddress = this.printAdress(this.searchClient);
           }
@@ -1666,19 +1498,18 @@ export default class NewShipment extends Vue {
 
       case "pickup":
         try {
-          resp = await DirectusAPI.directusAPI.getItems("trp_client", {
+          resp = await DirectusAPI.getTrpClients({
             filter: {
               id: {
                 eq: this.pickupID
               }
             }
-          });
+          }, 5);
         } catch {
           this.pickupAddress = "Kunden ID nicht vorhanden";
         }
-        if (resp?.data[0]) {
-          this.searchClient = Object.assign(new Client(), resp.data[0]);
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (resp[0].id!) {
+          this.searchClient = resp[0];
           this.pickupID = this.searchClient.id!;
           this.pickupAddress = this.printAdress(this.searchClient);
           this.currentOrder.shipper = this.searchClient;
@@ -1689,34 +1520,27 @@ export default class NewShipment extends Vue {
 
       case "anlagen":
         try {
-          resp = await DirectusAPI.directusAPI.getItems("anlage", {
+          resp2 = await DirectusAPI.getAnlage({
             filter: {
               anlagen_id: {
                 eq: this.anlagenID
               }
             }
-          });
+          }, 5);
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-
-          this.anlagenID = null;
-
+          this.anlagenID = 0;
           this.currentOrder.anlage = null;
         }
-        if (resp?.data[0]) {
-
-          this.anlagenDescription = resp.data[0].anlagenname + ", " + resp.data[0].standort;
-
-          this.rasterLagerplatz = resp.data[0].standortcode;
-
-          this.currentOrder.anlage = resp.data[0].id;
-
-          this.currentOrder.rasterLagerplatz = resp.data[0].standortcode;
+        if (resp2[0].id!) {
+          this.anlagenDescription = resp2[0].anlagenname + ", " + resp2[0].standort;
+          this.rasterLagerplatz = resp2[0].standortcode!;
+          this.currentOrder.anlage = new Anlage();
+          this.currentOrder.anlage = resp2[0];
+          this.currentOrder.rasterLagerplatz = resp2[0].standortcode!;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-
-          this.anlagenID = null;
-
+          this.anlagenID = 0;
           this.currentOrder.anlage = null;
         }
         break;
@@ -1724,20 +1548,18 @@ export default class NewShipment extends Vue {
   }
 
   AddButtonClicked(): void {
-    if (this.type === this.orderType[0]) {
+    if (this.type === ORDER_TYPE.Warentransport) {
       this.orderPositionsGoods.push(NewShipmentGoods);
       this.currentOrder.goods?.push(new PositionGoods());
-      this.currentOrder.goods[
-        this.currentOrder.goods.length - 1
-      ].dangerous_goods = false;
+      this.currentOrder.goods![this.currentOrder.goods!.length - 1].dangerousGoods = false;
       this.validFormGoods.push(true);
     }
-    if (this.type === this.orderType[1]) {
+    if (this.type === ORDER_TYPE.Personentransport) {
       this.orderPositionsPeople.push(NewShipmentPeople);
       this.currentOrder.people?.push(new PositionPeople());
       this.validFormPeople.push(true);
     }
-    if (this.type === this.orderType[2]) {
+    if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
       this.orderPositionsConstruction.push(NewShipmentConstruction);
       this.currentOrder.construction?.push(new PositionConstruction());
       this.validFormConst.push(true);
@@ -1745,19 +1567,19 @@ export default class NewShipment extends Vue {
   }
 
   MinusButtonClicked(): void {
-    if (this.type === this.orderType[0]) {
+    if (this.type === ORDER_TYPE.Warentransport) {
       this.orderPositionsGoods.splice(-1, 1);
-      this.currentOrder.goods.splice(-1, 1);
+      this.currentOrder.goods?.splice(-1, 1);
       this.validFormGoods.splice(-1, 1);
     }
-    if (this.type === this.orderType[1]) {
+    if (this.type === ORDER_TYPE.Personentransport) {
       this.orderPositionsPeople.splice(-1, 1);
-      this.currentOrder.people.splice(-1, 1);
+      this.currentOrder.people?.splice(-1, 1);
       this.validFormPeople.splice(-1, 1);
     }
-    if (this.type === this.orderType[2]) {
+    if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
       this.orderPositionsConstruction.splice(-1, 1);
-      this.currentOrder.construction.splice(-1, 1);
+      this.currentOrder.construction?.splice(-1, 1);
       this.validFormConst.splice(-1, 1);
     }
   }

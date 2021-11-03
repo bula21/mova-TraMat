@@ -3,9 +3,13 @@ import store from "@/store";
 import { format } from "fecha";
 import { Convert, Packaging, TransportState, TrpTypeClient, TrpTypePeople } from "./Quicktype";
 import { ConvertTrpClient, TrpClient } from "./TrpClient";
-import { ConvertTrpOrder, TrpOrder } from "./TrpOrder";
+import { AnlageClass, ConvertTrpOrder, TrpOrder } from "./TrpOrder";
+import PositionGoods from "@/model/PositionGoods";
+import PositionPeople from "@/model/PositionPeople";
+import PositionConstruction from "@/model/PositionConstruction";
 
 // https://web.archive.org/web/20201028134719/https://docs.directus.io/guides/js-sdk.html
+// https://web.archive.org/web/20200811211652/https://docs.directus.io/api/authentication.html#tokens
 class DirectusAPI {
   private directusSDK: DirectusSDK;
   public STORAGE_KEY = "directus-sdk-js";
@@ -141,6 +145,17 @@ class DirectusAPI {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async getAnlage(filter: any, limit: number): Promise<AnlageClass[]> {
+    const resp = await this.directusSDK.getItems("anlage", {
+      filter,
+      limit: limit
+    });
+    const anlage: AnlageClass[] = ConvertTrpOrder.toAnlage(JSON.stringify(resp.data));
+    return anlage;
+  }
+
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async getTrpClients(filter: any, limit: number): Promise<TrpClient[]> {
     const resp = await this.directusSDK.getItems("trp_client", {
       filter,
@@ -176,6 +191,7 @@ class DirectusAPI {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async getTrpOrder(filter: any, limit: number): Promise<TrpOrder[]> {
     const resp = await this.directusSDK.getItems("trp_order", {
       filter,
@@ -186,8 +202,8 @@ class DirectusAPI {
     return orders;
   }
 
-  public async createTrpOrder(order: TrpOrder): Promise<void> {
-    await this.directusSDK.createItem("trp_order", {
+  public async createTrpOrder(order: TrpOrder): Promise<TrpOrder> {
+    const resp = await this.directusSDK.createItem("trp_order", {
       remarks: order.remarks,
       state: 1, // means new shipment
       shipper: order.shipper?.id,
@@ -201,6 +217,54 @@ class DirectusAPI {
       raster_lagerplatz: order.rasterLagerplatz,
       delivery_only: order.deliveryOnly
     });
+    const newOrder: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
+    return newOrder[0];
+  }
+
+  public async createGoodsPos(goods: PositionGoods, orderId: number): Promise<PositionGoods> {
+    const resp = await this.directusSDK.createItem("trp_order_goods", {
+      quantity: goods.quantity,
+      packing_unit: goods.packingUnit,
+      goods_description: goods.goodsDescription,
+      marking: goods.marking,
+      length: goods.length,
+      height: goods.height,
+      width: goods.width,
+      gross_weight: goods.grossWeight,
+      net_weight: goods.netWeight,
+      value_chf: goods.valueChf,
+      dangerous_goods: goods.dangerousGoods,
+      order: orderId
+    });
+    const newPos: PositionGoods = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
+    return newPos;
+  }
+
+  public async createPeoplePos(people: PositionPeople, orderId: number): Promise<PositionPeople> {
+    const resp = await this.directusSDK.createItem("trp_order_people", {
+      quantity_of_people: people.quantityOfPeople,
+      type_people: people.typePeople,
+      quantity_of_luggage: people.quantityOfLuggage,
+      description_of_luagge: people.descriptionOfLuagge,
+      length: people.length,
+      height: people.height,
+      width: people.width,
+      weight: people.weight,
+      order: orderId
+    });
+    const newPos: PositionPeople = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
+    return newPos;
+  }
+
+  public async createConstPos(constru: PositionConstruction, orderId: number): Promise<PositionConstruction> {
+    const resp = await this.directusSDK.createItem("trp_order_construction", {
+      quantity: constru.quantity,
+      weight: constru.weight,
+      description: constru.description,
+      order: orderId
+    });
+    const newPos: PositionConstruction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
+    return newPos;
   }
 
   public getToken(): string | undefined {

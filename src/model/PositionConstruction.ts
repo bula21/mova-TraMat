@@ -1,18 +1,13 @@
-class PositionConstruction {
-    id?: number;
-    quantity?: number;
-    description?: string;
-    weight?: number;
-    fk_order?: number;
+import { Construction } from "@/services/TrpOrder";
 
-    constructor(id?: number, quantity?: number, description?: string, weight?: number,
-      fk_order?: number) {
-      this.id = id;
-      this.description = description;
-      this.quantity = quantity;
-      this.fk_order = fk_order;
-      this.weight = weight;
-    }
+class PositionConstruction implements Construction {
+  id?: number;
+  weight?: number | undefined;
+  quantity?: number | undefined;
+  description?: string | undefined;
+  order?: number | undefined;
+  owner?: number | undefined;
+  statusdirectus?: string | undefined;
 }
 
 export default PositionConstruction;

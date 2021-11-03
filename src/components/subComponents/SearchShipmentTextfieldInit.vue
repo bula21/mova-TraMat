@@ -53,7 +53,7 @@ import * as search from "@/components/Const";
 
 @Component
 export default class SearchShipmentTextfieldInit extends Vue {
-  items: string[] = search.searchCategories;
+  items: string[] = search.SEARCH_CATEGORIES;
   private pSearch = "";
   private pSearchCategory = "";
 

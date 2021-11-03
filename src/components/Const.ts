@@ -21,3 +21,8 @@ export enum ORDER_TYPE {
   "Personentransport"="Personentransport",
   "Bauleistung mit Fahrzeug"="Bauleistung mit Fahrzeug"
 }
+
+export enum TRP_TYP_CLIENT {
+  "mova",
+  "external"
+}

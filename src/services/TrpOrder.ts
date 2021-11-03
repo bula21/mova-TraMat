@@ -134,4 +134,36 @@ export class ConvertTrpOrder {
   public static trpOrderToJson(value: TrpOrder[]): string {
     return JSON.stringify(value);
   }
+  
+  public static toTrpGood(json: string): Good {
+    return JSON.parse(json);
+  }
+
+  public static trpGoodToJson(value: Good): string {
+    return JSON.stringify(value);
+  }
+  
+  public static toTrpPerson(json: string): Person {
+    return JSON.parse(json);
+  }
+
+  public static trpPersonToJson(value: Person): string {
+    return JSON.stringify(value);
+  }
+  
+  public static toTrpConst(json: string): Construction {
+    return JSON.parse(json);
+  }
+
+  public static trpConstToJson(value: Construction): string {
+    return JSON.stringify(value);
+  }
+  
+  public static toAnlage(json: string): AnlageClass[] {
+    return JSON.parse(json);
+  }
+
+  public static anlageToJson(value: AnlageClass[]): string {
+    return JSON.stringify(value);
+  }
 }

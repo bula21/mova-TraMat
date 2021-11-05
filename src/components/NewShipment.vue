@@ -888,7 +888,7 @@ export default class NewShipment extends Vue {
   private principalID = 0;
   private anlagenID = 0;
   private anlagenDescription = "--";
-  private rasterLagerplatz : string | null = "";
+  private rasterLagerplatz: string | null = "";
   private principalAddress = "";
   private orderType: string[] = [];
   private type = "";
@@ -995,7 +995,7 @@ export default class NewShipment extends Vue {
       this.typePeople.set(value.description, value.id);
     });
 
-    this.orderType.push(ORDER_TYPE["Bauleistung mit Fahrzeug"], ORDER_TYPE.Warentransport, ORDER_TYPE.Personentransport);
+    this.orderType.push(ORDER_TYPE.Warentransport, ORDER_TYPE.Personentransport, ORDER_TYPE["Bauleistung mit Fahrzeug"]);
   }
 
   destroyed(): void {

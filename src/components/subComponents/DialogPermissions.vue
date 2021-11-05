@@ -45,14 +45,12 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
-  components: {},
+  components: {}
 })
 export default class DialogPermissions extends Vue {
   @Prop({ type: Boolean, required: true })
   dialogWarnPermissions!: boolean;
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
   private closePermissions(): void {
     this.$emit("closePermissions");
   }

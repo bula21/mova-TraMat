@@ -3,10 +3,7 @@ import store from "@/store";
 import { format } from "fecha";
 import { Convert, Packaging, TransportState, TrpTypeClient, TrpTypePeople } from "./Quicktype";
 import { ConvertTrpClient, TrpClient } from "./TrpClient";
-import { AnlageClass, ConvertTrpOrder, TrpOrder } from "./TrpOrder";
-import PositionGoods from "@/model/PositionGoods";
-import PositionPeople from "@/model/PositionPeople";
-import PositionConstruction from "@/model/PositionConstruction";
+import { AnlageClass, Construction, ConvertTrpOrder, Good, Person, TrpOrder } from "./TrpOrder";
 
 // https://web.archive.org/web/20201028134719/https://docs.directus.io/guides/js-sdk.html
 // https://web.archive.org/web/20200811211652/https://docs.directus.io/api/authentication.html#tokens
@@ -221,7 +218,28 @@ class DirectusAPI {
     return newOrder[0];
   }
 
-  public async createGoodsPos(goods: PositionGoods, orderId: number): Promise<PositionGoods> {
+  public async updateTrpOrder(order: TrpOrder): Promise<TrpOrder> {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const resp = await this.directusSDK.updateItem("trp_order", order.id!, {
+      remarks: order.remarks,
+      state: order.state,
+      shipper: order.shipper?.id,
+      receiver: order.receiver?.id,
+      principal: order.principal?.id,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      delivery_date: format(order.deliveryDate!, "YYYY-MM-DD HH:mm:ss"),
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      pick_up_date: format(order.pickUpDate!, "YYYY-MM-DD HH:mm:ss"),
+      anlage: order.anlage,
+      raster_lagerplatz: order.rasterLagerplatz,
+      delivery_only: order.deliveryOnly,
+      statusdirectus: order.statusdirectus
+    });
+    const updateTrpOrder: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
+    return updateTrpOrder[0];
+  }
+
+  public async createGoodsPos(goods: Good, orderId: number): Promise<Good> {
     const resp = await this.directusSDK.createItem("trp_order_goods", {
       quantity: goods.quantity,
       packing_unit: goods.packingUnit,
@@ -236,11 +254,51 @@ class DirectusAPI {
       dangerous_goods: goods.dangerousGoods,
       order: orderId
     });
-    const newPos: PositionGoods = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
+    const newPos: Good = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
     return newPos;
   }
 
-  public async createPeoplePos(people: PositionPeople, orderId: number): Promise<PositionPeople> {
+  public async createGoodsPosWithState(goods: Good, orderId: number): Promise<Good> {
+    const resp = await this.directusSDK.createItem("trp_order_goods", {
+      quantity: goods.quantity,
+      packing_unit: goods.packingUnit,
+      goods_description: goods.goodsDescription,
+      marking: goods.marking,
+      length: goods.length,
+      height: goods.height,
+      width: goods.width,
+      gross_weight: goods.grossWeight,
+      net_weight: goods.netWeight,
+      value_chf: goods.valueChf,
+      dangerous_goods: goods.dangerousGoods,
+      order: orderId,
+      statusdirectus: goods.statusdirectus
+    });
+    const newPos: Good = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
+    return newPos;
+  }
+
+  public async updateGoodsPos(goods: Good, posId: number, orderId: number): Promise<Good> {
+    const resp = await this.directusSDK.updateItem("trp_order_goods", posId, {
+      quantity: goods.quantity,
+      packing_unit: goods.packingUnit,
+      goods_description: goods.goodsDescription,
+      marking: goods.marking,
+      length: goods.length,
+      height: goods.height,
+      width: goods.width,
+      gross_weight: goods.grossWeight,
+      net_weight: goods.netWeight,
+      value_chf: goods.valueChf,
+      dangerous_goods: goods.dangerousGoods,
+      order: orderId,
+      statusdirectus: goods.statusdirectus
+    });
+    const newPos: Good = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
+    return newPos;
+  }
+
+  public async createPeoplePos(people: Person, orderId: number): Promise<Person> {
     const resp = await this.directusSDK.createItem("trp_order_people", {
       quantity_of_people: people.quantityOfPeople,
       type_people: people.typePeople,
@@ -252,18 +310,76 @@ class DirectusAPI {
       weight: people.weight,
       order: orderId
     });
-    const newPos: PositionPeople = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
+    const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
     return newPos;
   }
 
-  public async createConstPos(constru: PositionConstruction, orderId: number): Promise<PositionConstruction> {
+  public async createPeoplePosWithState(people: Person, orderId: number): Promise<Person> {
+    const resp = await this.directusSDK.createItem("trp_order_people", {
+      quantity_of_people: people.quantityOfPeople,
+      type_people: people.typePeople,
+      quantity_of_luggage: people.quantityOfLuggage,
+      description_of_luagge: people.descriptionOfLuagge,
+      length: people.length,
+      height: people.height,
+      width: people.width,
+      weight: people.weight,
+      order: orderId,
+      statusdirectus: people.statusdirectus
+    });
+    const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
+    return newPos;
+  }
+
+  public async updatePeoplePos(people: Person, posId: number, orderId: number): Promise<Person> {
+    const resp = await this.directusSDK.updateItem("trp_order_people", posId, {
+      quantity_of_people: people.quantityOfPeople,
+      type_people: people.typePeople,
+      quantity_of_luggage: people.quantityOfLuggage,
+      description_of_luagge: people.descriptionOfLuagge,
+      length: people.length,
+      height: people.height,
+      width: people.width,
+      weight: people.weight,
+      order: orderId,
+      statusdirectus: people.statusdirectus
+    });
+    const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
+    return newPos;
+  }
+
+  public async createConstPos(constru: Construction, orderId: number): Promise<Construction> {
     const resp = await this.directusSDK.createItem("trp_order_construction", {
       quantity: constru.quantity,
       weight: constru.weight,
       description: constru.description,
       order: orderId
     });
-    const newPos: PositionConstruction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
+    const newPos: Construction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
+    return newPos;
+  }
+
+  public async createConstruPosWithState(constru: Construction, orderId: number): Promise<Construction> {
+    const resp = await this.directusSDK.createItem("trp_order_construction", {
+      quantity: constru.quantity,
+      weight: constru.weight,
+      description: constru.description,
+      order: orderId,
+      statusdirectus: constru.statusdirectus
+    });
+    const newPos: Construction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
+    return newPos;
+  }
+
+  public async updateConstruePos(constru: Construction, posId: number, orderId: number): Promise<Construction> {
+    const resp = await this.directusSDK.updateItem("trp_order_construction", posId, {
+      quantity: constru.quantity,
+      weight: constru.weight,
+      description: constru.description,
+      order: orderId,
+      statusdirectus: constru.statusdirectus
+    });
+    const newPos: Construction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
     return newPos;
   }
 

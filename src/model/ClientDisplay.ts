@@ -2,9 +2,9 @@
 
 class ClientDisplay {
   id?: number;
-  created_on?: Date | undefined;
-  modified_by?: Date | undefined;
-  modified_on?: Date | undefined;
+  created_on?: string | undefined;
+  modified_by?: string | undefined;
+  modified_on?: string | undefined;
   name?: string | undefined;
   street?: string | undefined;
   place?: string | undefined;

@@ -119,10 +119,17 @@ export interface TrpOrder {
   anlage?: AnlageClass | null;
   deliveryOnly?: boolean;
   document?: null;
+  // this state is doubled but need for directus to disable
+  // change of orders in certains states
   statusdirectus?: string;
   construction?: Construction[];
   goods?: Good[];
   people?: Person[];
+
+  calcCBM(): number;
+  calcLuaggage(): number;
+  calcQuantity(): number;
+  calcWeight(): number;
 }
 
 // Converts JSON strings to/from your types
@@ -134,7 +141,7 @@ export class ConvertTrpOrder {
   public static trpOrderToJson(value: TrpOrder[]): string {
     return JSON.stringify(value);
   }
-  
+
   public static toTrpGood(json: string): Good {
     return JSON.parse(json);
   }
@@ -142,7 +149,7 @@ export class ConvertTrpOrder {
   public static trpGoodToJson(value: Good): string {
     return JSON.stringify(value);
   }
-  
+
   public static toTrpPerson(json: string): Person {
     return JSON.parse(json);
   }
@@ -150,7 +157,7 @@ export class ConvertTrpOrder {
   public static trpPersonToJson(value: Person): string {
     return JSON.stringify(value);
   }
-  
+
   public static toTrpConst(json: string): Construction {
     return JSON.parse(json);
   }
@@ -158,7 +165,7 @@ export class ConvertTrpOrder {
   public static trpConstToJson(value: Construction): string {
     return JSON.stringify(value);
   }
-  
+
   public static toAnlage(json: string): AnlageClass[] {
     return JSON.parse(json);
   }

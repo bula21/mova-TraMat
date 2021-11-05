@@ -606,16 +606,16 @@
                   :is="posGoods"
                   :currenpos="editedOrder.goods[indxGoods]"
                   :quantity.sync="editedOrder.goods[indxGoods].quantity"
-                  :brutto-weight.sync="editedOrder.goods[indxGoods].gross_weight"
-                  :netto-weight.sync="editedOrder.goods[indxGoods].net_weight"
-                  :goods-descripttion.sync="editedOrder.goods[indxGoods].goods_description"
+                  :brutto-weight.sync="editedOrder.goods[indxGoods].grossWeight"
+                  :netto-weight.sync="editedOrder.goods[indxGoods].netWeight"
+                  :goods-descripttion.sync="editedOrder.goods[indxGoods].goodsDescription"
                   :length.sync="editedOrder.goods[indxGoods].length"
                   :width.sync="editedOrder.goods[indxGoods].width"
                   :height.sync="editedOrder.goods[indxGoods].height"
                   :marking.sync="editedOrder.goods[indxGoods].marking"
-                  :value-c-h-f.sync="editedOrder.goods[indxGoods].value_chf"
-                  :dangerous-goods.sync="editedOrder.goods[indxGoods].dangerous_goods"
-                  :packing-unit-selected.sync="editedOrder.goods[indxGoods].packing_unit"
+                  :value-c-h-f.sync="editedOrder.goods[indxGoods].valueChf"
+                  :dangerous-goods.sync="editedOrder.goods[indxGoods].dangerousGoods"
+                  :packing-unit-selected.sync="editedOrder.goods[indxGoods].packingUnit"
                   :valid-form-goods.sync="validFormGoods[indxGoods]"
                 />
               </div>
@@ -628,14 +628,14 @@
                 <component
                   :is="posPeople"
                   :currenpos="editedOrder.people[indxPeople]"
-                  :quantity.sync="editedOrder.people[indxPeople].quantity_of_people"
+                  :quantity.sync="editedOrder.people[indxPeople].quantityOfPeople"
                   :brutto-weight.sync="editedOrder.people[indxPeople].weight"
-                  :quantity-of-luagge.sync="editedOrder.people[indxPeople].quantity_of_luggage"
-                  :goods-descripttion.sync="editedOrder.people[indxPeople].description_of_luagge"
+                  :quantity-of-luagge.sync="editedOrder.people[indxPeople].quantityOfLuggage"
+                  :goods-descripttion.sync="editedOrder.people[indxPeople].descriptionOfLuagge"
                   :length.sync="editedOrder.people[indxPeople].length"
                   :width.sync="editedOrder.people[indxPeople].width"
                   :height.sync="editedOrder.people[indxPeople].height"
-                  :selected-type-of-people.sync="editedOrder.people[indxPeople].type_people"
+                  :selected-type-of-people.sync="editedOrder.people[indxPeople].typePeople"
                   :valid-form-people.sync="validFormPeople[indxPeople]"
                 />
               </div>
@@ -807,6 +807,9 @@ import PositionConstruction from "@/model/PositionConstruction";
 import Client from "@/model/Client";
 import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
 import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
+import { DIRECTUS_ROLES, ORDER_TYPE, TRP_TYP_CLIENT } from "./Const";
+import { TrpOrder } from "@/services/TrpOrder";
+import OrderDisplay from "@/model/OrderDisplay";
 
 @Component({
   components: {
@@ -821,50 +824,31 @@ import DialogPermissions from "@/components/subComponents/DialogPermissions.vue"
   }
 })
 export default class SearchShipment extends Vue {
-  /* eslint-disable @typescript-eslint/ban-ts-comment */
+  /* eslint-disable @typescript-eslint/no-non-null-assertion */
   private textFields = [SearchShipmentTextfieldAdd];
   private searchChild = "";
   private searchCategoryChild = "";
   private searchChildAdd = [];
   private searchCategoryChildAdd = [];
-  // @ts-ignore
   private componentKey = 0;
-  // @ts-ignore
   private limit = 100;
-  // @ts-ignore
   private limitTypes = [-1, 5, 50, 100, 200];
-  // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private orders: any = [{}];
-  // @ts-ignore
-  private editedItem = new Order();
-  // @ts-ignore
   private printOrder = new Order();
-  // @ts-ignore
-  private editedOrder = new Order();
-  private orderTable: Order[] = [];
-  // @ts-ignore
+  private editedOrder: TrpOrder = new Order();
+  private orderTable: TrpOrder[] = [];
   private errorMessage = "";
-  // @ts-ignore
   private dialog = false;
-  // @ts-ignore
   private dialogNotMova = false;
-  // @ts-ignore
   private dialogPrint = false;
-  // @ts-ignore
   private dialogSearchClient = false;
-  // @ts-ignore
   private dialogWarnOrder = false;
-  // @ts-ignore
   private warnPermissions = false;
-  // @ts-ignore
   private titleDialogOrder = "";
-  // @ts-ignore
   private textDialogOrder = "";
-  // @ts-ignore
   // formFirst
   private validFormFirst = true;
-  // @ts-ignore
   // formSecond
   private validFormSecond = true;
   private validFormGoods = [true];
@@ -873,74 +857,44 @@ export default class SearchShipment extends Vue {
   private orderPositionsGoods = [NewShipmentGoods];
   private orderPositionsPeople = [NewShipmentPeople];
   private orderPositionsConstruction = [NewShipmentConstruction];
-  // @ts-ignore
-  private orderType = [
-    "Warentransport",
-    "Personentransport",
-    "Bauleistung mit Fahrzeug"
-  ];
-
+  private orderType: string[] = [];
   private stateTypeFromIdToState = new Map();
   private stateTypeFromStateToId = new Map();
   private packagingUntisFromDesToId = new Map();
   private typePeopleFromDesToId = new Map();
-  // @ts-ts-ignore
+  private typePeopleFromIdToDes = new Map();
   private stateTypeArray: string[] = [];
-  // @ts-ignore
   private onlyDelivery = false;
-  // @ts-ignore
   private state = "";
-  // @ts-ignore
   private type = "";
-  // @ts-ignore
   private searchClient = new Client();
-  // @ts-ignore
-  private pickupID: number = null;
-  // @ts-ignore
+  private pickupID = 0;
   private pickupAddress = "";
-  // @ts-ignore
-  private deliveryID: number = null;
-  // @ts-ignore
+  private deliveryID = 0;
   private deliveryAddress = "";
-  // @ts-ignore
-  private principalID: number = null;
-  // @ts-ignore
+  private principalID = 0;
   private principalAddress = "";
-  // @ts-ignore
   private deliveryPhone = "";
-  // @ts-ignore
-  private anlagenID: number = null;
-  // @ts-ignore
+  private anlagenID = 0;
   private anlagenDescription = "--";
-  // @ts-ignore
   private rasterLagerplatz = "";
-  // @ts-ignore
   private menuDatePickup = false;
-  // @ts-ignore
   private menuDateDelivery = false;
-  // @ts-ignore
-  private datePickup: Date = new Date();
-  // @ts-ignore
-  private dateDelivery: Date = new Date();
-  // @ts-ignore
+  private datePickup = new Date().toISOString().substring(0, 10);
+  private dateDelivery = new Date().toISOString().substring(0, 10);
   private pickupTime = "00:00";
-  // @ts-ignore
   private deliveryTime = "00:00";
-  // @ts-ignore
   private remarksTrpOrder = "";
-  // @ts-ignore
   private idRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich"
   ];
 
-  // @ts-ignore
   private orderTypeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich"
   ];
 
-  // @ts-ignore
   private timeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
@@ -948,7 +902,6 @@ export default class SearchShipment extends Vue {
       "Wert ungültig (Format hh:mm)"
   ];
 
-  // @ts-ignore
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: string) => {
@@ -956,13 +909,12 @@ export default class SearchShipment extends Vue {
     }
   ];
 
-  // @ts-ignore
   private notRequired = true;
-  // @ts-ignore
+
   private rasterLagerplatzRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => {
-      if (this.editedOrder.receiver?.type === 1) {
+      if (this.editedOrder.receiver?.type?.id === TRP_TYP_CLIENT.mova) {
         this.notRequired = false;
         return !!v || "Wert ist erforderlich";
       } else {
@@ -976,8 +928,7 @@ export default class SearchShipment extends Vue {
     this.componentKey += 1;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async mounted() {
+  async mounted(): Promise<void> {
     window.addEventListener("keyup", this.handleEnter);
 
     const fetchStates = await DirectusAPI.fetchTrpState();
@@ -1001,15 +952,16 @@ export default class SearchShipment extends Vue {
 
     typPeopleResp.forEach((value) => {
       this.typePeopleFromDesToId.set(value.description, value.id);
+      this.typePeopleFromIdToDes.set(value.id, value.description);
     });
+
+    this.orderType.push(ORDER_TYPE.Warentransport, ORDER_TYPE.Personentransport, ORDER_TYPE["Bauleistung mit Fahrzeug"]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  destroyed() {
+  destroyed(): void {
     window.removeEventListener("keyup", this.handleEnter);
   }
 
-  // @ts-ignore
   private headers = [
     { text: "Actions", value: "actions", sortable: false },
     {
@@ -1041,8 +993,7 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  // @ts-ignore
-  private marginButtons() {
+  private marginButtons(): string {
     switch (this.$vuetify.breakpoint.name) {
       case "xs":
         return "mt-n10";
@@ -1078,71 +1029,38 @@ export default class SearchShipment extends Vue {
     if (!(this.orderTable.length > 0)) {
       return;
     }
-    this.orderTable.forEach((value: Order) => {
+
+    this.orderTable.forEach((value: TrpOrder) => {
       let weight = 0;
       let pos = 0;
       let posDescription = "";
       let cbm = 0;
 
-      if (value.people.length > 0) {
-        value.people.forEach((value) => {
-          // @ts-ignore
-          weight = value.weight * value.quantity_of_luggage + weight;
-          cbm =
-            // @ts-ignore
-            ((((value.length / 100) * value.height) / 100) * value.width) /
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            100 * value.quantity_of_luggage! +
-            cbm;
-          pos++;
-          posDescription =
-            // @ts-ignore
-            posDescription + value.type_people.description + "\n";
-        });
-        // @ts-ignore
-        cbm = cbm.toFixed(3);
-      } else if (value.goods.length > 0) {
-        value.goods.forEach((value) => {
-          // @ts-ignore
-          weight = value.gross_weight * value.quantity + weight;
+      weight = value.calcWeight();
+      cbm = value.calcCBM();
 
-          cbm =
-            // @ts-ignore
-            ((((value.length / 100) * value.height) / 100) * value.width) /
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            100 * value.quantity! +
-            cbm;
+      if (value.people!.length > 0) {
+        value.people!.forEach((value) => {
           pos++;
-          posDescription =
-            // @ts-ignore
-            posDescription + value.goods_description + "\n";
+          posDescription = posDescription + this.typePeopleFromIdToDes.get(value.typePeople) + "\n";
         });
-        // @ts-ignore
-        cbm = cbm.toFixed(3);
-      } else if (value.construction.length > 0) {
-        value.construction.forEach((value) => {
-          // @ts-ignore
-          weight = value.weight * value.quantity + weight;
-          // @ts-ignore
-          cbm = 0;
+      } else if (value.goods!.length > 0) {
+        value.goods!.forEach((value) => {
           pos++;
-          posDescription =
-            // @ts-ignore
-            posDescription + value.description + "\n";
+          posDescription = posDescription + value.goodsDescription + "\n";
+        });
+      } else if (value.construction!.length > 0) {
+        value.construction!.forEach((value) => {
+          pos++;
+          posDescription = posDescription + value.description + "\n";
         });
       }
 
       this.orders.push({
         id: value.id,
-        // @ts-ignore
-        state: value.state.state,
-        delivery_date: format(
-          // @ts-ignore
-          new Date(value.delivery_date),
-          "YYYY-MM-DD HH:mm"
-        ),
-        // @ts-ignore
-        pick_up_date: format(new Date(value.pick_up_date), "YYYY-MM-DD HH:mm"),
+        state: value.state?.state,
+        delivery_date: format(new Date(value.deliveryDate!), "YYYY-MM-DD HH:mm"),
+        pick_up_date: format(new Date(value.pickUpDate!), "YYYY-MM-DD HH:mm"),
         principal: value.principal?.name,
         principal_id: value.principal?.id,
         principal_email: value.principal?.email,
@@ -1160,9 +1078,8 @@ export default class SearchShipment extends Vue {
     });
   }
 
-  // @ts-ignore
-  private async fetchSearchOrder(): Promise<Order[]> {
-    const order: Order[] = [];
+  private async fetchSearchOrder(): Promise<TrpOrder[]> {
+    let order: TrpOrder[] = [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filteredDataValue: any[] = [];
@@ -1231,11 +1148,7 @@ export default class SearchShipment extends Vue {
             }
           } else {
             try {
-              let dateConv;
-              dateConv = format(
-                new Date(filteredDataValue[i].trim()),
-                "YYYY-MM-DD"
-              );
+              const dateConv = format(new Date(filteredDataValue[i].trim()), "YYYY-MM-DD");
 
               filter.delivery_date = {
                 between: [dateConv + " 00:00", dateConv + " 23:59"]
@@ -1274,11 +1187,7 @@ export default class SearchShipment extends Vue {
             }
           } else {
             try {
-              let dateConv;
-              dateConv = format(
-                new Date(filteredDataValue[i].trim()),
-                "YYYY-MM-DD"
-              );
+              const dateConv = format(new Date(filteredDataValue[i].trim()), "YYYY-MM-DD");
 
               filter.pick_up_date = {
                 between: [dateConv + " 00:00", dateConv + " 23:59"]
@@ -1291,17 +1200,14 @@ export default class SearchShipment extends Vue {
           }
         }
         if (filteredDataKey[i] === "Auftraggeber Firma/Name") {
-          const fetchPrincipals = await DirectusAPI.directusAPI.getItems(
-            "trp_client",
-            {
-              filter: { name: { like: filteredDataValue[i].trim() } }
-            }
-          );
+          const fetchPrincipals = await DirectusAPI.getTrpClients({
+            filter: { name: { like: filteredDataValue[i].trim() } }
+          }, 5);
           const arrayPricipalsId: number[] = [];
 
-          for (let j = 0; fetchPrincipals.data.length > j; j++) {
-            // @ts-ignore
-            arrayPricipalsId.push(fetchPrincipals.data[j].id);
+          for (let j = 0; fetchPrincipals.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayPricipalsId.push(fetchPrincipals[j].id!);
           }
 
           if (arrayPricipalsId.length > 0) {
@@ -1314,17 +1220,14 @@ export default class SearchShipment extends Vue {
           filter.principal = { in: principals };
         }
         if (filteredDataKey[i] === "Auftraggeber Email") {
-          const fetchPrincipals = await DirectusAPI.directusAPI.getItems(
-            "trp_client",
-            {
-              filter: { email: { like: filteredDataValue[i].trim() } }
-            }
-          );
+          const fetchPrincipals = await DirectusAPI.getTrpClients({
+            filter: { email: { like: filteredDataValue[i].trim() } }
+          }, 5);
           const arrayPricipalsId: number[] = [];
 
-          for (let j = 0; fetchPrincipals.data.length > j; j++) {
-            // @ts-ignore
-            arrayPricipalsId.push(fetchPrincipals.data[j].id);
+          for (let j = 0; fetchPrincipals.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayPricipalsId.push(fetchPrincipals[j].id!);
           }
 
           if (arrayPricipalsId.length > 0) {
@@ -1333,17 +1236,16 @@ export default class SearchShipment extends Vue {
           }
         }
         if (filteredDataKey[i] === "Lieferadresse Name") {
-          const fetchReciever = await DirectusAPI.directusAPI.getItems(
-            "trp_client",
+          const fetchReciever = await DirectusAPI.getTrpClients(
             {
               filter: { name: { like: filteredDataValue[i].trim() } }
-            }
+            }, 5
           );
           const arrayRecieverId: number[] = [];
 
-          for (let j = 0; fetchReciever.data.length > j; j++) {
-            // @ts-ignore
-            arrayRecieverId.push(fetchReciever.data[j].id);
+          for (let j = 0; fetchReciever.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayRecieverId.push(fetchReciever[j].id!);
           }
 
           if (arrayRecieverId.length > 0) {
@@ -1352,17 +1254,16 @@ export default class SearchShipment extends Vue {
           }
         }
         if (filteredDataKey[i] === "Ladeadresse Name") {
-          const fetchShipper = await DirectusAPI.directusAPI.getItems(
-            "trp_client",
+          const fetchShipper = await DirectusAPI.getTrpClients(
             {
               filter: { name: { like: filteredDataValue[i].trim() } }
-            }
+            }, 5
           );
           const arrayShipperId: number[] = [];
 
-          for (let j = 0; fetchShipper.data.length > j; j++) {
-            // @ts-ignore
-            arrayShipperId.push(fetchShipper.data[j].id);
+          for (let j = 0; fetchShipper.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayShipperId.push(fetchShipper[j].id!);
           }
 
           if (arrayShipperId.length > 0) {
@@ -1371,17 +1272,16 @@ export default class SearchShipment extends Vue {
           }
         }
         if (filteredDataKey[i] === "Lieferadresse Ort") {
-          const fetchReciever = await DirectusAPI.directusAPI.getItems(
-            "trp_client",
+          const fetchReciever = await DirectusAPI.getTrpClients(
             {
               filter: { place: { like: filteredDataValue[i].trim() } }
-            }
+            }, 5
           );
           const arrayRecieverId: number[] = [];
 
-          for (let j = 0; fetchReciever.data.length > j; j++) {
-            // @ts-ignore
-            arrayRecieverId.push(fetchReciever.data[i].id);
+          for (let j = 0; fetchReciever.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayRecieverId.push(fetchReciever[j].id!);
           }
 
           if (arrayRecieverId.length > 0) {
@@ -1390,17 +1290,15 @@ export default class SearchShipment extends Vue {
           }
         }
         if (filteredDataKey[i] === "Ladeadresse Ort") {
-          const fetchShipper = await DirectusAPI.directusAPI.getItems(
-            "trp_client",
+          const fetchShipper = await DirectusAPI.getTrpClients(
             {
               filter: { place: { like: filteredDataValue[i].trim() } }
-            }
+            }, 5
           );
           const arrayShipperId: number[] = [];
 
-          for (let j = 0; fetchShipper.data.length > j; j++) {
-            // @ts-ignore
-            arrayShipperId.push(fetchShipper.data[i].id);
+          for (let j = 0; fetchShipper.length > j; j++) {
+            arrayShipperId.push(fetchShipper[j].id!);
           }
 
           if (arrayShipperId.length > 0) {
@@ -1409,17 +1307,16 @@ export default class SearchShipment extends Vue {
           }
         }
         if (filteredDataKey[i] === "Ladeadresse PLZ") {
-          const fetchShipper = await DirectusAPI.directusAPI.getItems(
-            "trp_client",
+          const fetchShipper = await DirectusAPI.getTrpClients(
             {
               filter: { zipcode: { like: filteredDataValue[i].trim() } }
-            }
+            }, 5
           );
           const arrayShipperId: number[] = [];
 
-          for (let j = 0; fetchShipper.data.length > j; j++) {
-            // @ts-ignore
-            arrayShipperId.push(fetchShipper.data[i].id);
+          for (let j = 0; fetchShipper.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayShipperId.push(fetchShipper[j].id!);
           }
 
           if (arrayShipperId.length > 0) {
@@ -1428,17 +1325,16 @@ export default class SearchShipment extends Vue {
           }
         }
         if (filteredDataKey[i] === "Lieferadresse PLZ") {
-          const fetchReciever = await DirectusAPI.directusAPI.getItems(
-            "trp_client",
+          const fetchReciever = await DirectusAPI.getTrpClients(
             {
               filter: { zipcode: { like: filteredDataValue[i].trim() } }
-            }
+            }, 5
           );
           const arrayRecieverId: number[] = [];
 
-          for (let j = 0; fetchReciever.data.length > j; j++) {
-            // @ts-ignore
-            arrayRecieverId.push(fetchReciever.data[i].id);
+          for (let j = 0; fetchReciever.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayRecieverId.push(fetchReciever[j].id!);
           }
 
           if (arrayRecieverId.length > 0) {
@@ -1453,216 +1349,55 @@ export default class SearchShipment extends Vue {
         return order;
       }
 
-      const response = await DirectusAPI.directusAPI.getItems("trp_order", {
-        // @ts-ignore
-        filter,
-        limit: this.limit,
-        fields: ["*.*.*.*"]
-      });
+      order = await DirectusAPI.getTrpOrder(filter, this.limit);
 
-      response.data.forEach((value) => {
-        const currentClient = Object.assign(new Order(), value);
-        order.push(currentClient);
-      });
       return order;
     }
     return order;
   }
 
-  // @ts-ignore
-  private printItem(item: Order): void {
+  private printItem(item: OrderDisplay): void {
     if (
-      this.$store.state.authorisation === "Public" ||
-      this.$store.state.authorisation === "Lagerbauten" ||
-      this.$store.state.authorisation === "Dienstleiter/in" ||
-      this.$store.state.authorisation === "Besteller/in" ||
-      this.$store.state.authorisation === "Ressortleitung" ||
-      this.$store.state.authorisation === "Bereichsleitung Infra" ||
-      this.$store.state.authorisation === "Programmmaterial" ||
-      this.$store.state.authorisation === "Lagerplatz"
+      this.$store.state.authorisation === DIRECTUS_ROLES.Public ||
+      this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten ||
+      this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"] ||
+      this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
+      this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
+      this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"] ||
+      this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
+      this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
     ) {
       this.warnPermissions = true;
       return;
     }
 
     this.forceRerenderPrint();
+    let editedItems: TrpOrder[] = [];
     this.printOrder = new Order();
-    this.editedItem = new Order();
     this.editedOrder = new Order();
 
     if (item.id) {
-      this.editedItem = item;
-
-      // @ts-ignore
-      this.editedOrder = this.orderTable.filter((value: unknown) => {
-        // @ts-ignore
-        return value.id === this.editedItem.id;
+      editedItems = this.orderTable.filter((value) => {
+        return value.id === item.id;
       });
+      // check if found item is not null
+      if (editedItems[0]) {
+        this.editedOrder = editedItems[0];
+        this.printOrder = editedItems[0];
 
-      // @ts-ignore
-      this.editedOrder = this.editedOrder[0];
-
-      const convertedOrder = new Order();
-      convertedOrder.id = this.editedOrder.id;
-      // @ts-ignore
-      convertedOrder.modified_on = new Date(this.editedOrder.modified_on);
-      convertedOrder.receiver = new Client();
-      convertedOrder.receiver.id = this.editedOrder.receiver?.id;
-      // @ts-ignore
-      convertedOrder.receiver.type = this.editedOrder.receiver?.type.id;
-      convertedOrder.receiver.name = this.editedOrder.receiver?.name;
-      convertedOrder.receiver.street = this.editedOrder.receiver?.street;
-      convertedOrder.receiver.place = this.editedOrder.receiver?.place;
-      convertedOrder.receiver.zipcode = this.editedOrder.receiver?.zipcode;
-      convertedOrder.receiver.phone = this.editedOrder.receiver?.phone;
-      convertedOrder.receiver.email = this.editedOrder.receiver?.email;
-      convertedOrder.receiver.modified_on = new Date(
-        // @ts-ignore
-        this.editedOrder.receiver.modified_on
-      );
-      convertedOrder.receiver.created_on = new Date(
-        // @ts-ignore
-        this.editedOrder.receiver?.created_on
-      );
-      // @ts-ignore
-      convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
-
-      try {
-        // @ts-ignore
-        convertedOrder.anlage = this.editedOrder.anlage.id;
-      } catch {
-        convertedOrder.anlage = 0;
+        this.$nextTick(() => {
+          // still needed? --> probably not
+          this.printOrder = this.editedOrder;
+          this.dialogPrint = true;
+        });
       }
-
-      try {
-        // @ts-ignore
-        convertedOrder.rasterLagerplatz = this.editedOrder.raster_lagerplatz;
-      } catch {
-        convertedOrder.rasterLagerplatz = "";
-      }
-
-      convertedOrder.principal = new Client();
-      convertedOrder.principal.id = this.editedOrder.principal?.id;
-      // @ts-ignore
-      convertedOrder.principal.type = this.editedOrder.principal?.type.id;
-      convertedOrder.principal.name = this.editedOrder.principal?.name;
-      convertedOrder.principal.street = this.editedOrder.principal?.street;
-      convertedOrder.principal.place = this.editedOrder.principal?.place;
-      convertedOrder.principal.zipcode = this.editedOrder.principal?.zipcode;
-      convertedOrder.principal.phone = this.editedOrder.principal?.phone;
-      convertedOrder.principal.email = this.editedOrder.principal?.email;
-      convertedOrder.principal.modified_on = new Date(
-        // @ts-ignore
-        this.editedOrder.principal?.modified_on
-      );
-      convertedOrder.principal.created_on = new Date(
-        // @ts-ignore
-        this.editedOrder.principal?.created_on
-      );
-      // @ts-ignore
-      convertedOrder.principal.modified_by = this.editedOrder.principal?.modified_by.id;
-      // @ts-ignore
-      convertedOrder.delivery_date = new Date(this.editedOrder.delivery_date);
-      // @ts-ignore
-      convertedOrder.pick_up_date = new Date(this.editedOrder.pick_up_date);
-      convertedOrder.tour = this.editedOrder.tour;
-      // @ts-ignore
-      convertedOrder.created_on = new Date(this.editedOrder.created_on);
-      // @ts-ignore
-      convertedOrder.modified_by = this.editedOrder.modified_by.id;
-      convertedOrder.remarks = this.editedOrder.remarks;
-      convertedOrder.delivery_only = this.editedOrder.delivery_only;
-      convertedOrder.people = [];
-      this.editedOrder.people.forEach((element) => {
-        convertedOrder.people.push(
-          new PositionPeople(
-            element.id,
-            element.quantity_of_people,
-            // @ts-ignore
-            element.type_people.id,
-            element.quantity_of_luggage,
-            element.description_of_luagge,
-            element.length,
-            element.height,
-            element.width,
-            element.weight,
-            // @ts-ignore
-            element.order.id
-          )
-        );
-      });
-      convertedOrder.goods = [];
-      this.editedOrder.goods.forEach((element) => {
-        convertedOrder.goods.push(
-          new PositionGoods(
-            element.id,
-            element.quantity,
-            // @ts-ignore
-            element.packing_unit.id,
-            element.marking,
-            element.goods_description,
-            element.length,
-            element.gross_weight,
-            element.width,
-            element.net_weight,
-            element.value_chf,
-            // @ts-ignore
-            element.order.id,
-            element.height,
-            // @ts-ignore
-            element.dangerous_goods
-          )
-        );
-      });
-      convertedOrder.construction = [];
-      this.editedOrder.construction.forEach((element) => {
-        convertedOrder.construction.push(
-          new PositionConstruction(
-            element.id,
-            element.quantity,
-            element.description,
-            element.weight,
-            // @ts-ignore
-            element.order.id
-          )
-        );
-      });
-      // @ts-ignore
-      convertedOrder.state = this.editedOrder.state.id;
-      convertedOrder.shipper = new Client();
-      convertedOrder.shipper.id = this.editedOrder.shipper?.id;
-      // @ts-ignore
-      convertedOrder.shipper.type = this.editedOrder.shipper?.type.id;
-      convertedOrder.shipper.name = this.editedOrder.shipper?.name;
-      convertedOrder.shipper.street = this.editedOrder.shipper?.street;
-      convertedOrder.shipper.place = this.editedOrder.shipper?.place;
-      convertedOrder.shipper.zipcode = this.editedOrder.shipper?.zipcode;
-      convertedOrder.shipper.phone = this.editedOrder.shipper?.phone;
-      convertedOrder.shipper.email = this.editedOrder.shipper?.email;
-      convertedOrder.shipper.modified_on = new Date(
-        // @ts-ignore
-        this.editedOrder.shipper?.modified_on
-      );
-      convertedOrder.shipper.created_on = new Date(
-        // @ts-ignore
-        this.editedOrder.shipper?.created_on
-      );
-      // @ts-ignore
-      convertedOrder.shipper.modified_by = this.editedOrder.shipper?.modified_by.id;
-
-      this.editedOrder = convertedOrder;
-
-      this.$nextTick(() => {
-        this.printOrder = this.editedOrder;
-        this.dialogPrint = true;
-      });
     }
   }
 
-  // @ts-ignore
   private editItem(item: Order): void {
-    this.editedItem = new Order();
+    this.printOrder = new Order();
     this.editedOrder = new Order();
+    let editedItems: TrpOrder[] = [];
 
     this.validFormGoods = [true];
     this.validFormPeople = [true];
@@ -1672,278 +1407,100 @@ export default class SearchShipment extends Vue {
     this.orderPositionsConstruction = [];
 
     if (item.id) {
-      this.editedItem = item;
-
-      // @ts-ignore
-      this.editedOrder = this.orderTable.filter((value: unknown) => {
-        // @ts-ignore
-        return value.id === this.editedItem.id;
+      editedItems = this.orderTable.filter((value) => {
+        return value.id === item.id;
       });
+      // check if found item is not null
+      if (editedItems[0]) {
+        this.editedOrder = editedItems[0];
+        this.printOrder = editedItems[0];
+        try {
+          this.anlagenID = this.editedOrder.anlage!.id!;
+        } catch {
+          this.anlagenID = 0;
+          this.editedOrder.anlage!.id = undefined;
+        }
+        try {
+          this.rasterLagerplatz = this.editedOrder.rasterLagerplatz!;
+        } catch {
+          this.rasterLagerplatz = "";
+        }
 
-      // @ts-ignore
-      this.editedOrder = this.editedOrder[0];
+        this.pickupID = this.editedOrder.shipper!.id!;
+        this.pickupAddress = this.printAdress(this.editedOrder.shipper!);
+        this.deliveryID = this.editedOrder.receiver!.id!;
+        this.deliveryAddress = this.printAdress(this.editedOrder.receiver!);
+        this.principalID = this.editedOrder.principal!.id!;
+        this.principalAddress = this.printAdress(this.editedOrder.principal!);
+        this.datePickup = format(this.editedOrder.pickUpDate!, "YYYY-MM-DD");
+        this.dateDelivery = format(this.editedOrder.deliveryDate!, "YYYY-MM-DD");
+        this.pickupTime = format(this.editedOrder.pickUpDate!, "HH:mm");
+        this.deliveryTime = format(this.editedOrder.deliveryDate!, "HH:mm");
+        this.remarksTrpOrder = this.editedOrder.remarks!;
+        this.onlyDelivery = this.editedOrder.deliveryOnly!;
+        this.state = this.stateTypeFromIdToState.get(this.editedOrder.state);
 
-      const convertedOrder = new Order();
-      convertedOrder.id = this.editedOrder.id;
-      // @ts-ignore
-      convertedOrder.modified_on = new Date(this.editedOrder.modified_on);
-      convertedOrder.receiver = new Client();
-      convertedOrder.receiver.id = this.editedOrder.receiver?.id;
-      // @ts-ignore
-      convertedOrder.receiver.type = this.editedOrder.receiver?.type.id;
-      convertedOrder.receiver.name = this.editedOrder.receiver?.name;
-      convertedOrder.receiver.street = this.editedOrder.receiver?.street;
-      convertedOrder.receiver.place = this.editedOrder.receiver?.place;
-      convertedOrder.receiver.zipcode = this.editedOrder.receiver?.zipcode;
-      convertedOrder.receiver.phone = this.editedOrder.receiver?.phone;
-      convertedOrder.receiver.email = this.editedOrder.receiver?.email;
-      convertedOrder.receiver.modified_on = new Date(
-        // @ts-ignore
-        this.editedOrder.receiver.modified_on
-      );
-      convertedOrder.receiver.created_on = new Date(
-        // @ts-ignore
-        this.editedOrder.receiver?.created_on
-      );
-      // @ts-ignore
-      convertedOrder.receiver.modified_by = this.editedOrder.receiver?.modified_by.id;
-
-      try {
-        // @ts-ignore
-        convertedOrder.anlage = this.editedOrder.anlage.id;
-
-        DirectusAPI.directusAPI
-          .getItems("anlage", {
-            filter: {
-              id: {
-                eq: convertedOrder.anlage
-              }
-            }
-          })
-          .then((resp) => {
-            // @ts-ignore
-            if (resp.data.length > 0) {
-              // @ts-ignore
-              this.anlagenID = resp.data[0].anlagen_id;
-            } else {
-              convertedOrder.anlage = 0;
-              // @ts-ignore
-              this.anlagenID = null;
-            }
-          });
-      } catch {
-        convertedOrder.anlage = 0;
-        // @ts-ignore
-        this.anlagenID = null;
-      }
-
-      try {
-        // @ts-ignore
-        convertedOrder.rasterLagerplatz = this.editedOrder.raster_lagerplatz;
-      } catch {
-        convertedOrder.rasterLagerplatz = "";
-      }
-
-      convertedOrder.principal = new Client();
-      convertedOrder.principal.id = this.editedOrder.principal?.id;
-      // @ts-ignore
-      convertedOrder.principal.type = this.editedOrder.principal?.type.id;
-      convertedOrder.principal.name = this.editedOrder.principal?.name;
-      convertedOrder.principal.street = this.editedOrder.principal?.street;
-      convertedOrder.principal.place = this.editedOrder.principal?.place;
-      convertedOrder.principal.zipcode = this.editedOrder.principal?.zipcode;
-      convertedOrder.principal.phone = this.editedOrder.principal?.phone;
-      convertedOrder.principal.email = this.editedOrder.principal?.email;
-      convertedOrder.principal.modified_on = new Date(
-        // @ts-ignore
-        this.editedOrder.principal?.modified_on
-      );
-      convertedOrder.principal.created_on = new Date(
-        // @ts-ignore
-        this.editedOrder.principal?.created_on
-      );
-      // @ts-ignore
-      convertedOrder.principal.modified_by = this.editedOrder.principal?.modified_by.id;
-      // @ts-ignore
-      convertedOrder.delivery_date = new Date(this.editedOrder.delivery_date);
-      // @ts-ignore
-      convertedOrder.pick_up_date = new Date(this.editedOrder.pick_up_date);
-      convertedOrder.tour = this.editedOrder.tour;
-      // @ts-ignore
-      convertedOrder.created_on = new Date(this.editedOrder.created_on);
-      // @ts-ignore
-      convertedOrder.modified_by = this.editedOrder.modified_by.id;
-      convertedOrder.remarks = this.editedOrder.remarks;
-      convertedOrder.delivery_only = this.editedOrder.delivery_only;
-      convertedOrder.people = [];
-      this.editedOrder.people.forEach((element) => {
-        convertedOrder.people.push(
-          new PositionPeople(
-            element.id,
-            element.quantity_of_people,
-            // @ts-ignore
-            element.type_people.id,
-            element.quantity_of_luggage,
-            element.description_of_luagge,
-            element.length,
-            element.height,
-            element.width,
-            element.weight,
-            // @ts-ignore
-            element.order.id
-          )
-        );
-      });
-      convertedOrder.goods = [];
-      this.editedOrder.goods.forEach((element) => {
-        convertedOrder.goods.push(
-          new PositionGoods(
-            element.id,
-            element.quantity,
-            // @ts-ignore
-            element.packing_unit.id,
-            element.marking,
-            element.goods_description,
-            element.length,
-            element.gross_weight,
-            element.width,
-            element.net_weight,
-            element.value_chf,
-            // @ts-ignore
-            element.order.id,
-            element.height,
-            // @ts-ignore
-            element.dangerous_goods
-          )
-        );
-      });
-      convertedOrder.construction = [];
-      this.editedOrder.construction.forEach((element) => {
-        convertedOrder.construction.push(
-          new PositionConstruction(
-            element.id,
-            element.quantity,
-            element.description,
-            element.weight,
-            // @ts-ignore
-            element.order.id
-          )
-        );
-      });
-      // @ts-ignore
-      convertedOrder.state = this.editedOrder.state.id;
-      convertedOrder.shipper = new Client();
-      convertedOrder.shipper.id = this.editedOrder.shipper?.id;
-      // @ts-ignore
-      convertedOrder.shipper.type = this.editedOrder.shipper?.type.id;
-      convertedOrder.shipper.name = this.editedOrder.shipper?.name;
-      convertedOrder.shipper.street = this.editedOrder.shipper?.street;
-      convertedOrder.shipper.place = this.editedOrder.shipper?.place;
-      convertedOrder.shipper.zipcode = this.editedOrder.shipper?.zipcode;
-      convertedOrder.shipper.phone = this.editedOrder.shipper?.phone;
-      convertedOrder.shipper.email = this.editedOrder.shipper?.email;
-      convertedOrder.shipper.modified_on = new Date(
-        // @ts-ignore
-        this.editedOrder.shipper?.modified_on
-      );
-      convertedOrder.shipper.created_on = new Date(
-        // @ts-ignore
-        this.editedOrder.shipper?.created_on
-      );
-      // @ts-ignore
-      convertedOrder.shipper.modified_by = this.editedOrder.shipper?.modified_by.id;
-
-      this.editedOrder = convertedOrder;
-
-      // @ts-ignore
-      this.pickupID = this.editedOrder.shipper?.id;
-      // @ts-ignore
-      this.pickupAddress = this.printAdress(this.editedOrder.shipper);
-      // @ts-ignore
-      this.deliveryID = this.editedOrder.receiver.id;
-      // @ts-ignore
-      this.deliveryAddress = this.printAdress(this.editedOrder.receiver);
-      // @ts-ignore
-      this.rasterLagerplatz = this.editedOrder.rasterLagerplatz;
-      // @ts-ignore
-      this.principalID = this.editedOrder.principal?.id;
-      // @ts-ignore
-      this.principalAddress = this.printAdress(this.editedOrder.principal);
-      // @ts-ignore
-      this.datePickup = format(this.editedOrder.pick_up_date, "YYYY-MM-DD");
-      // @ts-ignore
-      this.dateDelivery = format(this.editedOrder.delivery_date, "YYYY-MM-DD");
-      // @ts-ignore
-      this.pickupTime = format(this.editedOrder.pick_up_date, "HH:mm");
-      // @ts-ignore
-      this.deliveryTime = format(this.editedOrder.delivery_date, "HH:mm");
-      // @ts-ignore
-      this.remarksTrpOrder = this.editedOrder.remarks;
-      // @ts-ignore
-      this.onlyDelivery = this.editedOrder.delivery_only;
-      this.state = this.stateTypeFromIdToState.get(this.editedOrder.state);
-
-      if (this.editedOrder.goods.length > 0) {
-        this.editedOrder.goods.forEach(() => {
-          this.orderPositionsGoods.push(NewShipmentGoods);
-        });
-        this.type = this.orderType[0];
-      } else if (this.editedOrder.people.length > 0) {
-        this.editedOrder.people.forEach(() => {
-          this.orderPositionsPeople.push(NewShipmentPeople);
-        });
-        this.type = this.orderType[1];
-      } else if (this.editedOrder.construction.length > 0) {
-        this.editedOrder.construction.forEach(() => {
-          this.orderPositionsConstruction.push(NewShipmentConstruction);
-        });
-        this.type = this.orderType[2];
-      }
-      this.dialog = true;
-      if (
-        this.$store.state.authorisation === "Public" ||
-        this.$store.state.authorisation === "Lagerbauten" ||
-        this.$store.state.authorisation === "Dienstleiter/in" ||
-        this.$store.state.authorisation === "Besteller/in" ||
-        this.$store.state.authorisation === "Ressortleitung" ||
-        this.$store.state.authorisation === "Bereichsleitung Infra" ||
-        this.$store.state.authorisation === "Programmmaterial" ||
-        this.$store.state.authorisation === "Lagerplatz"
-      ) {
-        if (this.state === "scheduled" || this.state === "checked") {
-          this.warnPermissions = true;
+        if (this.editedOrder.goods) {
+          if (this.editedOrder.goods.length > 0) {
+            this.editedOrder.goods.forEach(() => {
+              this.orderPositionsGoods.push(NewShipmentGoods);
+            });
+            this.type = this.orderType[0];
+          }
+        } else if (this.editedOrder.people) {
+          if (this.editedOrder.people.length > 0) {
+            this.editedOrder.people.forEach(() => {
+              this.orderPositionsPeople.push(NewShipmentPeople);
+            });
+            this.type = this.orderType[1];
+          }
+        } else if (this.editedOrder.construction) {
+          if (this.editedOrder.construction.length > 0) {
+            this.editedOrder.construction.forEach(() => {
+              this.orderPositionsConstruction.push(NewShipmentConstruction);
+            });
+            this.type = this.orderType[2];
+          }
+        }
+        this.dialog = true;
+        if (
+          this.$store.state.authorisation === DIRECTUS_ROLES.Public ||
+          this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten ||
+          this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"] ||
+          this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
+          this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
+          this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"] ||
+          this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
+          this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
+        ) {
+          if (this.state === "scheduled" || this.state === "checked") {
+            this.warnPermissions = true;
+          }
         }
       }
     }
   }
 
-  // @ts-ignore
   private closePrint(): void {
     this.printOrder = new Order();
     this.dialogPrint = false;
   }
 
-  // @ts-ignore
   private closePermissions(): void {
     this.warnPermissions = false;
   }
 
-  // @ts-ignore
   private async close(): Promise<void> {
-    // @ts-ignore
-    this.$refs.formFirst.reset();
-    // @ts-ignore
-    this.$refs.formSecond.reset();
+    (this.$refs.formFirst as Vue & { reset: () => boolean; }).reset();
+    (this.$refs.formSecond as Vue & { reset: () => boolean; }).reset();
     await this.search();
     this.dialog = false;
   }
 
-  // @ts-ignore
+
   private async save(): Promise<void> {
-    // @ts-ignore
-    this.$refs.formFirst.validate();
-    // @ts-ignore
-    this.$refs.formSecond.validate();
+    (this.$refs.formFirst as Vue & { validate: () => boolean; }).validate();
+    (this.$refs.formSecond as Vue & { validate: () => boolean; }).validate();
 
     let newVal = true;
 
@@ -2026,295 +1583,55 @@ export default class SearchShipment extends Vue {
     // goods
     if (
       this.type === this.orderType[0] &&
-      order.goods.length > 0 &&
-      !(order.people.length > 0) &&
-      !(order.construction.length > 0)
+      order.goods!.length > 0 &&
+      !(order.people!.length > 0) &&
+      !(order.construction!.length > 0)
     ) {
-      const updateOrder = await DirectusAPI.directusAPI.updateItem(
-        "trp_order",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        order.id!,
-        {
-          remarks: order.remarks,
-          state: order.state,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          shipper: order.shipper!.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          receiver: order.receiver!.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          principal: order.principal!.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
-          anlage: order.anlage,
-          raster_lagerplatz: order.rasterLagerplatz,
-          delivery_only: order.delivery_only,
-          statusdirectus: this.stateTypeFromIdToState.get(order.state)
-        }
-      );
+      order.statusdirectus = this.stateTypeFromIdToState.get(order.state);
+      const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
-      const idPos: number[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const quantity: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const packing_unit: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const goods_description: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const marking: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const length: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const height: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const width: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const gross_weight: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const net_weight: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const value_chf: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dangerous_goods: any[] = [];
-
-      order.goods.forEach((value) => {
-        // @ts-ignore
-        if (value.id) {
-          idPos.push(value.id);
+      for (let i = 0; order.goods!.length > i; i++) {
+        order.goods![i].statusdirectus = this.stateTypeFromIdToState.get(order.state);
+        if (order.goods![i].id!) {
+          await DirectusAPI.updateGoodsPos(order.goods![i], order.goods![i].id!, updateOrder.id!);
         } else {
-          idPos.push(0);
-        }
-        quantity.push(value.quantity);
-        goods_description.push(value.goods_description);
-        packing_unit.push(
-          this.packagingUntisFromDesToId.get(value.packing_unit)
-        );
-        marking.push(value.marking);
-        length.push(value.length);
-        height.push(value.height);
-        width.push(value.width);
-        gross_weight.push(value.gross_weight);
-        net_weight.push(value.net_weight);
-        value_chf.push(value.value_chf);
-        dangerous_goods.push(value.dangerous_goods);
-      });
-
-      for (let i = 0; order.goods.length > i; i++) {
-        if (idPos[i] !== 0) {
-          await DirectusAPI.directusAPI.updateItem(
-            "trp_order_goods",
-            idPos[i],
-            {
-              quantity: quantity[i],
-              packing_unit: packing_unit[i],
-              goods_description: goods_description[i],
-              marking: marking[i],
-              length: length[i],
-              height: height[i],
-              width: width[i],
-              gross_weight: gross_weight[i],
-              net_weight: net_weight[i],
-              value_chf: value_chf[i],
-              dangerous_goods: dangerous_goods[i],
-              // @ts-ignore
-              order: updateOrder.data.id,
-              statusdirectus: this.stateTypeFromIdToState.get(order.state)
-            }
-          );
-        } else {
-          await DirectusAPI.directusAPI.createItem("trp_order_goods", {
-            quantity: quantity[i],
-            packing_unit: packing_unit[i],
-            goods_description: goods_description[i],
-            marking: marking[i],
-            length: length[i],
-            height: height[i],
-            width: width[i],
-            gross_weight: gross_weight[i],
-            net_weight: net_weight[i],
-            value_chf: value_chf[i],
-            dangerous_goods: dangerous_goods[i],
-            // @ts-ignore
-            order: updateOrder.data.id,
-            statusdirectus: this.stateTypeFromIdToState.get(order.state)
-          });
+          await DirectusAPI.createGoodsPosWithState(order.goods![i], updateOrder.id!);
         }
       }
       // people
     } else if (
       this.type === this.orderType[1] &&
-      order.people.length > 0 &&
-      !(order.goods.length > 0) &&
-      !(order.construction.length > 0)
+      order.people!.length > 0 &&
+      !(order.goods!.length > 0) &&
+      !(order.construction!.length > 0)
     ) {
-      const updateOrder = await DirectusAPI.directusAPI.updateItem(
-        "trp_order",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        order.id!,
-        {
-          remarks: order.remarks,
-          state: order.state,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          shipper: order.shipper!.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          receiver: order.receiver!.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          principal: order.principal!.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
-          anlage: order.anlage,
-          raster_lagerplatz: order.rasterLagerplatz,
-          delivery_only: order.delivery_only,
-          statusdirectus: this.stateTypeFromIdToState.get(order.state)
-        }
-      );
+      order.statusdirectus = this.stateTypeFromIdToState.get(order.state);
+      const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
-      const idPos: number[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const quantityPeople: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const typePeople: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const quantityLuagge: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const descriptionLuagge: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const length: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const height: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const width: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const weight: any[] = [];
-
-      order.people.forEach((value) => {
-        // @ts-ignore
-        if (value.id) {
-          idPos.push(value.id);
+      for (let i = 0; order.people!.length > i; i++) {
+        order.people![i].statusdirectus = this.stateTypeFromIdToState.get(order.state);
+        if (order.people![i].id!) {
+          await DirectusAPI.updatePeoplePos(order.people![i], order.people![i].id!, updateOrder.id!);
         } else {
-          idPos.push(0);
-        }
-        quantityPeople.push(value.quantity_of_people);
-        typePeople.push(this.typePeopleFromDesToId.get(value.type_people));
-        quantityLuagge.push(value.quantity_of_luggage);
-        descriptionLuagge.push(value.description_of_luagge);
-        length.push(value.length);
-        height.push(value.height);
-        width.push(value.width);
-        weight.push(value.weight);
-      });
-
-      for (let i = 0; order.people.length > i; i++) {
-        if (idPos[i] !== 0) {
-          await DirectusAPI.directusAPI.updateItem(
-            "trp_order_people",
-            idPos[i],
-            {
-              quantity_of_people: quantityPeople[i],
-              type_people: typePeople[i],
-              quantity_of_luggage: quantityLuagge[i],
-              description_of_luagge: descriptionLuagge[i],
-              length: length[i],
-              height: height[i],
-              width: width[i],
-              weight: weight[i],
-              // @ts-ignore
-              order: updateOrder.data.id,
-              statusdirectus: this.stateTypeFromIdToState.get(order.state)
-            }
-          );
-        } else {
-          await DirectusAPI.directusAPI.createItem("trp_order_people", {
-            quantity_of_people: quantityPeople[i],
-            type_people: typePeople[i],
-            quantity_of_luggage: quantityLuagge[i],
-            description_of_luagge: descriptionLuagge[i],
-            length: length[i],
-            height: height[i],
-            width: width[i],
-            weight: weight[i],
-            // @ts-ignore
-            order: updateOrder.data.id,
-            statusdirectus: this.stateTypeFromIdToState.get(order.state)
-          });
+          await DirectusAPI.createPeoplePosWithState(order.people![i], updateOrder.id!);
         }
       }
       // construction
     } else if (
       this.type === this.orderType[2] &&
-      order.construction.length > 0 &&
-      !(order.goods.length > 0) &&
-      !(order.people.length > 0)
+      order.construction!.length > 0 &&
+      !(order.goods!.length > 0) &&
+      !(order.people!.length > 0)
     ) {
-      const updateOrder = await DirectusAPI.directusAPI.updateItem(
-        "trp_order",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        order.id!,
-        {
-          remarks: order.remarks,
-          state: order.state,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          shipper: order.shipper!.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          receiver: order.receiver!.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          principal: order.principal!.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          delivery_date: format(order.delivery_date!, "YYYY-MM-DD HH:mm:ss"),
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          pick_up_date: format(order.pick_up_date!, "YYYY-MM-DD HH:mm:ss"),
-          anlage: order.anlage,
-          raster_lagerplatz: order.rasterLagerplatz,
-          delivery_only: order.delivery_only,
-          statusdirectus: this.stateTypeFromIdToState.get(order.state)
-        }
-      );
+      order.statusdirectus = this.stateTypeFromIdToState.get(order.state);
+      const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
-      const idPos: number[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const quantity: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const weight: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const description: any[] = [];
-
-      order.construction.forEach((value) => {
-        // @ts-ignore
-        if (value.id) {
-          idPos.push(value.id);
+      for (let i = 0; order.construction!.length > i; i++) {
+        order.construction![i].statusdirectus = this.stateTypeFromIdToState.get(order.state);
+        if (order.construction![i].id!) {
+          await DirectusAPI.updateConstruePos(order.construction![i], order.construction![i].id!, updateOrder.id!);
         } else {
-          idPos.push(0);
-        }
-        quantity.push(value.quantity);
-        weight.push(value.weight);
-        description.push(value.description);
-      });
-      for (let i = 0; order.construction.length > i; i++) {
-        if (idPos[i] !== 0) {
-          await DirectusAPI.directusAPI.updateItem(
-            "trp_order_construction",
-            idPos[i],
-            {
-              quantity: quantity[i],
-              weight: weight[i],
-              description: description[i],
-              // @ts-ignore
-              order: updateOrder.data.id,
-              statusdirectus: this.stateTypeFromIdToState.get(order.state)
-            }
-          );
-        } else {
-          await DirectusAPI.directusAPI.createItem("trp_order_construction", {
-            quantity: quantity[i],
-            weight: weight[i],
-            description: description[i],
-            // @ts-ignore
-            order: updateOrder.data.id,
-            statusdirectus: this.stateTypeFromIdToState.get(order.state)
-          });
+          await DirectusAPI.createConstruPosWithState(order.construction![i], updateOrder.id!);
         }
       }
     } else {
@@ -2325,13 +1642,62 @@ export default class SearchShipment extends Vue {
       return;
     }
 
-    await this.search();
+    // update table --> maybe extract this part...
+    const idxOfChange = this.orders.indexOf((value: OrderDisplay) => {
+      return value.id === order.id;
+    });
+
+    let weight = 0;
+    let pos = 0;
+    let posDescription = "";
+    let cbm = 0;
+
+    weight = order.calcWeight();
+    cbm = order.calcCBM();
+
+    if (order.people!.length > 0) {
+      order.people!.forEach((value) => {
+        pos++;
+        posDescription = posDescription + this.typePeopleFromIdToDes.get(value.typePeople) + "\n";
+      });
+    } else if (order.goods!.length > 0) {
+      order.goods!.forEach((value) => {
+        pos++;
+        posDescription = posDescription + value.goodsDescription + "\n";
+      });
+    } else if (order.construction!.length > 0) {
+      order.construction!.forEach((value) => {
+        pos++;
+        posDescription = posDescription + value.description + "\n";
+      });
+    }
+
+    this.orders[idxOfChange] = {
+      id: order.id,
+      state: order.state?.state,
+      delivery_date: format(new Date(order.deliveryDate!), "YYYY-MM-DD HH:mm"),
+      pick_up_date: format(new Date(order.pickUpDate!), "YYYY-MM-DD HH:mm"),
+      principal: order.principal?.name,
+      principal_id: order.principal?.id,
+      principal_email: order.principal?.email,
+      shipper: order.shipper?.name,
+      receiver: order.receiver?.name,
+      shipper_place: order.shipper?.place,
+      receiver_place: order.receiver?.place,
+      shipper_zip: order.shipper?.zipcode,
+      receiver_zip: order.receiver?.zipcode,
+      weight: weight,
+      cbm: cbm,
+      pos: pos,
+      posDescription: posDescription
+    };
+
     this.dialog = false;
-    // @ts-ignore
-    this.$refs.formFirst.reset();
-    // @ts-ignore
-    this.$refs.formSecond.reset();
+    (this.$refs.formFirst as Vue & { reset: () => boolean; }).reset();
+    (this.$refs.formSecond as Vue & { reset: () => boolean; }).reset();
   }
+
+  // ----------------- TODO -------------------------- //
 
   AddButtonClicked(): void {
     if (this.type === this.orderType[0]) {
@@ -2358,7 +1724,7 @@ export default class SearchShipment extends Vue {
     if (this.type === this.orderType[0]) {
       DirectusAPI.directusAPI.deleteItem(
         "trp_order_goods",
-        // @ts-ignore
+
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.editedOrder.goods.pop().id!
       );
@@ -2369,7 +1735,7 @@ export default class SearchShipment extends Vue {
     if (this.type === this.orderType[1]) {
       DirectusAPI.directusAPI.deleteItem(
         "trp_order_people",
-        // @ts-ignore
+
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.editedOrder.people.pop().id!
       );
@@ -2380,7 +1746,7 @@ export default class SearchShipment extends Vue {
     if (this.type === this.orderType[2]) {
       DirectusAPI.directusAPI.deleteItem(
         "trp_order_construction",
-        // @ts-ignore
+
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.editedOrder.construction.pop().id!
       );
@@ -2407,7 +1773,7 @@ export default class SearchShipment extends Vue {
     return adress;
   }
 
-  // @ts-ignore
+
   private async updateSearchClients(client: Client) {
     this.searchClient = client;
 
@@ -2454,11 +1820,11 @@ export default class SearchShipment extends Vue {
     });
   }
 
-  // @ts-ignore
+
   private async triggerUdatePickupID(kindOfUpdate: string): void {
     let resp;
 
-    // @ts-ignore
+
     this.$refs.formFirst.resetValidation();
 
     switch (kindOfUpdate) {
@@ -2551,33 +1917,33 @@ export default class SearchShipment extends Vue {
           });
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          // @ts-ignore
+
           this.anlagenID = null;
-          // @ts-ignore
+
           this.editedOrder.anlage = null;
         }
         if (resp?.data[0]) {
           this.anlagenDescription =
-            // @ts-ignore
+
             resp.data[0].anlagenname + ", " + resp.data[0].standort;
-          // @ts-ignore
+
           this.rasterLagerplatz = resp.data[0].standortcode;
-          // @ts-ignore
+
           this.editedOrder.anlage = resp.data[0].id;
-          // @ts-ignore
+
           this.editedOrder.rasterLagerplatz = resp.data[0].standortcode;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          // @ts-ignore
+
           this.anlagenID = null;
-          // @ts-ignore
+
           this.editedOrder.anlage = null;
         }
         break;
     }
   }
 
-  // @ts-ignore
+
   private async exportOrders(): Promise<void> {
     if (!(this.orderTable.length > 0)) {
       return;
@@ -2598,47 +1964,47 @@ export default class SearchShipment extends Vue {
     await this.search();
   }
 
-  // @ts-ignore
+
   private triggerUpdateState(): void {
     const update = this.state;
     this.editedOrder.state = this.stateTypeFromStateToId.get(update);
   }
 
-  // @ts-ignore
+
   private triggerUpdateDatePickUp(): void {
     const upade = this.datePickup + " " + this.pickupTime;
     const upadeDateTime = new Date(upade);
     this.editedOrder.pick_up_date = upadeDateTime;
   }
 
-  // @ts-ignore
+
   private triggerUpdateDateDelivery(): void {
     const upade = this.dateDelivery + " " + this.deliveryTime;
     const upadeDateTime = new Date(upade);
     this.editedOrder.delivery_date = upadeDateTime;
   }
 
-  // @ts-ignore
+
   private triggerUpdateRemarks(): void {
     const upade = this.remarksTrpOrder;
     this.editedOrder.remarks = upade;
   }
 
-  // @ts-ignore
+
   private triggerUpdateRaster(): void {
     const upade = this.rasterLagerplatz;
     this.editedOrder.rasterLagerplatz = upade;
   }
 
-  // @ts-ignore
+
   private triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
     this.editedOrder.delivery_only = upade;
   }
 
-  // @ts-ignore
+
   private async searchCustomer(searchOption: string): Promise<void> {
-    // @ts-ignore
+
     this.$refs.formFirst.resetValidation();
     if (searchOption) {
       this.$nextTick(async () => {

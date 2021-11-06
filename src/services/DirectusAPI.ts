@@ -199,6 +199,10 @@ class DirectusAPI {
     return orders;
   }
 
+  public deleteOrderPos(id: number): void {
+    this.directusSDK.deleteItem("trp_order_goods", id);
+  }
+
   public async createTrpOrder(order: TrpOrder): Promise<TrpOrder> {
     const resp = await this.directusSDK.createItem("trp_order", {
       remarks: order.remarks,

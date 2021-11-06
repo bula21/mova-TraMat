@@ -820,8 +820,8 @@ import OrderDisplay from "@/model/OrderDisplay";
     NewShipmentConstruction,
     SearchCustomer,
     PrintTransportOrder,
-    DialogPermissions
-  }
+    DialogPermissions,
+  },
 })
 export default class SearchShipment extends Vue {
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -887,26 +887,26 @@ export default class SearchShipment extends Vue {
   private remarksTrpOrder = "";
   private idRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich"
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private orderTypeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich"
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private timeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
       /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v) ||
-      "Wert ungültig (Format hh:mm)"
+      "Wert ungültig (Format hh:mm)",
   ];
 
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: string) => {
       return !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig";
-    }
+    },
   ];
 
   private notRequired = true;
@@ -921,7 +921,7 @@ export default class SearchShipment extends Vue {
         this.notRequired = true;
         return true;
       }
-    }
+    },
   ];
 
   private forceRerenderPrint(): void {
@@ -955,7 +955,11 @@ export default class SearchShipment extends Vue {
       this.typePeopleFromIdToDes.set(value.id, value.description);
     });
 
-    this.orderType.push(ORDER_TYPE.Warentransport, ORDER_TYPE.Personentransport, ORDER_TYPE["Bauleistung mit Fahrzeug"]);
+    this.orderType.push(
+      ORDER_TYPE.Warentransport,
+      ORDER_TYPE.Personentransport,
+      ORDER_TYPE["Bauleistung mit Fahrzeug"]
+    );
   }
 
   destroyed(): void {
@@ -967,7 +971,7 @@ export default class SearchShipment extends Vue {
     {
       text: "Order ID",
       align: "start",
-      value: "id"
+      value: "id",
     },
     { text: "Status", value: "state" },
     { text: "delivery_date", value: "delivery_date" },
@@ -984,7 +988,7 @@ export default class SearchShipment extends Vue {
     { text: "Gewicht kg", value: "weight" },
     { text: "M^3", value: "cbm" },
     { text: "Positionen", value: "pos" },
-    { text: "Beschreibung Pos.", value: "posDescription" }
+    { text: "Beschreibung Pos.", value: "posDescription" },
   ];
 
   private handleEnter(event: KeyboardEvent) {
@@ -1042,7 +1046,10 @@ export default class SearchShipment extends Vue {
       if (value.people!.length > 0) {
         value.people!.forEach((value) => {
           pos++;
-          posDescription = posDescription + this.typePeopleFromIdToDes.get(value.typePeople) + "\n";
+          posDescription =
+            posDescription +
+            this.typePeopleFromIdToDes.get(value.typePeople) +
+            "\n";
         });
       } else if (value.goods!.length > 0) {
         value.goods!.forEach((value) => {
@@ -1059,7 +1066,10 @@ export default class SearchShipment extends Vue {
       this.orders.push({
         id: value.id,
         state: value.state?.state,
-        delivery_date: format(new Date(value.deliveryDate!), "YYYY-MM-DD HH:mm"),
+        delivery_date: format(
+          new Date(value.deliveryDate!),
+          "YYYY-MM-DD HH:mm"
+        ),
         pick_up_date: format(new Date(value.pickUpDate!), "YYYY-MM-DD HH:mm"),
         principal: value.principal?.name,
         principal_id: value.principal?.id,
@@ -1073,7 +1083,7 @@ export default class SearchShipment extends Vue {
         weight: weight,
         cbm: cbm,
         pos: pos,
-        posDescription: posDescription
+        posDescription: posDescription,
       });
     });
   }
@@ -1139,7 +1149,7 @@ export default class SearchShipment extends Vue {
               );
 
               filter.delivery_date = {
-                between: [dateConvMinusFormat, dateConvPlusFormat]
+                between: [dateConvMinusFormat, dateConvPlusFormat],
               };
             } catch {
               this.errorMessage =
@@ -1148,10 +1158,13 @@ export default class SearchShipment extends Vue {
             }
           } else {
             try {
-              const dateConv = format(new Date(filteredDataValue[i].trim()), "YYYY-MM-DD");
+              const dateConv = format(
+                new Date(filteredDataValue[i].trim()),
+                "YYYY-MM-DD"
+              );
 
               filter.delivery_date = {
-                between: [dateConv + " 00:00", dateConv + " 23:59"]
+                between: [dateConv + " 00:00", dateConv + " 23:59"],
               };
             } catch {
               this.errorMessage =
@@ -1178,7 +1191,7 @@ export default class SearchShipment extends Vue {
               );
 
               filter.pick_up_date = {
-                between: [dateConvMinusFormat, dateConvPlusFormat]
+                between: [dateConvMinusFormat, dateConvPlusFormat],
               };
             } catch {
               this.errorMessage =
@@ -1187,10 +1200,13 @@ export default class SearchShipment extends Vue {
             }
           } else {
             try {
-              const dateConv = format(new Date(filteredDataValue[i].trim()), "YYYY-MM-DD");
+              const dateConv = format(
+                new Date(filteredDataValue[i].trim()),
+                "YYYY-MM-DD"
+              );
 
               filter.pick_up_date = {
-                between: [dateConv + " 00:00", dateConv + " 23:59"]
+                between: [dateConv + " 00:00", dateConv + " 23:59"],
               };
             } catch {
               this.errorMessage =
@@ -1200,9 +1216,12 @@ export default class SearchShipment extends Vue {
           }
         }
         if (filteredDataKey[i] === "Auftraggeber Firma/Name") {
-          const fetchPrincipals = await DirectusAPI.getTrpClients({
-            filter: { name: { like: filteredDataValue[i].trim() } }
-          }, 5);
+          const fetchPrincipals = await DirectusAPI.getTrpClients(
+            {
+              filter: { name: { like: filteredDataValue[i].trim() } },
+            },
+            5
+          );
           const arrayPricipalsId: number[] = [];
 
           for (let j = 0; fetchPrincipals.length > j; j++) {
@@ -1220,9 +1239,12 @@ export default class SearchShipment extends Vue {
           filter.principal = { in: principals };
         }
         if (filteredDataKey[i] === "Auftraggeber Email") {
-          const fetchPrincipals = await DirectusAPI.getTrpClients({
-            filter: { email: { like: filteredDataValue[i].trim() } }
-          }, 5);
+          const fetchPrincipals = await DirectusAPI.getTrpClients(
+            {
+              filter: { email: { like: filteredDataValue[i].trim() } },
+            },
+            5
+          );
           const arrayPricipalsId: number[] = [];
 
           for (let j = 0; fetchPrincipals.length > j; j++) {
@@ -1238,8 +1260,9 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Lieferadresse Name") {
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: { name: { like: filteredDataValue[i].trim() } }
-            }, 5
+              filter: { name: { like: filteredDataValue[i].trim() } },
+            },
+            5
           );
           const arrayRecieverId: number[] = [];
 
@@ -1256,8 +1279,9 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Ladeadresse Name") {
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: { name: { like: filteredDataValue[i].trim() } }
-            }, 5
+              filter: { name: { like: filteredDataValue[i].trim() } },
+            },
+            5
           );
           const arrayShipperId: number[] = [];
 
@@ -1274,8 +1298,9 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Lieferadresse Ort") {
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: { place: { like: filteredDataValue[i].trim() } }
-            }, 5
+              filter: { place: { like: filteredDataValue[i].trim() } },
+            },
+            5
           );
           const arrayRecieverId: number[] = [];
 
@@ -1292,8 +1317,9 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Ladeadresse Ort") {
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: { place: { like: filteredDataValue[i].trim() } }
-            }, 5
+              filter: { place: { like: filteredDataValue[i].trim() } },
+            },
+            5
           );
           const arrayShipperId: number[] = [];
 
@@ -1309,8 +1335,9 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Ladeadresse PLZ") {
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: { zipcode: { like: filteredDataValue[i].trim() } }
-            }, 5
+              filter: { zipcode: { like: filteredDataValue[i].trim() } },
+            },
+            5
           );
           const arrayShipperId: number[] = [];
 
@@ -1327,8 +1354,9 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Lieferadresse PLZ") {
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: { zipcode: { like: filteredDataValue[i].trim() } }
-            }, 5
+              filter: { zipcode: { like: filteredDataValue[i].trim() } },
+            },
+            5
           );
           const arrayRecieverId: number[] = [];
 
@@ -1363,7 +1391,8 @@ export default class SearchShipment extends Vue {
       this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"] ||
       this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
       this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
-      this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"] ||
+      this.$store.state.authorisation ===
+        DIRECTUS_ROLES["Bereichsleitung Infra"] ||
       this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
       this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
     ) {
@@ -1433,7 +1462,10 @@ export default class SearchShipment extends Vue {
         this.principalID = this.editedOrder.principal!.id!;
         this.principalAddress = this.printAdress(this.editedOrder.principal!);
         this.datePickup = format(this.editedOrder.pickUpDate!, "YYYY-MM-DD");
-        this.dateDelivery = format(this.editedOrder.deliveryDate!, "YYYY-MM-DD");
+        this.dateDelivery = format(
+          this.editedOrder.deliveryDate!,
+          "YYYY-MM-DD"
+        );
         this.pickupTime = format(this.editedOrder.pickUpDate!, "HH:mm");
         this.deliveryTime = format(this.editedOrder.deliveryDate!, "HH:mm");
         this.remarksTrpOrder = this.editedOrder.remarks!;
@@ -1466,10 +1498,12 @@ export default class SearchShipment extends Vue {
         if (
           this.$store.state.authorisation === DIRECTUS_ROLES.Public ||
           this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten ||
-          this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"] ||
+          this.$store.state.authorisation ===
+            DIRECTUS_ROLES["Dienstleiter/in"] ||
           this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
           this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
-          this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"] ||
+          this.$store.state.authorisation ===
+            DIRECTUS_ROLES["Bereichsleitung Infra"] ||
           this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
           this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
         ) {
@@ -1491,16 +1525,15 @@ export default class SearchShipment extends Vue {
   }
 
   private async close(): Promise<void> {
-    (this.$refs.formFirst as Vue & { reset: () => boolean; }).reset();
-    (this.$refs.formSecond as Vue & { reset: () => boolean; }).reset();
+    (this.$refs.formFirst as Vue & { reset: () => boolean }).reset();
+    (this.$refs.formSecond as Vue & { reset: () => boolean }).reset();
     await this.search();
     this.dialog = false;
   }
 
-
   private async save(): Promise<void> {
-    (this.$refs.formFirst as Vue & { validate: () => boolean; }).validate();
-    (this.$refs.formSecond as Vue & { validate: () => boolean; }).validate();
+    (this.$refs.formFirst as Vue & { validate: () => boolean }).validate();
+    (this.$refs.formSecond as Vue & { validate: () => boolean }).validate();
 
     let newVal = true;
 
@@ -1591,11 +1624,20 @@ export default class SearchShipment extends Vue {
       const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
       for (let i = 0; order.goods!.length > i; i++) {
-        order.goods![i].statusdirectus = this.stateTypeFromIdToState.get(order.state);
+        order.goods![i].statusdirectus = this.stateTypeFromIdToState.get(
+          order.state
+        );
         if (order.goods![i].id!) {
-          await DirectusAPI.updateGoodsPos(order.goods![i], order.goods![i].id!, updateOrder.id!);
+          await DirectusAPI.updateGoodsPos(
+            order.goods![i],
+            order.goods![i].id!,
+            updateOrder.id!
+          );
         } else {
-          await DirectusAPI.createGoodsPosWithState(order.goods![i], updateOrder.id!);
+          await DirectusAPI.createGoodsPosWithState(
+            order.goods![i],
+            updateOrder.id!
+          );
         }
       }
       // people
@@ -1609,11 +1651,20 @@ export default class SearchShipment extends Vue {
       const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
       for (let i = 0; order.people!.length > i; i++) {
-        order.people![i].statusdirectus = this.stateTypeFromIdToState.get(order.state);
+        order.people![i].statusdirectus = this.stateTypeFromIdToState.get(
+          order.state
+        );
         if (order.people![i].id!) {
-          await DirectusAPI.updatePeoplePos(order.people![i], order.people![i].id!, updateOrder.id!);
+          await DirectusAPI.updatePeoplePos(
+            order.people![i],
+            order.people![i].id!,
+            updateOrder.id!
+          );
         } else {
-          await DirectusAPI.createPeoplePosWithState(order.people![i], updateOrder.id!);
+          await DirectusAPI.createPeoplePosWithState(
+            order.people![i],
+            updateOrder.id!
+          );
         }
       }
       // construction
@@ -1627,11 +1678,20 @@ export default class SearchShipment extends Vue {
       const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
       for (let i = 0; order.construction!.length > i; i++) {
-        order.construction![i].statusdirectus = this.stateTypeFromIdToState.get(order.state);
+        order.construction![i].statusdirectus = this.stateTypeFromIdToState.get(
+          order.state
+        );
         if (order.construction![i].id!) {
-          await DirectusAPI.updateConstruePos(order.construction![i], order.construction![i].id!, updateOrder.id!);
+          await DirectusAPI.updateConstruePos(
+            order.construction![i],
+            order.construction![i].id!,
+            updateOrder.id!
+          );
         } else {
-          await DirectusAPI.createConstruPosWithState(order.construction![i], updateOrder.id!);
+          await DirectusAPI.createConstruPosWithState(
+            order.construction![i],
+            updateOrder.id!
+          );
         }
       }
     } else {
@@ -1658,7 +1718,10 @@ export default class SearchShipment extends Vue {
     if (order.people!.length > 0) {
       order.people!.forEach((value) => {
         pos++;
-        posDescription = posDescription + this.typePeopleFromIdToDes.get(value.typePeople) + "\n";
+        posDescription =
+          posDescription +
+          this.typePeopleFromIdToDes.get(value.typePeople) +
+          "\n";
       });
     } else if (order.goods!.length > 0) {
       order.goods!.forEach((value) => {
@@ -1689,12 +1752,12 @@ export default class SearchShipment extends Vue {
       weight: weight,
       cbm: cbm,
       pos: pos,
-      posDescription: posDescription
+      posDescription: posDescription,
     };
 
     this.dialog = false;
-    (this.$refs.formFirst as Vue & { reset: () => boolean; }).reset();
-    (this.$refs.formSecond as Vue & { reset: () => boolean; }).reset();
+    (this.$refs.formFirst as Vue & { reset: () => boolean }).reset();
+    (this.$refs.formSecond as Vue & { reset: () => boolean }).reset();
   }
 
   // ----------------- TODO -------------------------- //
@@ -1703,9 +1766,9 @@ export default class SearchShipment extends Vue {
     if (this.type === this.orderType[0]) {
       this.orderPositionsGoods.push(NewShipmentGoods);
       this.editedOrder.goods?.push(new PositionGoods());
-      this.editedOrder.goods[
-        this.editedOrder.goods.length - 1
-      ].dangerous_goods = false;
+      this.editedOrder.goods![
+        this.editedOrder.goods!.length - 1
+      ].dangerousGoods = false;
       this.validFormGoods.push(true);
     }
     if (this.type === this.orderType[1]) {
@@ -1722,16 +1785,14 @@ export default class SearchShipment extends Vue {
 
   MinusButtonClicked(): void {
     if (this.type === this.orderType[0]) {
-      DirectusAPI.directusAPI.deleteItem(
-        "trp_order_goods",
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.editedOrder.goods.pop().id!
-      );
+      const deletedPos = this.editedOrder.goods!.pop();
+      DirectusAPI.deleteOrderPos(deletedPos!.id!);
       this.orderPositionsGoods.splice(-1, 1);
-      // this.editedOrder.goods.splice(-1, 1);
       this.validFormGoods.splice(-1, 1);
     }
+
+    // ----------------- TODO -------------------------- //
+
     if (this.type === this.orderType[1]) {
       DirectusAPI.directusAPI.deleteItem(
         "trp_order_people",
@@ -1772,7 +1833,6 @@ export default class SearchShipment extends Vue {
       client.email;
     return adress;
   }
-
 
   private async updateSearchClients(client: Client) {
     this.searchClient = client;
@@ -1820,10 +1880,8 @@ export default class SearchShipment extends Vue {
     });
   }
 
-
   private async triggerUdatePickupID(kindOfUpdate: string): void {
     let resp;
-
 
     this.$refs.formFirst.resetValidation();
 
@@ -1833,9 +1891,9 @@ export default class SearchShipment extends Vue {
           resp = await DirectusAPI.directusAPI.getItems("trp_client", {
             filter: {
               id: {
-                eq: this.deliveryID
-              }
-            }
+                eq: this.deliveryID,
+              },
+            },
           });
         } catch {
           this.deliveryAddress = "Kunden ID nicht vorhanden";
@@ -1857,9 +1915,9 @@ export default class SearchShipment extends Vue {
           resp = await DirectusAPI.directusAPI.getItems("trp_client", {
             filter: {
               id: {
-                eq: this.principalID
-              }
-            }
+                eq: this.principalID,
+              },
+            },
           });
         } catch {
           this.principalAddress = "Kunden ID nicht vorhanden";
@@ -1888,9 +1946,9 @@ export default class SearchShipment extends Vue {
           resp = await DirectusAPI.directusAPI.getItems("trp_client", {
             filter: {
               id: {
-                eq: this.pickupID
-              }
-            }
+                eq: this.pickupID,
+              },
+            },
           });
         } catch {
           this.pickupAddress = "Kunden ID nicht vorhanden";
@@ -1911,9 +1969,9 @@ export default class SearchShipment extends Vue {
           resp = await DirectusAPI.directusAPI.getItems("anlage", {
             filter: {
               anlagen_id: {
-                eq: this.anlagenID
-              }
-            }
+                eq: this.anlagenID,
+              },
+            },
           });
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
@@ -1924,7 +1982,6 @@ export default class SearchShipment extends Vue {
         }
         if (resp?.data[0]) {
           this.anlagenDescription =
-
             resp.data[0].anlagenname + ", " + resp.data[0].standort;
 
           this.rasterLagerplatz = resp.data[0].standortcode;
@@ -1943,7 +2000,6 @@ export default class SearchShipment extends Vue {
     }
   }
 
-
   private async exportOrders(): Promise<void> {
     if (!(this.orderTable.length > 0)) {
       return;
@@ -1952,7 +2008,7 @@ export default class SearchShipment extends Vue {
     const collectionFields = await DirectusAPI.directusAPI.getFields(
       "trp_order",
       {
-        fields: ["*.*.*"]
+        fields: ["*.*.*"],
       }
     );
 
@@ -1964,12 +2020,10 @@ export default class SearchShipment extends Vue {
     await this.search();
   }
 
-
   private triggerUpdateState(): void {
     const update = this.state;
     this.editedOrder.state = this.stateTypeFromStateToId.get(update);
   }
-
 
   private triggerUpdateDatePickUp(): void {
     const upade = this.datePickup + " " + this.pickupTime;
@@ -1977,34 +2031,28 @@ export default class SearchShipment extends Vue {
     this.editedOrder.pick_up_date = upadeDateTime;
   }
 
-
   private triggerUpdateDateDelivery(): void {
     const upade = this.dateDelivery + " " + this.deliveryTime;
     const upadeDateTime = new Date(upade);
     this.editedOrder.delivery_date = upadeDateTime;
   }
 
-
   private triggerUpdateRemarks(): void {
     const upade = this.remarksTrpOrder;
     this.editedOrder.remarks = upade;
   }
-
 
   private triggerUpdateRaster(): void {
     const upade = this.rasterLagerplatz;
     this.editedOrder.rasterLagerplatz = upade;
   }
 
-
   private triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
     this.editedOrder.delivery_only = upade;
   }
 
-
   private async searchCustomer(searchOption: string): Promise<void> {
-
     this.$refs.formFirst.resetValidation();
     if (searchOption) {
       this.$nextTick(async () => {

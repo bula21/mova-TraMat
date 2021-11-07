@@ -820,8 +820,8 @@ import OrderDisplay from "@/model/OrderDisplay";
     NewShipmentConstruction,
     SearchCustomer,
     PrintTransportOrder,
-    DialogPermissions,
-  },
+    DialogPermissions
+  }
 })
 export default class SearchShipment extends Vue {
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -887,26 +887,26 @@ export default class SearchShipment extends Vue {
   private remarksTrpOrder = "";
   private idRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich",
+    (v: any) => !!v || "Wert ist erforderlich"
   ];
 
   private orderTypeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich",
+    (v: any) => !!v || "Wert ist erforderlich"
   ];
 
   private timeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
       /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v) ||
-      "Wert ungültig (Format hh:mm)",
+      "Wert ungültig (Format hh:mm)"
   ];
 
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: string) => {
       return !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig";
-    },
+    }
   ];
 
   private notRequired = true;
@@ -921,7 +921,7 @@ export default class SearchShipment extends Vue {
         this.notRequired = true;
         return true;
       }
-    },
+    }
   ];
 
   private forceRerenderPrint(): void {
@@ -971,7 +971,7 @@ export default class SearchShipment extends Vue {
     {
       text: "Order ID",
       align: "start",
-      value: "id",
+      value: "id"
     },
     { text: "Status", value: "state" },
     { text: "delivery_date", value: "delivery_date" },
@@ -988,7 +988,7 @@ export default class SearchShipment extends Vue {
     { text: "Gewicht kg", value: "weight" },
     { text: "M^3", value: "cbm" },
     { text: "Positionen", value: "pos" },
-    { text: "Beschreibung Pos.", value: "posDescription" },
+    { text: "Beschreibung Pos.", value: "posDescription" }
   ];
 
   private handleEnter(event: KeyboardEvent) {
@@ -1083,7 +1083,7 @@ export default class SearchShipment extends Vue {
         weight: weight,
         cbm: cbm,
         pos: pos,
-        posDescription: posDescription,
+        posDescription: posDescription
       });
     });
   }
@@ -1149,7 +1149,7 @@ export default class SearchShipment extends Vue {
               );
 
               filter.delivery_date = {
-                between: [dateConvMinusFormat, dateConvPlusFormat],
+                between: [dateConvMinusFormat, dateConvPlusFormat]
               };
             } catch {
               this.errorMessage =
@@ -1164,7 +1164,7 @@ export default class SearchShipment extends Vue {
               );
 
               filter.delivery_date = {
-                between: [dateConv + " 00:00", dateConv + " 23:59"],
+                between: [dateConv + " 00:00", dateConv + " 23:59"]
               };
             } catch {
               this.errorMessage =
@@ -1191,7 +1191,7 @@ export default class SearchShipment extends Vue {
               );
 
               filter.pick_up_date = {
-                between: [dateConvMinusFormat, dateConvPlusFormat],
+                between: [dateConvMinusFormat, dateConvPlusFormat]
               };
             } catch {
               this.errorMessage =
@@ -1206,7 +1206,7 @@ export default class SearchShipment extends Vue {
               );
 
               filter.pick_up_date = {
-                between: [dateConv + " 00:00", dateConv + " 23:59"],
+                between: [dateConv + " 00:00", dateConv + " 23:59"]
               };
             } catch {
               this.errorMessage =
@@ -1218,7 +1218,7 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Auftraggeber Firma/Name") {
           const fetchPrincipals = await DirectusAPI.getTrpClients(
             {
-              filter: { name: { like: filteredDataValue[i].trim() } },
+              filter: { name: { like: filteredDataValue[i].trim() } }
             },
             5
           );
@@ -1241,7 +1241,7 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Auftraggeber Email") {
           const fetchPrincipals = await DirectusAPI.getTrpClients(
             {
-              filter: { email: { like: filteredDataValue[i].trim() } },
+              filter: { email: { like: filteredDataValue[i].trim() } }
             },
             5
           );
@@ -1260,7 +1260,7 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Lieferadresse Name") {
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: { name: { like: filteredDataValue[i].trim() } },
+              filter: { name: { like: filteredDataValue[i].trim() } }
             },
             5
           );
@@ -1279,7 +1279,7 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Ladeadresse Name") {
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: { name: { like: filteredDataValue[i].trim() } },
+              filter: { name: { like: filteredDataValue[i].trim() } }
             },
             5
           );
@@ -1298,7 +1298,7 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Lieferadresse Ort") {
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: { place: { like: filteredDataValue[i].trim() } },
+              filter: { place: { like: filteredDataValue[i].trim() } }
             },
             5
           );
@@ -1317,7 +1317,7 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Ladeadresse Ort") {
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: { place: { like: filteredDataValue[i].trim() } },
+              filter: { place: { like: filteredDataValue[i].trim() } }
             },
             5
           );
@@ -1335,7 +1335,7 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Ladeadresse PLZ") {
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: { zipcode: { like: filteredDataValue[i].trim() } },
+              filter: { zipcode: { like: filteredDataValue[i].trim() } }
             },
             5
           );
@@ -1354,7 +1354,7 @@ export default class SearchShipment extends Vue {
         if (filteredDataKey[i] === "Lieferadresse PLZ") {
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: { zipcode: { like: filteredDataValue[i].trim() } },
+              filter: { zipcode: { like: filteredDataValue[i].trim() } }
             },
             5
           );
@@ -1752,7 +1752,7 @@ export default class SearchShipment extends Vue {
       weight: weight,
       cbm: cbm,
       pos: pos,
-      posDescription: posDescription,
+      posDescription: posDescription
     };
 
     this.dialog = false;
@@ -1786,33 +1786,21 @@ export default class SearchShipment extends Vue {
   MinusButtonClicked(): void {
     if (this.type === this.orderType[0]) {
       const deletedPos = this.editedOrder.goods!.pop();
-      DirectusAPI.deleteOrderPos(deletedPos!.id!);
+      DirectusAPI.deleteGoodsPos(deletedPos!.id!);
       this.orderPositionsGoods.splice(-1, 1);
       this.validFormGoods.splice(-1, 1);
     }
 
-    // ----------------- TODO -------------------------- //
-
     if (this.type === this.orderType[1]) {
-      DirectusAPI.directusAPI.deleteItem(
-        "trp_order_people",
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.editedOrder.people.pop().id!
-      );
+      const deletedPos = this.editedOrder.people!.pop();
+      DirectusAPI.deletePeoplePos(deletedPos!.id!);
       this.orderPositionsPeople.splice(-1, 1);
-      // this.editedOrder.people.splice(-1, 1);
       this.validFormPeople.splice(-1, 1);
     }
     if (this.type === this.orderType[2]) {
-      DirectusAPI.directusAPI.deleteItem(
-        "trp_order_construction",
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.editedOrder.construction.pop().id!
-      );
+      const deletedPos = this.editedOrder.construction!.pop();
+      DirectusAPI.deleteConstPos(deletedPos!.id!);
       this.orderPositionsConstruction.splice(-1, 1);
-      // this.editedOrder.construction.splice(-1, 1);
       this.validFormConst.splice(-1, 1);
     }
   }
@@ -1839,28 +1827,24 @@ export default class SearchShipment extends Vue {
 
     switch (this.$store.state.searchOption) {
       case "delivery":
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.deliveryID = this.searchClient.id!;
         this.deliveryAddress = this.printAdress(client);
         this.editedOrder.receiver = client;
         break;
       case "principal":
-        if (this.searchClient.type === 1) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (this.searchClient.type?.id === TRP_TYP_CLIENT.mova) {
           this.principalID = this.searchClient.id!;
           this.principalAddress = this.printAdress(client);
           this.editedOrder.principal = client;
           break;
         } else {
           this.dialogNotMova = true;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this.principalID = this.searchClient.id!;
           this.principalAddress = this.printAdress(client);
           this.editedOrder.principal = client;
           break;
         }
       case "pickup":
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.pickupID = this.searchClient.id!;
         this.pickupAddress = this.printAdress(client);
         this.editedOrder.shipper = client;
@@ -1880,28 +1864,33 @@ export default class SearchShipment extends Vue {
     });
   }
 
-  private async triggerUdatePickupID(kindOfUpdate: string): void {
-    let resp;
+  private async triggerUdatePickupID(kindOfUpdate: string): Promise<void> {
+    let resp: Client[] = [];
+    let resp2: AnlageClass[] = [];
 
-    this.$refs.formFirst.resetValidation();
+    (
+      this.$refs.formFirst as Vue & { resetValidation: () => boolean }
+    ).resetValidation();
 
     switch (kindOfUpdate) {
       case "delivery":
         try {
-          resp = await DirectusAPI.directusAPI.getItems("trp_client", {
-            filter: {
-              id: {
-                eq: this.deliveryID,
-              },
+          resp = await DirectusAPI.getTrpClients(
+            {
+              filter: {
+                id: {
+                  eq: this.deliveryID
+                }
+              }
             },
-          });
+            5
+          );
         } catch {
           this.deliveryAddress = "Kunden ID nicht vorhanden";
         }
 
-        if (resp?.data[0]) {
-          this.searchClient = Object.assign(new Client(), resp.data[0]);
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (resp[0].id!) {
+          this.searchClient = resp[0];
           this.deliveryID = this.searchClient.id!;
           this.deliveryAddress = this.printAdress(this.searchClient);
           this.editedOrder.receiver = this.searchClient;
@@ -1912,26 +1901,27 @@ export default class SearchShipment extends Vue {
 
       case "principal":
         try {
-          resp = await DirectusAPI.directusAPI.getItems("trp_client", {
-            filter: {
-              id: {
-                eq: this.principalID,
-              },
+          resp = await DirectusAPI.getTrpClients(
+            {
+              filter: {
+                id: {
+                  eq: this.principalID
+                }
+              }
             },
-          });
+            5
+          );
         } catch {
           this.principalAddress = "Kunden ID nicht vorhanden";
         }
 
-        if (resp?.data[0]) {
-          this.searchClient = Object.assign(new Client(), resp.data[0]);
-          if (this.searchClient.type === 1) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (resp[0].id!) {
+          this.searchClient = resp[0];
+          if (this.searchClient.type === TRP_TYP_CLIENT.mova) {
             this.principalID = this.searchClient.id!;
             this.principalAddress = this.printAdress(this.searchClient);
           } else {
             this.dialogNotMova = true;
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.principalID = this.searchClient.id!;
             this.principalAddress = this.printAdress(this.searchClient);
           }
@@ -1943,19 +1933,18 @@ export default class SearchShipment extends Vue {
 
       case "pickup":
         try {
-          resp = await DirectusAPI.directusAPI.getItems("trp_client", {
+          resp = await DirectusAPI.getTrpClients({
             filter: {
               id: {
-                eq: this.pickupID,
-              },
-            },
-          });
+                eq: this.pickupID
+              }
+            }
+          }, 5);
         } catch {
           this.pickupAddress = "Kunden ID nicht vorhanden";
         }
-        if (resp?.data[0]) {
-          this.searchClient = Object.assign(new Client(), resp.data[0]);
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (resp[0].id!) {
+          this.searchClient = resp[0];
           this.pickupID = this.searchClient.id!;
           this.pickupAddress = this.printAdress(this.searchClient);
           this.editedOrder.shipper = this.searchClient;
@@ -1966,34 +1955,25 @@ export default class SearchShipment extends Vue {
 
       case "anlagen":
         try {
-          resp = await DirectusAPI.directusAPI.getItems("anlage", {
+          resp2 = await DirectusAPI.getAnlage({
             filter: {
               anlagen_id: {
-                eq: this.anlagenID,
-              },
-            },
-          });
+                eq: this.anlagenID
+              }
+            }
+          }, 5);
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-
-          this.anlagenID = null;
-
+          this.anlagenID = 0;
           this.editedOrder.anlage = null;
         }
-        if (resp?.data[0]) {
-          this.anlagenDescription =
-            resp.data[0].anlagenname + ", " + resp.data[0].standort;
-
-          this.rasterLagerplatz = resp.data[0].standortcode;
-
-          this.editedOrder.anlage = resp.data[0].id;
-
-          this.editedOrder.rasterLagerplatz = resp.data[0].standortcode;
+        if (resp[0].id!) {
+          this.editedOrder.anlage = resp2[0];
+          this.anlagenDescription = this.editedOrder.anlage?.anlagenname + ", " + this.editedOrder.anlage?.standort;
+          this.rasterLagerplatz = this.editedOrder.anlage!.standortcode!;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-
-          this.anlagenID = null;
-
+          this.anlagenID = 0;
           this.editedOrder.anlage = null;
         }
         break;
@@ -2005,15 +1985,9 @@ export default class SearchShipment extends Vue {
       return;
     }
 
-    const collectionFields = await DirectusAPI.directusAPI.getFields(
-      "trp_order",
-      {
-        fields: ["*.*.*"],
-      }
-    );
-
+    /// TODO 
     const csv = ExportCSV.createCsvOrder(
-      collectionFields.data,
+      headers.,
       this.orderTable
     );
     ExportCSV.sendCsvDownload("orders.csv", csv);

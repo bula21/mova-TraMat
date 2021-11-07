@@ -199,10 +199,6 @@ class DirectusAPI {
     return orders;
   }
 
-  public deleteOrderPos(id: number): void {
-    this.directusSDK.deleteItem("trp_order_goods", id);
-  }
-
   public async createTrpOrder(order: TrpOrder): Promise<TrpOrder> {
     const resp = await this.directusSDK.createItem("trp_order", {
       remarks: order.remarks,
@@ -241,6 +237,10 @@ class DirectusAPI {
     });
     const updateTrpOrder: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
     return updateTrpOrder[0];
+  }
+
+  public deleteGoodsPos(id: number): void {
+    this.directusSDK.deleteItem("trp_order_goods", id);
   }
 
   public async createGoodsPos(goods: Good, orderId: number): Promise<Good> {
@@ -302,6 +302,10 @@ class DirectusAPI {
     return newPos;
   }
 
+  public deletePeoplePos(id: number): void {
+    this.directusSDK.deleteItem("trp_order_people", id);
+  }
+
   public async createPeoplePos(people: Person, orderId: number): Promise<Person> {
     const resp = await this.directusSDK.createItem("trp_order_people", {
       quantity_of_people: people.quantityOfPeople,
@@ -350,6 +354,10 @@ class DirectusAPI {
     });
     const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
     return newPos;
+  }
+
+  public deleteConstPos(id: number): void {
+    this.directusSDK.deleteItem("trp_order_construction", id);
   }
 
   public async createConstPos(constru: Construction, orderId: number): Promise<Construction> {

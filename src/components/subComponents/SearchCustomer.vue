@@ -170,41 +170,29 @@
 import DirectusAPI from "@/services/DirectusAPI";
 import { Component, Vue } from "vue-property-decorator";
 import Client from "@/model/Client";
+import { TRP_TYP_CLIENT } from "../Const";
 
 @Component
 export default class SearchCustomer extends Vue {
-  /* eslint-disable @typescript-eslint/ban-ts-comment */
-  // @ts-ignore
   private name = "";
-  // @ts-ignore
   private street = "";
-  // @ts-ignore
   private zip = "";
-  // @ts-ignore
   private place = "";
-  // @ts-ignore
   private phone = "";
-  // @ts-ignore
   private email = "";
-  // @ts-ignore
   private id = "";
-  // @ts-ignore
   private type = "";
-  // @ts-ignore
-  private customerTypes = ["mova", "extern", "ohne Typ suchen"];
-  // @ts-ignore
+  private customerTypes: string[] = [];
   private choosenItem = new Client();
-  // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private clients: any = [{}];
 
-  // @ts-ignore
   private headers = [
     { text: "Actions", value: "actions", sortable: false },
     {
       text: "Kunden ID",
       align: "start",
-      value: "id",
+      value: "id"
     },
     { text: "Typ", value: "type" },
     { text: "Firma/Name", value: "name" },
@@ -215,16 +203,20 @@ export default class SearchCustomer extends Vue {
     { text: "Email", value: "email" },
     { text: "modified_on", value: "modified_on" },
     { text: "created_on", value: "created_on" },
-    { text: "modified_by", value: "modified_by" },
+    { text: "modified_by", value: "modified_by" }
   ];
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  mounted() {
+  async mounted(): Promise<void> {
     window.addEventListener("keyup", this.handleEnter);
+
+    const resp = await DirectusAPI.fetchTrpTypeClient();
+    resp.forEach((clientType) => {
+      this.customerTypes.push(clientType.acronym);
+    });
+    this.customerTypes.push("ohne Typ suchen");
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  destroyed() {
+  destroyed(): void {
     window.removeEventListener("keyup", this.handleEnter);
   }
 
@@ -245,57 +237,52 @@ export default class SearchCustomer extends Vue {
     clientsTable.forEach((value: Client) => {
       this.clients.push({
         id: value.id,
-        // @ts-ignore
-        type: value.type.acronym,
+        type: value.type?.acronym,
         name: value.name,
         street: value.street,
         place: value.place,
         zipcode: value.zipcode,
         phone: value.phone,
         email: value.email,
-        modified_on: value.modified_on,
-        created_on: value.created_on,
+        modified_on: value.modifiedOn,
+        created_on: value.createdOn,
         modified_by:
-          // @ts-ignore
-          value.modified_by.first_name + " " + value.modified_by.last_name,
+          value.modifiedBy?.firstName + " " + value.modifiedBy?.lastName
       });
     });
   }
 
-  // @ts-ignore
   private async close(): Promise<void> {
     this.$emit("closeSearch");
     await this.$nextTick(async () => {
       this.choosenItem = new Client();
       await this.$store.commit("changeSearchToEmpty");
     });
-    // @ts-ignore
-    this.$refs.form.reset();
+
+    (this.$refs.form as Vue & { reset: () => boolean; }).reset();
   }
 
-  // @ts-ignore
   private async selectItem(item: Client): Promise<void> {
     if (item.id) {
       this.choosenItem = item;
-      // @ts-ignore
-      if (this.choosenItem.type === "mova") {
-        this.choosenItem.type = 1;
-        // @ts-ignore
-      } else if (this.choosenItem.type === "external") {
-        this.choosenItem.type = 2;
+
+      if (this.choosenItem.type === TRP_TYP_CLIENT.mova) {
+        this.choosenItem.type.id = 1;
+      } else if (this.choosenItem.type === TRP_TYP_CLIENT.external) {
+        this.choosenItem.type.id = 2;
       }
       await this.$nextTick(async () => {
         await this.$emit("clientUpdate", this.choosenItem);
         this.choosenItem = new Client();
       });
       this.$emit("closeSearch");
-      // @ts-ignore
-      this.$refs.form.reset();
+
+      (this.$refs.form as Vue & { reset: () => boolean; }).reset();
     }
   }
 
   private async search(): Promise<Client[]> {
-    let client: Client[] = [];
+    const client: Client[] = [];
 
     const data = new Map();
     data.set("id", this.id);
@@ -307,7 +294,7 @@ export default class SearchCustomer extends Vue {
     data.set("email", this.email);
     data.set("type", this.type);
 
-    let filteredData = new Map();
+    const filteredData = new Map();
 
     data.forEach((value, key) => {
       if (value) {
@@ -317,7 +304,7 @@ export default class SearchCustomer extends Vue {
 
     if (filteredData.size > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let filter: any = {};
+      const filter: any = {};
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       await filteredData.forEach((value, key) => {
@@ -343,16 +330,8 @@ export default class SearchCustomer extends Vue {
         }
       });
 
-      let response = await DirectusAPI.directusAPI.getItems("trp_client", {
-        filter,
-        fields: ["*", "modified_by.*.*", "type.*.*"],
-      });
-
-      await response.data.forEach((value) => {
-        let currentClient = Object.assign(new Client(), value);
-        client?.push(currentClient);
-      });
-      return client;
+      const response = await DirectusAPI.getTrpClients(filter, -1);
+      return response;
     }
     return client;
   }

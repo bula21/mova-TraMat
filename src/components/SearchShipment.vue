@@ -808,7 +808,7 @@ import Client from "@/model/Client";
 import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
 import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
 import { DIRECTUS_ROLES, ORDER_TYPE, TRP_TYP_CLIENT } from "./Const";
-import { TrpOrder } from "@/services/TrpOrder";
+import { AnlageClass, TrpOrder } from "@/services/TrpOrder";
 import OrderDisplay from "@/model/OrderDisplay";
 
 @Component({
@@ -860,7 +860,7 @@ export default class SearchShipment extends Vue {
   private orderType: string[] = [];
   private stateTypeFromIdToState = new Map();
   private stateTypeFromStateToId = new Map();
-  private packagingUntisFromDesToId = new Map();
+  private packagingUntisFromIdToDes = new Map();
   private typePeopleFromDesToId = new Map();
   private typePeopleFromIdToDes = new Map();
   private stateTypeArray: string[] = [];
@@ -942,10 +942,7 @@ export default class SearchShipment extends Vue {
     const featchPackaging = await DirectusAPI.fetchPackaging();
 
     featchPackaging.forEach((value) => {
-      this.packagingUntisFromDesToId.set(
-        value.abbreviation + "=" + value.description,
-        value.id
-      );
+      this.packagingUntisFromIdToDes.set(value.id, value.abbreviation);
     });
 
     const typPeopleResp = await DirectusAPI.fetchTrpTypePeople();
@@ -1392,7 +1389,7 @@ export default class SearchShipment extends Vue {
       this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
       this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
       this.$store.state.authorisation ===
-        DIRECTUS_ROLES["Bereichsleitung Infra"] ||
+      DIRECTUS_ROLES["Bereichsleitung Infra"] ||
       this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
       this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
     ) {
@@ -1423,7 +1420,7 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private editItem(item: Order): void {
+  private editItem(item: OrderDisplay): void {
     this.printOrder = new Order();
     this.editedOrder = new Order();
     let editedItems: TrpOrder[] = [];
@@ -1499,11 +1496,11 @@ export default class SearchShipment extends Vue {
           this.$store.state.authorisation === DIRECTUS_ROLES.Public ||
           this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten ||
           this.$store.state.authorisation ===
-            DIRECTUS_ROLES["Dienstleiter/in"] ||
+          DIRECTUS_ROLES["Dienstleiter/in"] ||
           this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
           this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
           this.$store.state.authorisation ===
-            DIRECTUS_ROLES["Bereichsleitung Infra"] ||
+          DIRECTUS_ROLES["Bereichsleitung Infra"] ||
           this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
           this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
         ) {
@@ -1525,15 +1522,15 @@ export default class SearchShipment extends Vue {
   }
 
   private async close(): Promise<void> {
-    (this.$refs.formFirst as Vue & { reset: () => boolean }).reset();
-    (this.$refs.formSecond as Vue & { reset: () => boolean }).reset();
+    (this.$refs.formFirst as Vue & { reset: () => boolean; }).reset();
+    (this.$refs.formSecond as Vue & { reset: () => boolean; }).reset();
     await this.search();
     this.dialog = false;
   }
 
   private async save(): Promise<void> {
-    (this.$refs.formFirst as Vue & { validate: () => boolean }).validate();
-    (this.$refs.formSecond as Vue & { validate: () => boolean }).validate();
+    (this.$refs.formFirst as Vue & { validate: () => boolean; }).validate();
+    (this.$refs.formSecond as Vue & { validate: () => boolean; }).validate();
 
     let newVal = true;
 
@@ -1756,11 +1753,9 @@ export default class SearchShipment extends Vue {
     };
 
     this.dialog = false;
-    (this.$refs.formFirst as Vue & { reset: () => boolean }).reset();
-    (this.$refs.formSecond as Vue & { reset: () => boolean }).reset();
+    (this.$refs.formFirst as Vue & { reset: () => boolean; }).reset();
+    (this.$refs.formSecond as Vue & { reset: () => boolean; }).reset();
   }
-
-  // ----------------- TODO -------------------------- //
 
   AddButtonClicked(): void {
     if (this.type === this.orderType[0]) {
@@ -1868,9 +1863,7 @@ export default class SearchShipment extends Vue {
     let resp: Client[] = [];
     let resp2: AnlageClass[] = [];
 
-    (
-      this.$refs.formFirst as Vue & { resetValidation: () => boolean }
-    ).resetValidation();
+    (this.$refs.formFirst as Vue & { resetValidation: () => boolean; }).resetValidation();
 
     switch (kindOfUpdate) {
       case "delivery":
@@ -1985,13 +1978,15 @@ export default class SearchShipment extends Vue {
       return;
     }
 
-    /// TODO 
+    const collectionFields1: string[] = Object.keys(this.orderTable[0]);
+
     const csv = ExportCSV.createCsvOrder(
-      headers.,
-      this.orderTable
+      collectionFields1,
+      this.orderTable,
+      this.packagingUntisFromIdToDes,
+      this.typePeopleFromIdToDes
     );
     ExportCSV.sendCsvDownload("orders.csv", csv);
-    await this.search();
   }
 
   private triggerUpdateState(): void {
@@ -2002,13 +1997,13 @@ export default class SearchShipment extends Vue {
   private triggerUpdateDatePickUp(): void {
     const upade = this.datePickup + " " + this.pickupTime;
     const upadeDateTime = new Date(upade);
-    this.editedOrder.pick_up_date = upadeDateTime;
+    this.editedOrder.pickUpDate = upadeDateTime;
   }
 
   private triggerUpdateDateDelivery(): void {
     const upade = this.dateDelivery + " " + this.deliveryTime;
     const upadeDateTime = new Date(upade);
-    this.editedOrder.delivery_date = upadeDateTime;
+    this.editedOrder.deliveryDate = upadeDateTime;
   }
 
   private triggerUpdateRemarks(): void {
@@ -2023,11 +2018,11 @@ export default class SearchShipment extends Vue {
 
   private triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
-    this.editedOrder.delivery_only = upade;
+    this.editedOrder.deliveryOnly = upade;
   }
 
   private async searchCustomer(searchOption: string): Promise<void> {
-    this.$refs.formFirst.resetValidation();
+    (this.$refs.formFirst as Vue & { resetValidation: () => boolean; }).resetValidation();
     if (searchOption) {
       this.$nextTick(async () => {
         this.$store.commit("changeSearchOption", searchOption);

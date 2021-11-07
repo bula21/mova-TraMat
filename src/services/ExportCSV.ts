@@ -1,154 +1,167 @@
-/* eslint-disable camelcase */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import ClientDisplay from "@/model/ClientDisplay";
 import { createObjectCsvStringifier } from "csv-writer";
+import { TrpOrder } from "./TrpOrder";
 
 class ExportCSV {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public createCsvClients(fieldsClients: any[], rows: any[]): string {
+  public createCsvClients(fieldsClients: string[], clients: ClientDisplay[]): string {
     const csvWriter = createObjectCsvStringifier({
       header: fieldsClients
     });
-    return fieldsClients.join(",") + "\n" + csvWriter.stringifyRecords(rows);
+    return fieldsClients.join(",") + "\n" + csvWriter.stringifyRecords(clients);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public createCsvOrder(fieldsOrder: any[], rows: any[]): string {
-    const fieldNames = fieldsOrder.map((x) => x.field);
-    fieldNames.push("cbm");
-    fieldNames.push("totalweight");
+  public createCsvOrder(fieldsOrder: string[], trpOrders: TrpOrder[], packagingUntisFromIdToDes: Map<number, string>, typePeopleFromIdToDes: Map<number, string>): string {
+    const rows = [{}];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rows.forEach((x: any) => {
-      const weightCBM = this.calcWeightCBM(x);
-      x.cbm = weightCBM[1];
-      x.totalweight = weightCBM[0];
+    fieldsOrder.push("cbm");
+    fieldsOrder.push("totalweight");
 
-      // @ts-ignore
-      if (x.modified_by) {
-        // @ts-ignore
-        const newRow = x.modified_by.first_name + " " + x.modified_by.last_name;
-        // @ts-ignore
-        x.modified_by = newRow;
+    trpOrders.forEach((x: TrpOrder) => {
+      const row: Record<string, unknown> = {};
+      row.id = x.id;
+      row.createdOn = x.createdOn!.toISOString().substring(0, 10);
+      row.modifiedOn = x.modifiedOn!.toISOString().substring(0, 10);
+      row.remarks = x.remarks;
+      row.state = x.state?.state;
+      row.deliveryDate = x.deliveryDate!.toISOString().substring(0, 10);
+      row.pickUpDate = x.pickUpDate!.toISOString().substring(0, 10);
+      row.cbm = x.calcCBM();
+      row.totalweight = x.calcWeight();
+      row.deliveryOnly = x.deliveryOnly;
+      row.statusdirectus = x.statusdirectus;
+
+      let modifiedBy = "";
+      let owner = "";
+      let anlage = "";
+      let principal = "";
+      let receiver = "";
+      let shipper = "";
+      let goods = "";
+      let people = "";
+      let construction = "";
+      let tour = "";
+      let rasterLagerplatz = "";
+      let document = false;
+
+      if (x.tour) {
+        tour = x.tour;
       }
 
-      // @ts-ignore
+      if (x.document) {
+        document = true;
+      }
+
+      if (x.rasterLagerplatz) {
+        rasterLagerplatz = x.rasterLagerplatz;
+      }
+
+      if (x.modifiedBy) {
+        modifiedBy = x.modifiedBy.firstName + " " + x.modifiedBy.lastName;
+      }
+
       if (x.owner) {
-        // @ts-ignore
-        const newRow = x.owner.first_name + " " + x.owner.last_name;
-        // @ts-ignore
-        x.owner = newRow;
+        owner = x.owner.firstName + " " + x.owner.lastName;
       }
 
-      if (x.anlage) {
-        // @ts-ignore
-        const newRow = x.anlage.id;
-        // @ts-ignore
-        x.anlage = newRow;
-      }
-
-      if (x.state) {
-        // @ts-ignore
-        const newState = x.state.state;
-        // @ts-ignore
-        x.state = newState;
+      if (x.anlage?.id) {
+        anlage = "ID: " + x.anlage.id + "|" + x.anlage.anlagenname;
       }
 
       if (x.principal) {
-        // @ts-ignore
-        const newAdress = "ID: " + x.principal.id + "|" + x.principal.name +
-                    "|" + x.principal.street + "|" + x.principal.street + "|" +
-                    x.principal.zipcode + " " + x.principal.place + "|" +
-                    x.principal.email + "|" + x.principal.phone;
-        x.principal = newAdress;
+        principal = "ID: " + x.principal.id + "|" + x.principal.name +
+          "|" + x.principal.street + "|" + x.principal.zipcode + " " + x.principal.place + "|" +
+          x.principal.email + "|" + x.principal.phone;
       }
+
       if (x.receiver) {
-        // @ts-ignore
-        const newAdress = "ID: " + x.receiver.id + "|" + x.receiver.name +
-                    "|" + x.receiver.street + "|" + x.receiver.street + "|" +
-                    x.receiver.zipcode + " " + x.receiver.place + "|" +
-                    x.receiver.email + "|" + x.receiver.phone;
-        x.receiver = newAdress;
+        receiver = "ID: " + x.receiver.id + "|" + x.receiver.name +
+          "|" + x.receiver.street + "|" + x.receiver.zipcode + " " + x.receiver.place + "|" +
+          x.receiver.email + "|" + x.receiver.phone;
       }
       if (x.shipper) {
-        // @ts-ignore
-        const newAdress = "ID: " + x.shipper.id + "|" + x.shipper.name +
-                    "|" + x.shipper.street + "|" + x.shipper.street + "|" +
-                    x.shipper.zipcode + " " + x.shipper.place + "|" +
-                    x.shipper.email + "|" + x.shipper.phone;
-        x.shipper = newAdress;
+        shipper = "ID: " + x.shipper.id + "|" + x.shipper.name +
+          "|" + x.shipper.street + "|" + x.shipper.zipcode + " " + x.shipper.place + "|" +
+          x.shipper.email + "|" + x.shipper.phone;
       }
 
-      if (x.goods.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      row.tour = tour;
+      row.document = document;
+      row.rasterLagerplatz = rasterLagerplatz;
+      row.modifiedBy = modifiedBy;
+      row.owner = owner;
+      row.anlage = anlage;
+      row.principal = principal;
+      row.receiver = receiver;
+      row.shipper = shipper;
+
+      if (x.goods!.length > 0) {
         let posNr = 0;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        x.goods.forEach((element: any) => {
+        x.goods!.forEach((element) => {
           posNr++;
           const position = "Pos: " + posNr + "\n";
-          const dangerous_goods = "| Gefahrgut: " + element.dangerous_goods;
-          const goods_description = "| Beschreibung: " + element.goods_description;
-          const gross_weight = "| Brutto(kg): " + element.gross_weight;
-          const net_weight = "| Netto(kg): " + element.net_weight;
+          const dangerousGgoods = "| Gefahrgut: " + element.dangerousGoods;
+          const goodsDescription = "| Beschreibung: " + element.goodsDescription;
+          const grossWeight = "| Brutto(kg): " + element.grossWeight;
+          const netWeight = "| Netto(kg): " + element.netWeight;
           const dims = "| LxBxH cm: " + element.length + "x" + element.width + "x" + element.height;
           const marking = "| Markierung: " + element.marking;
-          const packing_unit = "| Verp.Einheit: " + element.packing_unit.description;
+          const packingUnit = "| Verp.Einheit: " + packagingUntisFromIdToDes.get(element.packingUnit!);
           const quantity = " Anz.: " + element.quantity;
-          const value_chf = "| Warenwert(CHF): " + element.value_chf;
+          const valueChf = "| Warenwert(CHF): " + element.valueChf;
 
-          x["goodsPos" + posNr] = position + quantity + packing_unit + gross_weight + net_weight + goods_description + dims + value_chf + dangerous_goods + marking;
-          fieldNames.push("goodsPos" + posNr);
+          row["goodsPos" + posNr] = position + quantity + packingUnit + grossWeight + netWeight + goodsDescription + dims + valueChf + dangerousGgoods + marking;
+          fieldsOrder.push("goodsPos" + posNr);
         });
-        x.goods = "Anz. Pos: " + posNr;
+        goods = "Anz. Pos: " + posNr;
       }
+      row.goods = goods;
 
-      if (x.people.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (x.people!.length > 0) {
         let posNr = 0;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        x.people.forEach((element: any) => {
+        x.people!.forEach((element) => {
           posNr++;
           const position = "Pos: " + posNr + "\n";
-          const description_of_luagge = "| Besch. Gepäck: " + element.description_of_luagge;
-          const quantity_of_people = "Anz. Pers: " + element.quantity_of_people;
-          const quantity_of_luggage = "| Anz. Gepäck: " + element.quantity_of_luggage;
-          const type_people = "| Typ. Pers.: " + element.type_people.description;
+          const descriptionOfLuagge = "| Besch. Gepäck: " + element.descriptionOfLuagge;
+          const quantityOfPeople = "Anz. Pers: " + element.quantityOfPeople;
+          const quantityOfLuggage = "| Anz. Gepäck: " + element.quantityOfLuggage;
+          const typePeople = "| Typ. Pers.: " + typePeopleFromIdToDes.get(element.typePeople!);
           const dims = "| LxBxH cm: " + element.length + "x" + element.width + "x" + element.height;
           const weight = "| Gewicht(kg): " + element.weight;
 
-          x["peoplePos" + posNr] = position + quantity_of_people + type_people + quantity_of_luggage + description_of_luagge + weight + dims;
-          fieldNames.push("peoplePos" + posNr);
+          row["peoplePos" + posNr] = position + quantityOfPeople + typePeople + quantityOfLuggage + descriptionOfLuagge + weight + dims;
+          fieldsOrder.push("peoplePos" + posNr);
         });
-        x.people = "Anz. Pos: " + posNr;
+        people = "Anz. Pos: " + posNr;
       }
+      row.people = people;
 
-      if (x.construction.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (x.construction!.length > 0) {
         let posNr = 0;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        x.construction.forEach((element: any) => {
+        x.construction!.forEach((element) => {
           posNr++;
           const position = "Pos: " + posNr + "\n";
           const description = "Besch.: " + element.description;
           const quantity = "| Quantität.: " + element.quantity;
           const weight = "| Gewicht(kg): " + element.weight;
 
-          x["constructionPos" + posNr] = position + description + quantity + weight;
-          fieldNames.push("constructionPos" + posNr);
+          row["constructionPos" + posNr] = position + description + quantity + weight;
+          fieldsOrder.push("constructionPos" + posNr);
         });
-        x.construction = "Anz. Pos: " + posNr;
+        construction = "Anz. Pos: " + posNr;
       }
+      row.construction = construction;
+      rows.push(row);
     });
 
     const csvWriter = createObjectCsvStringifier({
-      header: fieldNames
+      header: fieldsOrder
     });
 
-    return fieldNames.join(",") + "\n" + csvWriter.stringifyRecords(rows);
+    return fieldsOrder.join(",") + "\n" + csvWriter.stringifyRecords(rows);
   }
 
   public sendCsvDownload(name: string, content: string) {
@@ -163,56 +176,6 @@ class ExportCSV {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private calcWeightCBM(order: any): [number, number] {
-    let weight = 0;
-    let cbm = 0;
-
-    if (order.people.length > 0) {
-      // @ts-ignore
-      order.people.forEach((value) => {
-        // @ts-ignore
-        weight = value.weight * value.quantity_of_luggage + weight;
-        cbm =
-                    // @ts-ignore
-                    ((((value.length / 100) * value.height) / 100) * value.width) /
-                    100 * value.quantity_of_luggage +
-                    cbm;
-      });
-      // @ts-ignore
-      cbm = cbm.toFixed(3);
-      return [weight, cbm];
-    }
-    if (order.goods.length > 0) {
-      // @ts-ignore
-      order.goods.forEach((value) => {
-        // @ts-ignore
-        weight = value.gross_weight * value.quantity + weight;
-
-        cbm =
-                    // @ts-ignore
-                    ((((value.length / 100) * value.height) / 100) * value.width) /
-                    100 * value.quantity +
-                    cbm;
-      });
-      // @ts-ignore
-      cbm = cbm.toFixed(3);
-      return [weight, cbm];
-    }
-    if (order.construction.length > 0) {
-      // @ts-ignore
-      order.construction.forEach((value) => {
-        // @ts-ignore
-        weight = value.weight * value.quantity + weight;
-        // @ts-ignore
-        cbm = 0;
-      });
-      return [weight, cbm];
-    } else {
-      return [weight, cbm];
-    }
   }
 }
 

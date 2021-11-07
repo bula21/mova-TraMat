@@ -77,8 +77,7 @@ export default class Home extends Vue {
   private currentOrder = 0;
   private inProcessOrders = 0;
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async mounted() {
+  async mounted(): Promise<void> {
     const orders = await this.fetchHomeOrders();
     this.newOrders = orders[0];
     this.currentOrder = orders[1];

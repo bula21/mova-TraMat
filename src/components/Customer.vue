@@ -377,8 +377,7 @@ export default class NewShipment extends Vue {
   private customerTypesNew: string[] = [];
   private customerTypesSearch: string[] = [];
   private editedItem = new Client();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private clients: any = [{}];
+  private clients: ClientDisplay[] = [];
   private limit = 100;
   private limitTypes = [-1, 5, 50, 100, 200];
   private nameRules = [
@@ -644,8 +643,7 @@ export default class NewShipment extends Vue {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const collectionFields: any[] = [];
+    const collectionFields: string[] = [];
 
     this.headers.forEach((elemt) => {
       collectionFields.push(elemt.value);

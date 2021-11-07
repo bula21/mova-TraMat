@@ -125,7 +125,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import PositionGoods from "@/model/PositionGoods";
 import DirectusAPI from "@/services/DirectusAPI";
 import { Component, Prop, Vue } from "vue-property-decorator";
@@ -135,210 +134,192 @@ export default class NewShipmentGoods extends Vue {
   @Prop({ type: PositionGoods, required: true })
   currenpos!: PositionGoods;
 
-  // @ts-ignore
   private packingUnit: string[] = [];
-  // @ts-ignore
-  private pQuantity: number = null;
-  // @ts-ignore
-  private pBruttoWeight: number = null;
-  // @ts-ignore
-  private pNettoWeight: number = null;
-  // @ts-ignore
-  private pGoodsDescripttion = "";
-  // @ts-ignore
-  private pLength: number = null;
-  // @ts-ignore
-  private pWidth: number = null;
-  // @ts-ignore
-  private pHeight: number = null;
-  // @ts-ignore
-  private pMarking = "";
-  // @ts-ignore
-  private pValueCHF: number = null;
-  // @ts-ignore
-  private pDangerousGoods = false;
-  // @ts-ignore
-  private pPackingUnitSelected = "";
-  // @ts-ignore
-  //formGoods
+  private pQuantity: number | undefined = undefined;
+  private pBruttoWeight: number | undefined = undefined;
+  private pNettoWeight: number | undefined = undefined;
+  private pGoodsDescripttion: string | undefined = "";
+  private pLength: number | undefined = undefined;
+  private pWidth: number | undefined = undefined;
+  private pHeight: number | undefined = undefined;
+  private pMarking: string | null | undefined = "";
+  private pValueCHF: number | undefined = undefined;
+  private pDangerousGoods: boolean | undefined = false;
+  private pPackingUnitSelected: string | undefined = "";
+
+  // formGoods
   private pValidFormGoods = true;
   private packagingUntisConv = new Map();
-  // @ts-ignore
+
   private quanityRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
-      /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt",
+      /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt"
   ];
-  // @ts-ignore
+
   private requiredRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich",
+    (v: any) => !!v || "Wert ist erforderlich"
   ];
-  // @ts-ignore
+
   private weightRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => (v !== null || v!==undefined) || "Wert ist erforderlich",
+    (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
       /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v) ||
-      "Nur Zahlen mit max. 3 Kommastellen",
+      "Nur Zahlen mit max. 3 Kommastellen"
   ];
-  // @ts-ignore
+
   private dimRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => (v !== null || v!==undefined) || "Wert ist erforderlich",
+    (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
       /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v) ||
-      "Nur Zahlen mit max. 1 Kommastelle",
+      "Nur Zahlen mit max. 1 Kommastelle"
   ];
-  // @ts-ignore
+
   private valueCHFRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
       /^[0-9]{1,11}(?:\.[0-9]{1,2})?$/.test(v) ||
-      "Nur Zahlen mit max. 2 Kommastelle",
+      "Nur Zahlen mit max. 2 Kommastelle"
   ];
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async mounted() {
-    const resp = await this.fetchPackagingUnits();
-    this.packingUnit = resp;
-    // @ts-ignore
-    this.$refs.formGoods.validate();
-    // @ts-ignore
-    this.$refs.formGoods.resetValidation();
-
-    this.pPackingUnitSelected = this.packagingUntisConv.get(
-      this.currenpos.packing_unit
-    );
-     // @ts-ignore
-    this.pQuantity = this.currenpos.quantity;
-     // @ts-ignore
-    this.pBruttoWeight = this.currenpos.gross_weight;
-     // @ts-ignore
-    this.pNettoWeight = this.currenpos.net_weight;
-     // @ts-ignore
-    this.pGoodsDescripttion = this.currenpos.goods_description;
-     // @ts-ignore
-    this.pLength = this.currenpos.length;
-     // @ts-ignore
-    this.pWidth = this.currenpos.width;
-     // @ts-ignore
-    this.pHeight = this.currenpos.height;
-     // @ts-ignore
-    this.pMarking = this.currenpos.marking;
-     // @ts-ignore
-    this.pValueCHF = this.currenpos.value_chf;
-     // @ts-ignore
-    this.pDangerousGoods = this.currenpos.dangerous_goods;
-  }
-
-  private async fetchPackagingUnits(): Promise<string[]> {
-    let packagingUntis: string[] = [];
-    const data = await DirectusAPI.directusAPI.getItems("trp_packing_unit");
-    data.data.forEach((value) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      packagingUntis.push(value.abbreviation + "=" + value.description);
-      // @ts-ignore
-      this.packagingUntisConv.set(
-        // @ts-ignore
-        value.id,
-        // @ts-ignore
+  async mounted(): Promise<void> {
+    const resp1 = await DirectusAPI.fetchPackaging();
+    resp1.forEach((value) => {
+      this.packagingUntisConv.set(value.id,
         value.abbreviation + "=" + value.description
       );
+      this.packingUnit.push(value.abbreviation + "=" + value.description);
     });
-    return packagingUntis;
+
+    (this.$refs.formGoods as Vue & { validate: () => boolean; }).validate();
+    (this.$refs.formGoods as Vue & { resetValidation: () => boolean; }).resetValidation();
+
+    this.pPackingUnitSelected = this.packagingUntisConv.get(this.currenpos.packingUnit);
+    this.pQuantity = this.currenpos.quantity;
+    this.pBruttoWeight = this.currenpos.grossWeight;
+    this.pNettoWeight = this.currenpos.netWeight;
+    this.pGoodsDescripttion = this.currenpos.goodsDescription;
+    this.pLength = this.currenpos.length;
+    this.pWidth = this.currenpos.width;
+    this.pHeight = this.currenpos.height;
+    this.pMarking = this.currenpos.marking;
+    this.pValueCHF = this.currenpos.valueChf;
+    this.pDangerousGoods = this.currenpos.dangerousGoods;
   }
-  public get quantity(): number {
+
+  public get quantity(): number | undefined {
     return this.pQuantity;
   }
-  public set quantity(v: number) {
+
+  public set quantity(v: number | undefined) {
     this.pQuantity = v;
     this.$emit("update:quantity", this.pQuantity);
   }
-  public get bruttoWeight(): number {
+
+  public get bruttoWeight(): number | undefined {
     return this.pBruttoWeight;
   }
-  public set bruttoWeight(v: number) {
+
+  public set bruttoWeight(v: number | undefined) {
     this.pBruttoWeight = v;
     this.$emit("update:bruttoWeight", this.pBruttoWeight);
   }
 
-  public get nettoWeight(): number {
+  public get nettoWeight(): number | undefined {
     return this.pNettoWeight;
   }
-  public set nettoWeight(v: number) {
+
+  public set nettoWeight(v: number | undefined) {
     this.pNettoWeight = v;
     this.$emit("update:nettoWeight", this.pNettoWeight);
   }
-  public get goodsDescripttion(): string {
+
+  public get goodsDescripttion(): string | undefined {
     return this.pGoodsDescripttion;
   }
-  public set goodsDescripttion(v: string) {
+
+  public set goodsDescripttion(v: string | undefined) {
     this.pGoodsDescripttion = v;
     this.$emit("update:goodsDescripttion", this.pGoodsDescripttion);
   }
-  public get length(): number {
+
+  public get length(): number | undefined {
     return this.pLength;
   }
-  public set length(v: number) {
+
+  public set length(v: number | undefined) {
     this.pLength = v;
     this.$emit("update:length", this.pLength);
   }
-  public get width(): number {
+
+  public get width(): number | undefined {
     return this.pWidth;
   }
-  public set width(v: number) {
+
+  public set width(v: number | undefined) {
     this.pWidth = v;
     this.$emit("update:width", this.pWidth);
   }
-  public get height(): number {
+
+  public get height(): number | undefined {
     return this.pHeight;
   }
-  public set height(v: number) {
+
+  public set height(v: number | undefined) {
     this.pHeight = v;
     this.$emit("update:height", this.pHeight);
   }
-  public get marking(): string {
+
+  public get marking(): string | undefined | null {
     return this.pMarking;
   }
-  public set marking(v: string) {
+
+  public set marking(v: string | undefined | null) {
     this.pMarking = v;
     this.$emit("update:marking", this.pMarking);
   }
-  public get valueCHF(): number {
+
+  public get valueCHF(): number | undefined {
     return this.pValueCHF;
   }
-  public set valueCHF(v: number) {
+
+  public set valueCHF(v: number | undefined) {
     this.pValueCHF = v;
     this.$emit("update:valueCHF", this.pValueCHF);
   }
 
-  public get dangerousGoods(): boolean {
+  public get dangerousGoods(): boolean | undefined {
     return this.pDangerousGoods;
   }
-  public set dangerousGoods(v: boolean) {
+
+  public set dangerousGoods(v: boolean | undefined) {
     this.pDangerousGoods = v;
     this.$emit("update:dangerousGoods", this.pDangerousGoods);
   }
 
-  public get packingUnitSelected(): string {
+  public get packingUnitSelected(): string | undefined {
     return this.pPackingUnitSelected;
   }
-  public set packingUnitSelected(v: string) {
+
+  public set packingUnitSelected(v: string | undefined) {
     this.pPackingUnitSelected = v;
     this.$emit("update:packingUnitSelected", this.pPackingUnitSelected);
   }
+
   public set validFormGoods(v: boolean) {
     this.pValidFormGoods = v;
     this.$emit("update:validFormGoods", this.pValidFormGoods);
   }
+
   public get validFormGoods(): boolean {
     return this.pValidFormGoods;
   }

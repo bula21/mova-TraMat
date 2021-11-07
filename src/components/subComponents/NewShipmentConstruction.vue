@@ -38,7 +38,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import PositionConstruction from "@/model/PositionConstruction";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
@@ -46,81 +45,77 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 export default class NewShipmentConstruction extends Vue {
   @Prop({ type: PositionConstruction, required: true })
   currenpos!: PositionConstruction;
-  // @ts-ignore
-  private pQuantity: number = null;
-  // @ts-ignore
-  private pBruttoWeight: number = null;
-  // @ts-ignore
-  private pGoodsDescripttion = "";
-  // @ts-ignore
-  //formConst
+
+  private pQuantity: number | undefined = undefined;
+  private pBruttoWeight: number | undefined = undefined;
+  private pGoodsDescripttion: string | undefined = "";
+  // formConst
   private pValidFormConst = true;
-  // @ts-ignore
   private quanityRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
-      /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt",
+      /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt"
   ];
-  // @ts-ignore
+
   private weightRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => v !== null || v !== undefined || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) =>
       /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v) ||
-      "Nur Zahlen mit max. 3 Kommastellen",
+      "Nur Zahlen mit max. 3 Kommastellen"
   ];
-  // @ts-ignore
+
   private requiredRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => v !== " " || "Wert ist erforderlich",
+    (v: any) => v !== " " || "Wert ist erforderlich"
   ];
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async mounted() {
-    // @ts-ignore
-    this.$refs.formConst.validate();
-    // @ts-ignore
-    this.$refs.formConst.resetValidation();
+  async mounted(): Promise<void> {
+    (this.$refs.formConst as Vue & { validate: () => boolean; }).validate();
+    (this.$refs.formConst as Vue & { resetValidation: () => boolean; }).resetValidation();
 
-    // @ts-ignore
     this.pQuantity = this.currenpos.quantity;
-    // @ts-ignore
     this.pBruttoWeight = this.currenpos.weight;
-    // @ts-ignore
     this.pGoodsDescripttion = this.currenpos.description;
   }
 
-  public get quantity(): number {
+  public get quantity(): number | undefined {
     return this.pQuantity;
   }
-  public set quantity(v: number) {
+
+  public set quantity(v: number | undefined) {
     this.pQuantity = v;
     this.$emit("update:quantity", this.pQuantity);
   }
-  public get bruttoWeight(): number {
+
+  public get bruttoWeight(): number | undefined {
     return this.pBruttoWeight;
   }
-  public set bruttoWeight(v: number) {
+
+  public set bruttoWeight(v: number | undefined) {
     this.pBruttoWeight = v;
     this.$emit("update:bruttoWeight", this.pBruttoWeight);
   }
 
-  public get goodsDescripttion(): string {
+  public get goodsDescripttion(): string | undefined {
     return this.pGoodsDescripttion;
   }
-  public set goodsDescripttion(v: string) {
+
+  public set goodsDescripttion(v: string | undefined) {
     this.pGoodsDescripttion = v;
     this.$emit("update:goodsDescripttion", this.pGoodsDescripttion);
   }
+
   public set validFormConst(v: boolean) {
     this.pValidFormConst = v;
     this.$emit("update:validFormConst", this.pValidFormConst);
   }
+
   public get validFormConst(): boolean {
     return this.pValidFormConst;
   }

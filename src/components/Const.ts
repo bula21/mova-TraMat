@@ -3,28 +3,28 @@ export const SEARCH_CATEGORIES = ["Order ID", "Status", "Liefertermin", "Ladeter
   "Lieferadresse Name", "Ladeadresse Name", "Lieferadresse Ort", "Ladeadresse Ort",
   "Ladeadresse PLZ", "Lieferadresse PLZ"];
 
-export enum DIRECTUS_ROLES {
+export const DIRECTUS_ROLES = {
   // no warn
-  "Administrator" = "Administrator",
-  "Transport MA" = "Transport MA",
+  Administrator: "Administrator",
+  "Transport MA": "Transport MA",
   // warn
-  "Public" = "Public",
-  "Lagerbauten" = "Lagerbauten",
-  "Dienstleiter/in" = "Dienstleiter/in",
-  "Besteller/in" = "Besteller/in",
-  "Ressortleitung" = "Ressortleitung",
-  "Bereichsleitung Infra" = "Bereichsleitung Infra",
-  "Lagerplatz" = "Lagerplatz",
-  "Programmmaterial" = "Programmmaterial"
-}
+  Public: "Public",
+  Lagerbauten: "Lagerbauten",
+  "Dienstleiter/in": "Dienstleiter/in",
+  "Besteller/in": "Besteller/in",
+  Ressortleitung: "Ressortleitung",
+  "Bereichsleitung Infra": "Bereichsleitung Infra",
+  Lagerplatz: "Lagerplatz",
+  Programmmaterial: "Programmmaterial",
+};
 
-export enum ORDER_TYPE {
-  "Warentransport" = "Warentransport",
-  "Personentransport" = "Personentransport",
-  "Bauleistung mit Fahrzeug" = "Bauleistung mit Fahrzeug"
-}
+export const ORDER_TYPE = {
+  Warentransport: "Warentransport",
+  Personentransport: "Personentransport",
+  "Bauleistung mit Fahrzeug": "Bauleistung mit Fahrzeug",
+};
 
-export enum TRP_TYP_CLIENT {
-  "mova",
-  "external"
-}
+export const TRP_TYP_CLIENT = {
+  mova: 1,
+  external: 2,
+};

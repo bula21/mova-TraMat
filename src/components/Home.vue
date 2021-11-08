@@ -50,7 +50,7 @@
       </v-col>
       <v-col cols="4">
         <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
-          Status: Transportaufträge
+          Status: Scheduled
         </h5>
         <v-progress-circular
           class="mt-4"
@@ -68,8 +68,8 @@
 </template>
 
 <script lang="ts">
-import DirectusAPI from "@/services/DirectusAPI";
 import { Component, Vue } from "vue-property-decorator";
+import DirectusAPI from "@/services/DirectusAPI";
 
 @Component
 export default class Home extends Vue {
@@ -78,29 +78,23 @@ export default class Home extends Vue {
   private inProcessOrders = 0;
 
   async mounted(): Promise<void> {
-    const orders = await this.fetchHomeOrders();
+    const orders = await Home.fetchHomeOrders();
     this.newOrders = orders[0];
     this.currentOrder = orders[1];
     this.inProcessOrders = orders[2];
   }
 
-  private async fetchHomeOrders(): Promise<number[]> {
+  private static async fetchHomeOrders(): Promise<number[]> {
     const ordersNew = await DirectusAPI.getTrpOrder({
-      filter: {
-        state: "1"
-      }
+      state: "1",
     }, -1);
 
     const orderCurrent = await DirectusAPI.getTrpOrder({
-      filter: {
-        state: "3"
-      }
+      state: "3",
     }, -1);
 
     const orderInProcess = await DirectusAPI.getTrpOrder({
-      filter: {
-        state: "2"
-      }
+      state: "2",
     }, -1);
     return [ordersNew.length, orderCurrent.length, orderInProcess.length];
   }

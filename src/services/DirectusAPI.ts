@@ -1,6 +1,6 @@
 import DirectusSDK from "@directus/sdk-js";
+import fecha from "fecha";
 import store from "@/store";
-import { format } from "fecha";
 import { Convert, Packaging, TransportState, TrpTypeClient, TrpTypePeople } from "./Quicktype";
 import { ConvertTrpClient, TrpClient } from "./TrpClient";
 import { AnlageClass, Construction, ConvertTrpOrder, Good, Person, TrpOrder } from "./TrpOrder";
@@ -33,7 +33,7 @@ class DirectusAPI {
         tokenExpirationTime ?: number;
         *storage
         storage?: IStorageAPI;
-      **/
+      * */
     this.directusSDK = new DirectusSDK({
       url: this.BASE_URL,
       mode: "jwt",
@@ -41,7 +41,7 @@ class DirectusAPI {
       persist: true,
       // eslint-disable-next-line
       // @ts-ignore
-      storage: sessionStorage
+      storage: sessionStorage,
     });
   }
 
@@ -63,12 +63,12 @@ class DirectusAPI {
                   persist: boolean;
                   storage: boolean;
                   mode: AuthModes;)
-              **/
-        email: email,
-        password: password,
+              * */
+        email,
+        password,
         url: this.BASE_URL,
         project: this.PROJECT,
-        persist: true
+        persist: true,
       });
       store.commit("loginSuccess");
     } catch (error) {
@@ -131,8 +131,8 @@ class DirectusAPI {
 
   public async fetchTrpTypePeople(): Promise<TrpTypePeople[]> {
     const typPeopleResp = await this.directusSDK.getItems("trp_typ_people");
-    const TrpTypePeople: TrpTypePeople[] = Convert.toTrpTypePeople(JSON.stringify(typPeopleResp.data));
-    return TrpTypePeople;
+    const trpTypePeople: TrpTypePeople[] = Convert.toTrpTypePeople(JSON.stringify(typPeopleResp.data));
+    return trpTypePeople;
   }
 
   public async fetchTrpTypeClient(): Promise<TrpTypeClient[]> {
@@ -145,7 +145,7 @@ class DirectusAPI {
   public async getAnlage(filter: any, limit: number): Promise<AnlageClass[]> {
     const resp = await this.directusSDK.getItems("anlage", {
       filter,
-      limit: limit
+      limit,
     });
     const anlage: AnlageClass[] = ConvertTrpOrder.toAnlage(JSON.stringify(resp.data));
     return anlage;
@@ -156,8 +156,8 @@ class DirectusAPI {
   public async getTrpClients(filter: any, limit: number): Promise<TrpClient[]> {
     const resp = await this.directusSDK.getItems("trp_client", {
       filter,
-      limit: limit,
-      fields: ["*", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "type.*.*"]
+      limit,
+      fields: ["*", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "type.*.*"],
     });
     const clients: TrpClient[] = ConvertTrpClient.toTrpClient(JSON.stringify(resp.data));
     return clients;
@@ -172,7 +172,7 @@ class DirectusAPI {
       place: client.place,
       zipcode: client.zipcode,
       phone: client.phone,
-      email: client.email
+      email: client.email,
     });
   }
 
@@ -184,7 +184,7 @@ class DirectusAPI {
       place: client.place,
       zipcode: client.zipcode,
       phone: client.phone,
-      email: client.email
+      email: client.email,
     });
   }
 
@@ -192,8 +192,8 @@ class DirectusAPI {
   public async getTrpOrder(filter: any, limit: number): Promise<TrpOrder[]> {
     const resp = await this.directusSDK.getItems("trp_order", {
       filter,
-      limit: limit,
-      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "receiver.*", "receiver.type.*", "principal.*", "principal.type.*", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*"]
+      limit,
+      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "receiver.*", "receiver.type.*", "principal.*", "principal.type.*", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*"],
     });
     const orders: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
     return orders;
@@ -207,12 +207,12 @@ class DirectusAPI {
       receiver: order.receiver?.id,
       principal: order.principal?.id,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      delivery_date: format(order.deliveryDate!, "YYYY-MM-DD HH:mm:ss"),
+      delivery_date: fecha.format(order.deliveryDate!, "YYYY-MM-DD HH:mm:ss"),
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      pick_up_date: format(order.pickUpDate!, "YYYY-MM-DD HH:mm:ss"),
+      pick_up_date: fecha.format(order.pickUpDate!, "YYYY-MM-DD HH:mm:ss"),
       anlage: order.anlage?.id,
       raster_lagerplatz: order.rasterLagerplatz,
-      delivery_only: order.deliveryOnly
+      delivery_only: order.deliveryOnly,
     });
     const newOrder: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
     return newOrder[0];
@@ -227,13 +227,13 @@ class DirectusAPI {
       receiver: order.receiver?.id,
       principal: order.principal?.id,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      delivery_date: format(order.deliveryDate!, "YYYY-MM-DD HH:mm:ss"),
+      delivery_date: fecha.format(order.deliveryDate!, "YYYY-MM-DD HH:mm:ss"),
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      pick_up_date: format(order.pickUpDate!, "YYYY-MM-DD HH:mm:ss"),
+      pick_up_date: fecha.format(order.pickUpDate!, "YYYY-MM-DD HH:mm:ss"),
       anlage: order.anlage,
       raster_lagerplatz: order.rasterLagerplatz,
       delivery_only: order.deliveryOnly,
-      statusdirectus: order.statusdirectus
+      statusdirectus: order.statusdirectus,
     });
     const updateTrpOrder: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
     return updateTrpOrder[0];
@@ -256,7 +256,7 @@ class DirectusAPI {
       net_weight: goods.netWeight,
       value_chf: goods.valueChf,
       dangerous_goods: goods.dangerousGoods,
-      order: orderId
+      order: orderId,
     });
     const newPos: Good = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
     return newPos;
@@ -276,7 +276,7 @@ class DirectusAPI {
       value_chf: goods.valueChf,
       dangerous_goods: goods.dangerousGoods,
       order: orderId,
-      statusdirectus: goods.statusdirectus
+      statusdirectus: goods.statusdirectus,
     });
     const newPos: Good = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
     return newPos;
@@ -296,7 +296,7 @@ class DirectusAPI {
       value_chf: goods.valueChf,
       dangerous_goods: goods.dangerousGoods,
       order: orderId,
-      statusdirectus: goods.statusdirectus
+      statusdirectus: goods.statusdirectus,
     });
     const newPos: Good = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
     return newPos;
@@ -316,7 +316,7 @@ class DirectusAPI {
       height: people.height,
       width: people.width,
       weight: people.weight,
-      order: orderId
+      order: orderId,
     });
     const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
     return newPos;
@@ -333,7 +333,7 @@ class DirectusAPI {
       width: people.width,
       weight: people.weight,
       order: orderId,
-      statusdirectus: people.statusdirectus
+      statusdirectus: people.statusdirectus,
     });
     const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
     return newPos;
@@ -350,7 +350,7 @@ class DirectusAPI {
       width: people.width,
       weight: people.weight,
       order: orderId,
-      statusdirectus: people.statusdirectus
+      statusdirectus: people.statusdirectus,
     });
     const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
     return newPos;
@@ -365,7 +365,7 @@ class DirectusAPI {
       quantity: constru.quantity,
       weight: constru.weight,
       description: constru.description,
-      order: orderId
+      order: orderId,
     });
     const newPos: Construction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
     return newPos;
@@ -377,7 +377,7 @@ class DirectusAPI {
       weight: constru.weight,
       description: constru.description,
       order: orderId,
-      statusdirectus: constru.statusdirectus
+      statusdirectus: constru.statusdirectus,
     });
     const newPos: Construction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
     return newPos;
@@ -389,7 +389,7 @@ class DirectusAPI {
       weight: constru.weight,
       description: constru.description,
       order: orderId,
-      statusdirectus: constru.statusdirectus
+      statusdirectus: constru.statusdirectus,
     });
     const newPos: Construction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
     return newPos;
@@ -402,9 +402,8 @@ class DirectusAPI {
   public getlocalExp(): number {
     if (this.directusSDK.config.localExp !== undefined) {
       return this.directusSDK.config.localExp;
-    } else {
-      return 0;
     }
+    return 0;
   }
 }
 

@@ -8,7 +8,7 @@ class ClientDisplay {
   name?: string | undefined;
   street?: string | undefined;
   place?: string | undefined;
-  phone?: string | undefined;
+  phone?: null | string;
   zipcode?: number | undefined;
   email?: string | null | undefined;
   type?: string | undefined;

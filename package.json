@@ -2,11 +2,14 @@
   "name": "tramat",
   "version": "1.0.1",
   "private": true,
+  "description": "App for BuLa21 (BuLa22) to edit/create/schedule transportation orders for goods/people/construction.",
+  "author": "Andreas S. Trippel",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
+  "main": ".eslintrc.js",
   "dependencies": {
     "@directus/sdk-js": "^6.3.0",
     "@types/pdfobject": "^2.0.6",
@@ -46,21 +49,18 @@
     "vue-template-compiler": "^2.6.11",
     "vuetify-loader": "^1.7.0"
   },
-  "description": "App for BuLa21 (BuLa22) to edit/create/schedule transportation orders for goods/people/construction.",
-  "main": ".eslintrc.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bula21/mova-TraMat.git"
+  "bugs": {
+    "url": "https://github.com/bula21/mova-TraMat/issues"
   },
+  "homepage": "https://github.com/bula21/mova-TraMat#readme",
   "keywords": [
     "TraMat",
     "BuLa22",
     "mova"
   ],
-  "author": "Andreas S. Trippel",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/bula21/mova-TraMat/issues"
-  },
-  "homepage": "https://github.com/bula21/mova-TraMat#readme"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bula21/mova-TraMat.git"
+  }
 }

@@ -865,8 +865,8 @@ const countOfSteps = 3;
     SearchCustomer,
     NewShipmentGoods,
     NewShipmentPeople,
-    NewShipmentConstruction
-  }
+    NewShipmentConstruction,
+  },
 })
 export default class NewShipment extends Vue {
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -916,19 +916,18 @@ export default class NewShipment extends Vue {
   private typePeople = new Map();
   private idRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich"
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private orderTypeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich"
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private timeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v) ||
-      "Wert ungültig (Format hh:mm)"
+    (v: any) => /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v)
+      || "Wert ungültig (Format hh:mm)",
   ];
 
   private notRequired = true;
@@ -938,18 +937,15 @@ export default class NewShipment extends Vue {
       if (this.currentOrder.receiver?.type === TRP_TYP_CLIENT.mova) {
         this.notRequired = false;
         return !!v || "Wert ist erforderlich";
-      } else {
-        this.notRequired = true;
-        return true;
       }
-    }
+      this.notRequired = true;
+      return true;
+    },
   ];
 
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: string) => {
-      return !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig";
-    }
+    (v: string) => !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig",
   ];
 
 
@@ -965,16 +961,18 @@ export default class NewShipment extends Vue {
         return "mt-2";
       case "xl":
         return "mt-2";
+      default:
+        return "mt-n10";
     }
   }
 
   async mounted(): Promise<void> {
     window.addEventListener("keyup", this.handleEnter);
 
-    const upadePick = this.datePickup + " " + this.pickupTime;
+    const upadePick = `${this.datePickup} ${this.pickupTime}`;
     const upadeDateTimePick = new Date(upadePick);
     this.currentOrder.pickUpDate = upadeDateTimePick;
-    const upadeDeli = this.dateDelivery + " " + this.deliveryTime;
+    const upadeDeli = `${this.dateDelivery} ${this.deliveryTime}`;
     const upadeDateTimeDeli = new Date(upadeDeli);
     this.currentOrder.deliveryDate = upadeDateTimeDeli;
     this.currentOrder.goods = [new PositionGoods()];
@@ -985,8 +983,8 @@ export default class NewShipment extends Vue {
     const data = await DirectusAPI.fetchPackaging();
     data.forEach((value) => {
       this.packagingUntis.set(
-        value.abbreviation + "=" + value.description,
-        value.id
+        `${value.abbreviation}=${value.description}`,
+        value.id,
       );
     });
 
@@ -1025,7 +1023,7 @@ export default class NewShipment extends Vue {
           this.currentOrder.deliveryDate,
           this.currentOrder.pickUpDate,
           this.currentOrder.remarks,
-          this.currentOrder.goods
+          this.currentOrder.goods,
         );
         break;
 
@@ -1035,7 +1033,7 @@ export default class NewShipment extends Vue {
           this.currentOrder.pickUpDate,
           this.currentOrder.remarks,
           this.currentOrder.goods,
-          this.currentOrder.people
+          this.currentOrder.people,
         );
         break;
 
@@ -1046,7 +1044,7 @@ export default class NewShipment extends Vue {
           this.currentOrder.remarks,
           this.currentOrder.goods,
           this.currentOrder.people,
-          this.currentOrder.construction
+          this.currentOrder.construction,
         );
         break;
 
@@ -1063,142 +1061,68 @@ export default class NewShipment extends Vue {
     remarks: string | null | undefined,
     goods?: PositionGoods[] | undefined,
     people?: PositionPeople[] | undefined,
-    construction?: PositionConstruction[] | undefined
+    construction?: PositionConstruction[] | undefined,
   ): string {
     let details = "";
     const newLine = "\n";
 
     try {
-      details =
-        "Ladetermin: " + pickupDate?.toLocaleString().substring(0, 16) + "\n";
+      details = `Ladetermin: ${pickupDate?.toLocaleString().substring(0, 16)}\n`;
 
-      details =
-        details +
-        "Liefertermin: " +
+      details = `${details}Liefertermin: ${deliveryDate?.toLocaleString().substring(0, 16)}\n`;
 
-        deliveryDate?.toLocaleString().substring(0, 16) +
-        "\n";
-
-      details = details + "Sendungstyp: " + this.type + "\n";
+      details = `${details}Sendungstyp: ${this.type}\n`;
     } catch {
-      details = "Ladetermin: " + "\n";
-      details = details + "Liefertermin: " + "\n";
-      details = details + "Sendungstyp: " + "\n";
+      details = "Ladetermin: \n";
+      details = `${details}Liefertermin: "\n"`;
+      details = `${details}Sendungstyp: "\n"`;
     }
 
     let posDetails = "";
 
     if (ORDER_TYPE.Warentransport === this.type && !!goods) {
       goods.forEach((element, idx) => {
-        posDetails =
-          posDetails +
-          "*******Sendungs Position " +
-          idx +
-          "*******" +
-          newLine +
-          "Anzahl: " +
-          element.quantity +
-          newLine +
-          "Verpackungseinheit: " +
-          element.packingUnit +
-          newLine +
-          "Brutto Gewicht: " +
-          element.grossWeight +
-          newLine +
-          "Netto Gewicht: " +
-          element.netWeight +
-          newLine +
-          "Warenbeschreibung: " +
-          element.goodsDescription +
-          newLine +
-          "Warenwert: " +
-          element.valueChf +
-          newLine +
-          "Gefahrgut: " +
-          element.dangerousGoods +
-          newLine +
-          "Markierung: " +
-          element.marking +
-          newLine +
-          "Dims: " +
-          element.length +
-          "x" +
-          element.width +
-          "x" +
-          element.height +
-          newLine;
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******
+        ${newLine}Anzahl: ${element.quantity}${newLine}Verpackungseinheit: ${element.packingUnit}${newLine}
+        Brutto Gewicht: ${element.grossWeight}${newLine}Netto Gewicht: ${element.netWeight}${newLine}
+        Warenbeschreibung: ${element.goodsDescription}${newLine}Warenwert: ${element.valueChf}${newLine}
+        Gefahrgut: ${element.dangerousGoods}${newLine}Markierung: ${element.marking}${newLine}
+        Dims: ${element.length}x${element.width}x${element.height}${newLine}`;
       });
     }
 
     if (ORDER_TYPE.Personentransport === this.type && !!people) {
       people.forEach((element, idx) => {
-        posDetails =
-          posDetails +
-          "*******Sendungs Position " +
-          idx +
-          "*******" +
-          newLine +
-          "Anzahl: " +
-          element.quantityOfPeople +
-          newLine +
-          "Typ Personen: " +
-          element.typePeople +
-          newLine +
-          "Anzahl Gepäck Stk.: " +
-          element.quantityOfLuggage +
-          newLine +
-          "Warenbeschreibung: " +
-          element.descriptionOfLuagge +
-          newLine +
-          "Gewicht: " +
-          element.weight +
-          newLine +
-          "Dims: " +
-          element.length +
-          "x" +
-          element.width +
-          "x" +
-          element.height +
-          newLine;
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******
+        ${newLine}Anzahl: ${element.quantityOfPeople}${newLine}Typ Personen: ${element.typePeople}
+        ${newLine}Anzahl Gepäck Stk.: ${element.quantityOfLuggage}${newLine}
+        Warenbeschreibung: ${element.descriptionOfLuagge}${newLine}Gewicht: ${element.weight}${newLine}
+        Dims: ${element.length}x${element.width}x${element.height}${newLine}`;
       });
     }
 
     if (ORDER_TYPE["Bauleistung mit Fahrzeug"] === this.type && !!construction) {
       construction.forEach((element, idx) => {
-        posDetails =
-          posDetails +
-          "*******Sendungs Position " +
-          idx +
-          "*******" +
-          newLine +
-          "Anzahl: " +
-          element.quantity +
-          newLine +
-          "Beschreibung Bauleistung mit Fhrz.: " +
-          element.description +
-          newLine +
-          "Gewicht: " +
-          element.weight +
-          newLine;
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******${newLine}Anzahl: ${element.quantity}
+        ${newLine}Beschreibung Bauleistung mit Fhrz.: ${element.description}${newLine}Gewicht: ${element.weight}${newLine}`;
       });
     }
 
-    details = details + posDetails;
-    details = details + "**************" + newLine + "Bemerkungen: " + remarks;
+    details += posDetails;
+    details = `${details}**************${newLine}Bemerkungen: ${remarks}`;
 
     return details;
   }
 
 
   private next(): void {
-    this.step++;
+    this.step = +1;
   }
 
 
   private back(): void {
-    this.step--;
+    this.step = -1;
   }
-
 
   private async submit(): Promise<void> {
     (this.$refs.formFirst as Vue & { validate: () => boolean; }).validate();
@@ -1221,8 +1145,7 @@ export default class NewShipment extends Vue {
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
-          this.textDialogOrder =
-            "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
+          this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
           this.dialogWarnOrder = true;
         }
       }
@@ -1243,8 +1166,7 @@ export default class NewShipment extends Vue {
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
-          this.textDialogOrder =
-            "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
+          this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
           this.dialogWarnOrder = true;
         }
       }
@@ -1265,15 +1187,13 @@ export default class NewShipment extends Vue {
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
-          this.textDialogOrder =
-            "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
+          this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
           this.dialogWarnOrder = true;
         }
       }
     } else {
       this.titleDialogOrder = "Fehlerhafte Eingaben";
-      this.textDialogOrder =
-        "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
+      this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
       this.dialogWarnOrder = true;
     }
   }
@@ -1284,6 +1204,7 @@ export default class NewShipment extends Vue {
       const newOrder = await DirectusAPI.createTrpOrder(order);
 
       for (let i = 0; order.goods!.length > i; i++) {
+        // eslint-disable-next-line no-await-in-loop
         await DirectusAPI.createGoodsPos(order.goods![i], newOrder.id!);
       }
     }
@@ -1293,6 +1214,7 @@ export default class NewShipment extends Vue {
       const newOrder = await DirectusAPI.createTrpOrder(order);
 
       for (let i = 0; order.people!.length > i; i++) {
+        // eslint-disable-next-line no-await-in-loop
         await DirectusAPI.createPeoplePos(order.people![i], newOrder.id!);
       }
     }
@@ -1302,13 +1224,13 @@ export default class NewShipment extends Vue {
       const newOrder = await DirectusAPI.createTrpOrder(order);
 
       for (let i = 0; order.construction!.length > i; i++) {
+        // eslint-disable-next-line no-await-in-loop
         await DirectusAPI.createConstPos(order.construction![i], newOrder.id!);
       }
     }
 
     this.titleDialogOrder = "Sendung erfolgreich erfasst";
-    this.textDialogOrder =
-      "Merci für deinen Auftrag. Eine Auftragsbestätigung folgt sobald wie möglich.";
+    this.textDialogOrder = "Merci für deinen Auftrag. Eine Auftragsbestätigung folgt sobald wie möglich.";
     this.dialogWarnOrder = true;
     this.step = 1;
 
@@ -1351,20 +1273,10 @@ export default class NewShipment extends Vue {
     }
   }
 
+  // eslint-disable-next-line class-methods-use-this
   private printAdress(client: Client): string {
     let adress = "";
-    adress =
-      client.name +
-      "\n" +
-      client.street +
-      "\n" +
-      client.zipcode +
-      " " +
-      client.place +
-      "\n" +
-      client.phone +
-      "\n" +
-      client.email;
+    adress = `${client.name}\n${client.street}\n${client.zipcode} ${client.place}\n${client.phone}\n${client.email}`;
     return adress;
   }
 
@@ -1395,7 +1307,7 @@ export default class NewShipment extends Vue {
         this.pickupAddress = this.printAdress(client);
         this.currentOrder.shipper = client;
         break;
-      case "undefined":
+      default:
         this.deliveryID = 0;
         this.deliveryAddress = "";
         this.pickupID = 0;
@@ -1411,13 +1323,13 @@ export default class NewShipment extends Vue {
   }
 
   private triggerUpdateDatePickUp(): void {
-    const upade = this.datePickup + " " + this.pickupTime;
+    const upade = `${this.datePickup} ${this.pickupTime}`;
     const upadeDateTime = new Date(upade);
     this.currentOrder.pickUpDate = upadeDateTime;
   }
 
   private triggerUpdateDateDelivery(): void {
-    const upade = this.dateDelivery + " " + this.deliveryTime;
+    const upade = `${this.dateDelivery} ${this.deliveryTime}`;
     const upadeDateTime = new Date(upade);
     this.currentOrder.deliveryDate = upadeDateTime;
   }
@@ -1449,9 +1361,9 @@ export default class NewShipment extends Vue {
           resp = await DirectusAPI.getTrpClients({
             filter: {
               id: {
-                eq: this.deliveryID
-              }
-            }
+                eq: this.deliveryID,
+              },
+            },
           }, 5);
         } catch {
           this.deliveryAddress = "Kunden ID nicht vorhanden";
@@ -1472,9 +1384,9 @@ export default class NewShipment extends Vue {
           resp = await DirectusAPI.getTrpClients({
             filter: {
               id: {
-                eq: this.principalID
-              }
-            }
+                eq: this.principalID,
+              },
+            },
           }, 5);
         } catch {
           this.principalAddress = "Kunden ID nicht vorhanden";
@@ -1501,9 +1413,9 @@ export default class NewShipment extends Vue {
           resp = await DirectusAPI.getTrpClients({
             filter: {
               id: {
-                eq: this.pickupID
-              }
-            }
+                eq: this.pickupID,
+              },
+            },
           }, 5);
         } catch {
           this.pickupAddress = "Kunden ID nicht vorhanden";
@@ -1523,9 +1435,9 @@ export default class NewShipment extends Vue {
           resp2 = await DirectusAPI.getAnlage({
             filter: {
               anlagen_id: {
-                eq: this.anlagenID
-              }
-            }
+                eq: this.anlagenID,
+              },
+            },
           }, 5);
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
@@ -1533,7 +1445,7 @@ export default class NewShipment extends Vue {
           this.currentOrder.anlage = null;
         }
         if (resp2[0].id!) {
-          this.anlagenDescription = resp2[0].anlagenname + ", " + resp2[0].standort;
+          this.anlagenDescription = `${resp2[0].anlagenname}, ${resp2[0].standort}`;
           this.rasterLagerplatz = resp2[0].standortcode!;
           this.currentOrder.anlage = new Anlage();
           this.currentOrder.anlage = resp2[0];
@@ -1544,23 +1456,34 @@ export default class NewShipment extends Vue {
           this.currentOrder.anlage = null;
         }
         break;
+
+      default:
+        this.anlagenDescription = "Analgen ID nicht vorhanden";
+        this.anlagenID = 0;
+        this.currentOrder.anlage = null;
+        this.pickupAddress = "Kunden ID nicht vorhanden";
+        this.principalAddress = "Kunden ID nicht vorhanden";
+        this.deliveryAddress = "Kunden ID nicht vorhanden";
     }
   }
 
   AddButtonClicked(): void {
     if (this.type === ORDER_TYPE.Warentransport) {
       this.orderPositionsGoods.push(NewShipmentGoods);
+      // eslint-disable-next-line no-unused-expressions
       this.currentOrder.goods?.push(new PositionGoods());
       this.currentOrder.goods![this.currentOrder.goods!.length - 1].dangerousGoods = false;
       this.validFormGoods.push(true);
     }
     if (this.type === ORDER_TYPE.Personentransport) {
       this.orderPositionsPeople.push(NewShipmentPeople);
+      // eslint-disable-next-line no-unused-expressions
       this.currentOrder.people?.push(new PositionPeople());
       this.validFormPeople.push(true);
     }
     if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
       this.orderPositionsConstruction.push(NewShipmentConstruction);
+      // eslint-disable-next-line no-unused-expressions
       this.currentOrder.construction?.push(new PositionConstruction());
       this.validFormConst.push(true);
     }
@@ -1569,16 +1492,19 @@ export default class NewShipment extends Vue {
   MinusButtonClicked(): void {
     if (this.type === ORDER_TYPE.Warentransport) {
       this.orderPositionsGoods.splice(-1, 1);
+      // eslint-disable-next-line no-unused-expressions
       this.currentOrder.goods?.splice(-1, 1);
       this.validFormGoods.splice(-1, 1);
     }
     if (this.type === ORDER_TYPE.Personentransport) {
       this.orderPositionsPeople.splice(-1, 1);
+      // eslint-disable-next-line no-unused-expressions
       this.currentOrder.people?.splice(-1, 1);
       this.validFormPeople.splice(-1, 1);
     }
     if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
       this.orderPositionsConstruction.splice(-1, 1);
+      // eslint-disable-next-line no-unused-expressions
       this.currentOrder.construction?.splice(-1, 1);
       this.validFormConst.splice(-1, 1);
     }
@@ -1593,7 +1519,7 @@ export default class NewShipment extends Vue {
   }
 
   get overViewAnlage(): string {
-    return "Anlagen ID: " + this.anlagenID + "\nRaster Lagerplatz: " + this.rasterLagerplatz;
+    return `Anlagen ID: ${this.anlagenID}\nRaster Lagerplatz: ${this.rasterLagerplatz}`;
   }
 
   set overViewAnlage(v: string) {

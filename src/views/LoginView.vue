@@ -175,7 +175,9 @@ export default class LoginView extends Vue {
     } else {
       try {
         await DirectusAPI.login(this.username, this.password);
-        await this.$router.push({ name: "main" });
+        await this.$router.push({
+          name: "main",
+        });
       } catch (error) {
         this.errorMessage = "Login failed";
       }

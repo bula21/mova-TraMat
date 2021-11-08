@@ -38,20 +38,23 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Component, Vue, Prop } from "vue-property-decorator";
-import Order from "@/model/Order";
-import DirectusAPI from "@/services/DirectusAPI";
 import { format } from "fecha";
 import { jsPDF } from "jspdf";
 import PDFObject from "pdfobject";
+import DirectusAPI from "@/services/DirectusAPI";
+import Order from "@/model/Order";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as logo from "@/assets/Mova22Logo.json";
 
 @Component({
-  components: {}
+  components: {
+  },
 })
 export default class PrintTransportOrder extends Vue {
-  @Prop({ type: Order, required: true })
+  @Prop({
+    type: Order, required: true,
+  })
   order!: Order;
 
   private firstAndLastName = "";
@@ -67,7 +70,7 @@ export default class PrintTransportOrder extends Vue {
     window.addEventListener("keyup", this.handleEnter);
     const nameEmail = await DirectusAPI.fetchNameEmail();
     this.Email = nameEmail[2];
-    this.firstAndLastName = nameEmail[0] + " " + nameEmail[1];
+    this.firstAndLastName = `${nameEmail[0]} ${nameEmail[1]}`;
     const featchPackaging = await DirectusAPI.fetchPackaging();
     featchPackaging.forEach((value) => {
       this.packagingUntisFromIdToDes.set(value.id, value.abbreviation);
@@ -86,6 +89,7 @@ export default class PrintTransportOrder extends Vue {
     window.removeEventListener("keyup", this.handleEnter);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   private handleEnter(event: KeyboardEvent) {
     if (event.key === "Enter") {
       // this.printOrder();
@@ -93,11 +97,12 @@ export default class PrintTransportOrder extends Vue {
   }
 
   private async printOrder(): Promise<void> {
-    this.fileName = "Order" + this.order.id + ".pdf";
+    this.fileName = `Order${this.order.id}.pdf`;
     this.orderPDF.save(this.fileName);
     this.close();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   private breakLines(text: string, spaceLine: number): [string, number] {
     let newText = " ";
     let lineBreaks = 0;
@@ -110,17 +115,15 @@ export default class PrintTransportOrder extends Vue {
         lineBreaks = Math.ceil(text.length / spaceLine);
         newText = text.substring(0, spaceLine);
         for (let i = 1; lineBreaks > i; i++) {
-          newText =
-            newText +
-            "\n" +
-            text.substring(spaceLine * i, i * spaceLine + spaceLine);
+          newText = `${newText
+          }\n${
+            text.substring(spaceLine * i, i * spaceLine + spaceLine)}`;
         }
       }
-      lineBreaks = lineBreaks - 1;
-      return [newText, lineBreaks];
-    } else {
+      lineBreaks -= 1;
       return [newText, lineBreaks];
     }
+    return [newText, lineBreaks];
   }
 
   private async generatePDF(): Promise<jsPDF> {
@@ -144,7 +147,7 @@ export default class PrintTransportOrder extends Vue {
     pdf.setFont("Helvetica", "normal");
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    pdf.text("Seite " + pageNr, 19.5, 28.7, undefined, undefined, "right");
+    pdf.text(`Seite ${pageNr}`, 19.5, 28.7, undefined, undefined, "right");
     pdf.addImage(logo.image.data, "PNG", 16, 0.7, 3.5, 1.4);
     pdf.setFontSize(11);
     pdf.setFont("Helvetica", "bolditalic");
@@ -156,24 +159,24 @@ export default class PrintTransportOrder extends Vue {
     pdf.text("CH-3011 Bern", borderLeft, 3.2);
     pdf.setFont("Helvetica", "italic");
     pdf.text(
-      "Gedruckt: " + format(new Date(), "DD.MM.YYYY HH:mm:ss"),
+      `Gedruckt: ${format(new Date(), "DD.MM.YYYY HH:mm:ss")}`,
       19.5,
       2.7,
       null,
       null,
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      "right"
+      "right",
     );
     pdf.text(
-      "Sachbearbeiter/-in: " + this.firstAndLastName + ", " + this.Email,
+      `Sachbearbeiter/-in: ${this.firstAndLastName}, ${this.Email}`,
       19.5,
       3.2,
       null,
       null,
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      "right"
+      "right",
     );
     pdf.setLineWidth(0.02);
     pdf.setDrawColor(0, 0, 0);
@@ -184,84 +187,84 @@ export default class PrintTransportOrder extends Vue {
     pdf.setFontSize(12);
     pdf.setFont("Helvetica", "bold");
     pdf.text(
-      "L I E F E R S C H E I N / T R A N S P O R T - A U F T R A G" +
-        "\t \t ID: " +
-        this.order.id,
+      `${"L I E F E R S C H E I N / T R A N S P O R T - A U F T R A G"
+        + "\t \t ID: "}${
+        this.order.id}`,
       borderLeft,
-      4.5
+      4.5,
     );
     pdf.line(1, 4.7, 20, 4.7);
     pdf.setFontSize(11);
     pdf.setFont("Helvetica", "bold");
-    pdf.text("Auftraggeber: \t" + this.order.principal?.id, borderLeft, 5.5);
+    pdf.text(`Auftraggeber: \t${this.order.principal?.id}`, borderLeft, 5.5);
     pdf.setFont("Helvetica", "normal");
     pdf.text(
-      this.order.principal?.name +
-        "\n" +
-        this.order.principal?.street +
-        "\n" +
-        this.order.principal?.zipcode +
-        " " +
-        this.order.principal?.place +
-        "\n" +
-        this.order.principal?.phone +
-        "\n" +
-        this.order.principal?.email,
+      `${this.order.principal?.name
+      }\n${
+        this.order.principal?.street
+      }\n${
+        this.order.principal?.zipcode
+      } ${
+        this.order.principal?.place
+      }\n${
+        this.order.principal?.phone
+      }\n${
+        this.order.principal?.email}`,
       1.2,
-      6
+      6,
     );
 
     pdf.setFont("Helvetica", "italic");
 
     try {
-      pdf.text("Anlagen ID:      \t" + this.order.anlage?.id, 10.5, 6);
+      pdf.text(`Anlagen ID:      \t${this.order.anlage?.id}`, 10.5, 6);
     } catch {
       console.log("no Anlage ID by print PDF");
     }
 
     try {
-      pdf.text("Raster Lagerplatz:   " + this.order.rasterLagerplatz, 10.5, 6.5);
+      pdf.text(`Raster Lagerplatz:   ${this.order.rasterLagerplatz}`, 10.5, 6.5);
     } catch {
       console.log("no Raster Lagerplatz by print PDF");
     }
 
     pdf.setFont("Helvetica", "normal");
     pdf.setFont("Helvetica", "bold");
-    pdf.text("Ladeadresse: \t" + this.order.shipper?.id, borderLeft, 8.5);
+    pdf.text(`Ladeadresse: \t${this.order.shipper?.id}`, borderLeft, 8.5);
     pdf.setFont("Helvetica", "normal");
     pdf.text(
-      this.order.shipper?.name +
-        "\n" +
-        this.order.shipper?.street +
-        "\n" +
-        this.order.shipper?.zipcode +
-        " " +
-        this.order.shipper?.place +
-        "\n" +
-        this.order.shipper?.phone +
-        "\n" +
-        this.order.shipper?.email,
+      `${this.order.shipper?.name
+      }\n${
+        this.order.shipper?.street
+      }\n${
+        this.order.shipper?.zipcode
+      } ${
+        this.order.shipper?.place
+      }\n${
+        this.order.shipper?.phone
+      }\n${
+        this.order.shipper?.email}`,
       1.2,
-      9
+      9,
     );
 
     pdf.setFont("Helvetica", "bold");
-    pdf.text("Lieferadresse: \t" + this.order.receiver?.id, 10.5, 8.5);
+    pdf.text(`Lieferadresse: \t${this.order.receiver?.id}`, 10.5, 8.5);
     pdf.setFont("Helvetica", "normal");
     pdf.text(
-      this.order.receiver?.name +
-        "\n" +
-        this.order.receiver?.street +
-        "\n" +
-        this.order.receiver?.zipcode +
-        " " +
-        this.order.receiver?.place +
-        "\n" +
-        this.order.receiver?.phone +
-        "\n" +
-        this.order.receiver?.email,
+      `${this.order.receiver?.name
+      }\n${
+        this.order.receiver?.street
+      }\n${
+        this.order.receiver?.zipcode
+      } ${
+        this.order.receiver?.place
+      }\n${
+        this.order.receiver?.phone
+      }\n${
+        this.order.receiver?.email}`,
       10.5,
-      9
+      9,
     );
 
     pdf.line(1, 11.5, 20, 11.5);
@@ -276,18 +279,18 @@ export default class PrintTransportOrder extends Vue {
       pdf.text("Sendungsart: \t    Bauleistung mit Fahrzeug", borderLeft, 12.2);
     }
     pdf.text(
-      "Abholbereit ab: \t " +
-        format(this.order.pickUpDate!, "DD.MM.YYYY HH:mm"),
+      `Abholbereit ab: \t ${
+        format(this.order.pickUpDate!, "DD.MM.YYYY HH:mm")}`,
       borderLeft,
-      12.7
+      12.7,
     );
     pdf.text(
-      "Zustellung bis: \t  " +
-        format(this.order.deliveryDate!, "DD.MM.YYYY HH:mm"),
+      `Zustellung bis: \t  ${
+        format(this.order.deliveryDate!, "DD.MM.YYYY HH:mm")}`,
       borderLeft,
-      13.2
+      13.2,
     );
-    pdf.text("Tour:         \t \t" + this.order.tour, borderLeft, 13.7);
+    pdf.text(`Tour:         \t \t${this.order.tour}`, borderLeft, 13.7);
     pdf.line(1, 14.2, 20, 14.2);
     pdf.setFont("Helvetica", "bold");
     // people order
@@ -303,11 +306,11 @@ export default class PrintTransportOrder extends Vue {
         if (currPos > 29.7 - 5) {
           pdf.addPage("a4", "p");
           currPos = 2;
-          pageNr = pageNr + 1;
+          pageNr += 1;
           pdf.setFontSize(9);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.text(`Seite ${pageNr}`, 19.5, 28.7, null, null, "right");
           pdf.setFontSize(11);
           pdf.setLineWidth(0.02);
           pdf.setDrawColor(0, 0, 0);
@@ -317,49 +320,49 @@ export default class PrintTransportOrder extends Vue {
         }
 
         pdf.text(
-          this.order.people![i].quantityOfPeople + "",
+          `${this.order.people![i].quantityOfPeople}`,
           borderLeft,
-          currPos
+          currPos,
         );
         const typePeople = this.breakLines(
           this.typePeopleFromIdToDes.get(this.order.people![i].typePeople),
-          12
+          12,
         );
         pdf.text(
           typePeople[0],
           borderLeft + 3.5,
-          currPos
+          currPos,
         );
         pdf.text(
-          this.order.people![i].quantityOfLuggage + "",
+          `${this.order.people![i].quantityOfLuggage}`,
           borderLeft + 6.5,
-          currPos
+          currPos,
         );
         const descBag = this.breakLines(
           this.order.people![i].descriptionOfLuagge!,
-          22
+          22,
         );
         pdf.text(descBag[0], borderLeft + 10.3, currPos);
-        pdf.text(this.order.people![i].weight + "", borderLeft + 16, currPos);
+        pdf.text(`${this.order.people![i].weight}`, borderLeft + 16, currPos);
 
         if (descBag[1] > 0) {
-          currPos = currPos + 0.5 * descBag[1];
+          currPos += 0.5 * descBag[1];
         }
 
         if (typePeople[1] > 0) {
-          currPos = currPos + 0.5 * typePeople[1];
+          currPos += 0.5 * typePeople[1];
         }
 
-        currPos = currPos + 0.5;
+        currPos += 0.5;
 
         if (currPos > 29.7 - 3) {
           pdf.addPage("a4", "p");
           currPos = 2;
-          pageNr = pageNr + 1;
+          pageNr += 1;
           pdf.setFontSize(9);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.text(`Seite ${pageNr}`, 19.5, 28.7, null, null, "right");
           pdf.setFontSize(11);
           pdf.setLineWidth(0.02);
           pdf.setDrawColor(0, 0, 0);
@@ -371,14 +374,14 @@ export default class PrintTransportOrder extends Vue {
         pdf.setFont("Helvetica", "italic");
         pdf.setFontSize(10);
         pdf.text(
-          "Dims Gepäck (LxBxH) cm: " +
-            this.order.people![i].length +
-            "x" +
-            this.order.people![i].width +
-            "x" +
-            this.order.people![i].height,
+          `Dims Gepäck (LxBxH) cm: ${
+            this.order.people![i].length
+          }x${
+            this.order.people![i].width
+          }x${
+            this.order.people![i].height}`,
           borderLeft,
-          currPos
+          currPos,
         );
 
         pdf.setFont("Helvetica", "normal");
@@ -387,11 +390,11 @@ export default class PrintTransportOrder extends Vue {
         if (currPos > 29.7 - 10) {
           pdf.addPage("a4", "p");
           currPos = 2;
-          pageNr = pageNr + 1;
+          pageNr += 1;
           pdf.setFontSize(9);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.text(`Seite ${pageNr}`, 19.5, 28.7, null, null, "right");
           pdf.setFontSize(11);
           pdf.setLineWidth(0.02);
           pdf.setDrawColor(0, 0, 0);
@@ -407,29 +410,29 @@ export default class PrintTransportOrder extends Vue {
           pdf.text("Summe:", borderLeft, posiPeople + 0.5);
           pdf.setFont("Helvetica", "normal");
           pdf.text(
-            "Pers.: " + this.order.calcQuantity(),
+            `Pers.: ${this.order.calcQuantity()}`,
             borderLeft + 3.5,
-            posiPeople + 0.5
+            posiPeople + 0.5,
           );
           pdf.text(
-            "Gepäckstk.: " + this.order.calcLuaggage(),
+            `Gepäckstk.: ${this.order.calcLuaggage()}`,
             borderLeft + 6.5,
-            posiPeople + 0.5
+            posiPeople + 0.5,
           );
           pdf.text(
-            this.order.calcCBM() + " m^3",
+            `${this.order.calcCBM()} m^3`,
             borderLeft + 10.3,
-            posiPeople + 0.5
+            posiPeople + 0.5,
           );
           pdf.text(
-            this.order.calcWeight() + " kg",
+            `${this.order.calcWeight()} kg`,
             borderLeft + 16,
-            posiPeople + 0.5
+            posiPeople + 0.5,
           );
           pdf.line(1, posiPeople + 0.7, 20, posiPeople + 0.7);
           pdf.line(1, posiPeople + 0.8, 20, posiPeople + 0.8);
           const bemerkung = this.breakLines(this.order.remarks!, 46);
-          pdf.text("Bemerkung: " + bemerkung[0], borderLeft, posiPeople + 1.6);
+          pdf.text(`Bemerkung: ${bemerkung[0]}`, borderLeft, posiPeople + 1.6);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           pdf.setLineDash([0.0]);
@@ -439,10 +442,10 @@ export default class PrintTransportOrder extends Vue {
           pdf.text(
             "Datum, (Stempel), Unterschirft",
             borderLeft,
-            posiPeople + 7
+            posiPeople + 7,
           );
         }
-        currPos = currPos + 0.8;
+        currPos += 0.8;
       }
     }
     // goods order
@@ -458,11 +461,11 @@ export default class PrintTransportOrder extends Vue {
         if (currPos > 29.7 - 5) {
           pdf.addPage("a4", "p");
           currPos = 2;
-          pageNr = pageNr + 1;
+          pageNr += 1;
           pdf.setFontSize(9);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.text(`Seite ${pageNr}`, 19.5, 28.7, null, null, "right");
           pdf.setFontSize(11);
           pdf.setLineWidth(0.02);
           pdf.setDrawColor(0, 0, 0);
@@ -473,42 +476,42 @@ export default class PrintTransportOrder extends Vue {
 
         const arrayMark = this.breakLines(this.order.goods![i].marking!, 14);
         pdf.text(arrayMark[0], borderLeft, currPos);
-        pdf.text(this.order.goods![i].quantity! + "", borderLeft + 4, currPos);
+        pdf.text(`${this.order.goods![i].quantity!}`, borderLeft + 4, currPos);
         pdf.text(
-          this.packagingUntisFromIdToDes.get(
-            this.order.goods![i].packingUnit!
-          ) + "",
+          `${this.packagingUntisFromIdToDes.get(
+            this.order.goods![i].packingUnit!,
+          )}`,
           borderLeft + 5.5,
-          currPos
+          currPos,
         );
         const arrayDesc = this.breakLines(
           this.order.goods![i].goodsDescription!,
-          26
+          26,
         );
         pdf.text(arrayDesc[0], borderLeft + 8.5, currPos);
         pdf.text(
-          this.order.goods![i].grossWeight! + "",
+          `${this.order.goods![i].grossWeight!}`,
           borderLeft + 15,
-          currPos
+          currPos,
         );
 
         if (arrayMark[1] > arrayDesc[1] && arrayMark[1] > 0) {
-          currPos = currPos + 0.5 * arrayMark[1];
+          currPos += 0.5 * arrayMark[1];
         }
         if (arrayDesc[1] > arrayMark[1] && arrayDesc[1] > 0) {
-          currPos = currPos + 0.5 * arrayDesc[1];
+          currPos += 0.5 * arrayDesc[1];
         }
 
-        currPos = currPos + 0.5;
+        currPos += 0.5;
 
         if (currPos > 29.7 - 3) {
           pdf.addPage("a4", "p");
           currPos = 2;
-          pageNr = pageNr + 1;
+          pageNr += 1;
           pdf.setFontSize(9);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.text(`Seite ${pageNr}`, 19.5, 28.7, null, null, "right");
           pdf.setFontSize(11);
           pdf.setLineWidth(0.02);
           pdf.setDrawColor(0, 0, 0);
@@ -520,20 +523,20 @@ export default class PrintTransportOrder extends Vue {
         pdf.setFont("Helvetica", "italic");
         pdf.setFontSize(10);
         pdf.text(
-          "Gefahrgut: " +
-            this.order.goods![i].dangerousGoods +
-            ", (LxBxH) cm: " +
-            this.order.goods![i].length +
-            "x" +
-            this.order.goods![i].width +
-            "x" +
-            this.order.goods![i].height +
-            ", Warenwert (CHF): " +
-            this.order.goods![i].valueChf +
-            ", Netto Geweicht (kg): " +
-            this.order.goods![i].netWeight,
+          `Gefahrgut: ${
+            this.order.goods![i].dangerousGoods
+          }, (LxBxH) cm: ${
+            this.order.goods![i].length
+          }x${
+            this.order.goods![i].width
+          }x${
+            this.order.goods![i].height
+          }, Warenwert (CHF): ${
+            this.order.goods![i].valueChf
+          }, Netto Geweicht (kg): ${
+            this.order.goods![i].netWeight}`,
           borderLeft,
-          currPos
+          currPos,
         );
 
         pdf.setFont("Helvetica", "normal");
@@ -542,11 +545,11 @@ export default class PrintTransportOrder extends Vue {
         if (currPos > 29.7 - 9) {
           pdf.addPage("a4", "p");
           currPos = 2;
-          pageNr = pageNr + 1;
+          pageNr += 1;
           pdf.setFontSize(9);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.text(`Seite ${pageNr}`, 19.5, 28.7, null, null, "right");
           pdf.setFontSize(11);
           pdf.setLineWidth(0.02);
           pdf.setDrawColor(0, 0, 0);
@@ -562,24 +565,24 @@ export default class PrintTransportOrder extends Vue {
           pdf.text("Summe:", borderLeft, positGoods + 0.5);
           pdf.setFont("Helvetica", "normal");
           pdf.text(
-            this.order.calcQuantity() + " Stk.",
+            `${this.order.calcQuantity()} Stk.`,
             borderLeft + 4,
-            positGoods + 0.5
+            positGoods + 0.5,
           );
           pdf.text(
-            this.order.calcCBM() + " m^3",
+            `${this.order.calcCBM()} m^3`,
             borderLeft + 8.5,
-            positGoods + 0.5
+            positGoods + 0.5,
           );
           pdf.text(
-            this.order.calcWeight() + " kg",
+            `${this.order.calcWeight()} kg`,
             borderLeft + 15,
-            positGoods + 0.5
+            positGoods + 0.5,
           );
           pdf.line(1, positGoods + 0.7, 20, positGoods + 0.7);
           pdf.line(1, positGoods + 0.8, 20, positGoods + 0.8);
           const bemerkung = this.breakLines(this.order.remarks!, 46);
-          pdf.text("Bemerkung: " + bemerkung[0], borderLeft, positGoods + 1.6);
+          pdf.text(`Bemerkung: ${bemerkung[0]}`, borderLeft, positGoods + 1.6);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           pdf.setLineDash([0.0]);
@@ -587,12 +590,12 @@ export default class PrintTransportOrder extends Vue {
           pdf.setFont("Helvetica", "italic");
           pdf.setFontSize(10);
           pdf.text(
-            "Datum, (Stempel), Unterschirft \n" + "Wir übergeben Ihnen obige Sendung vollständig und in äusserlich gutem Zustand. Allfällige Reklamationen \noder Schadensmeldungen sind sofort mitzuteilen und innert 24 Studen schriftlich zu bestätigen.",
+            "Datum, (Stempel), Unterschirft \n Wir übergeben Ihnen obige Sendung vollständig und in äusserlich gutem Zustand. Allfällige Reklamationen \noder Schadensmeldungen sind sofort mitzuteilen und innert 24 Studen schriftlich zu bestätigen.",
             borderLeft,
-            positGoods + 7
+            positGoods + 7,
           );
         }
-        currPos = currPos + 0.8;
+        currPos += 0.8;
       }
     }
     // constr. order
@@ -606,11 +609,11 @@ export default class PrintTransportOrder extends Vue {
         if (currPos > 29.7 - 5) {
           pdf.addPage("a4", "p");
           currPos = 2;
-          pageNr = pageNr + 1;
+          pageNr += 1;
           pdf.setFontSize(9);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.text(`Seite ${pageNr}`, 19.5, 28.7, null, null, "right");
           pdf.setFontSize(11);
           pdf.setLineWidth(0.02);
           pdf.setDrawColor(0, 0, 0);
@@ -620,26 +623,26 @@ export default class PrintTransportOrder extends Vue {
         }
 
         pdf.text(
-          this.order.construction![i].quantity! + "",
+          `${this.order.construction![i].quantity!}`,
           borderLeft,
-          currPos
+          currPos,
         );
         const arrayDes = this.breakLines(
           this.order.construction![i].description!,
-          27
+          27,
         );
         pdf.text(arrayDes[0], borderLeft + 4, currPos);
         pdf.text(
-          this.order.construction![i].weight + "",
+          `${this.order.construction![i].weight}`,
           borderLeft + 15,
-          currPos
+          currPos,
         );
 
         if (arrayDes[1] > 0) {
-          currPos = currPos + 0.5 * arrayDes[1];
+          currPos += 0.5 * arrayDes[1];
         }
 
-        currPos = currPos + 0.5;
+        currPos += 0.5;
 
         pdf.setFont("Helvetica", "normal");
         pdf.setFontSize(12);
@@ -647,11 +650,11 @@ export default class PrintTransportOrder extends Vue {
         if (currPos > 29.7 - 9) {
           pdf.addPage("a4", "p");
           currPos = 2;
-          pageNr = pageNr + 1;
+          pageNr += 1;
           pdf.setFontSize(9);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          pdf.text("Seite " + pageNr, 19.5, 28.7, null, null, "right");
+          pdf.text(`Seite ${pageNr}`, 19.5, 28.7, null, null, "right");
           pdf.setFontSize(11);
           pdf.setLineWidth(0.02);
           pdf.setDrawColor(0, 0, 0);
@@ -667,19 +670,19 @@ export default class PrintTransportOrder extends Vue {
           pdf.text("Summe:", borderLeft, positCons + 0.5);
           pdf.setFont("Helvetica", "normal");
           pdf.text(
-            "Quantität Leistungen: " + this.order.calcQuantity(),
+            `Quantität Leistungen: ${this.order.calcQuantity()}`,
             borderLeft + 4,
-            positCons + 0.5
+            positCons + 0.5,
           );
           pdf.text(
-            this.order.calcWeight() + " kg",
+            `${this.order.calcWeight()} kg`,
             borderLeft + 15,
-            positCons + 0.5
+            positCons + 0.5,
           );
           pdf.line(1, positCons + 0.7, 20, positCons + 0.7);
           pdf.line(1, positCons + 0.8, 20, positCons + 0.8);
           const bemerkung = this.breakLines(this.order.remarks!, 46);
-          pdf.text("Bemerkung: " + bemerkung[0], borderLeft, positCons + 1.6);
+          pdf.text(`Bemerkung: ${bemerkung[0]}`, borderLeft, positCons + 1.6);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           pdf.setLineDash([0.0]);
@@ -688,7 +691,7 @@ export default class PrintTransportOrder extends Vue {
           pdf.setFontSize(10);
           pdf.text("Datum, (Stempel), Unterschirft", borderLeft, positCons + 7);
         }
-        currPos = currPos + 0.8;
+        currPos += 0.8;
       }
     }
     return pdf;

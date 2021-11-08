@@ -38,12 +38,14 @@
 </template>
 
 <script lang="ts">
-import PositionConstruction from "@/model/PositionConstruction";
 import { Component, Prop, Vue } from "vue-property-decorator";
+import PositionConstruction from "@/model/PositionConstruction";
 
 @Component
 export default class NewShipmentConstruction extends Vue {
-  @Prop({ type: PositionConstruction, required: true })
+  @Prop({
+    type: PositionConstruction, required: true,
+  })
   currenpos!: PositionConstruction;
 
   private pQuantity: number | undefined = undefined;
@@ -55,24 +57,22 @@ export default class NewShipmentConstruction extends Vue {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt"
+    (v: any) => /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt",
   ];
 
   private weightRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => v !== null || v !== undefined || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v) ||
-      "Nur Zahlen mit max. 3 Kommastellen"
+    (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v)
+      || "Nur Zahlen mit max. 3 Kommastellen",
   ];
 
   private requiredRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => v !== " " || "Wert ist erforderlich"
+    (v: any) => v !== " " || "Wert ist erforderlich",
   ];
 
   async mounted(): Promise<void> {

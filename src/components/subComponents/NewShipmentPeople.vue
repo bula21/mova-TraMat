@@ -108,13 +108,15 @@
 </template>
 
 <script lang="ts">
+import { Component, Prop, Vue } from "vue-property-decorator";
 import PositionPeople from "@/model/PositionPeople";
 import DirectusAPI from "@/services/DirectusAPI";
-import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class NewShipmentPeople extends Vue {
-  @Prop({ type: PositionPeople, required: true })
+  @Prop({
+    type: PositionPeople, required: true,
+  })
   currenpos!: PositionPeople;
 
   private typeOfPeople: string[] = [];
@@ -135,33 +137,30 @@ export default class NewShipmentPeople extends Vue {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt"
+    (v: any) => /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt",
   ];
 
   private requiredRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => v !== " " || "Wert ist erforderlich"
+    (v: any) => v !== " " || "Wert ist erforderlich",
   ];
 
   private dimRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v) ||
-      "Nur Zahlen mit max. 1 Kommastelle"
+    (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v)
+      || "Nur Zahlen mit max. 1 Kommastelle",
   ];
 
   private weightRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v) ||
-      "Nur Zahlen mit max. 3 Kommastellen"
+    (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v)
+      || "Nur Zahlen mit max. 3 Kommastellen",
   ];
 
   async mounted(): Promise<void> {

@@ -1,24 +1,28 @@
+/* eslint-disable indent */
+/* eslint-disable class-methods-use-this */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import ClientDisplay from "@/model/ClientDisplay";
 import { createObjectCsvStringifier } from "csv-writer";
+import ClientDisplay from "@/model/ClientDisplay";
 import { TrpOrder } from "./TrpOrder";
 
 class ExportCSV {
-  public createCsvClients(fieldsClients: string[], clients: ClientDisplay[]): string {
+  createCsvClients(fieldsClients: string[], clients: ClientDisplay[]): string {
     const csvWriter = createObjectCsvStringifier({
-      header: fieldsClients
+      header: fieldsClients,
     });
-    return fieldsClients.join(",") + "\n" + csvWriter.stringifyRecords(clients);
+    return `${fieldsClients.join(",")}\n${csvWriter.stringifyRecords(clients)}`;
   }
 
   public createCsvOrder(fieldsOrder: string[], trpOrders: TrpOrder[], packagingUntisFromIdToDes: Map<number, string>, typePeopleFromIdToDes: Map<number, string>): string {
-    const rows = [{}];
+    const rows = [{
+    }];
 
     fieldsOrder.push("cbm");
     fieldsOrder.push("totalweight");
 
     trpOrders.forEach((x: TrpOrder) => {
-      const row: Record<string, unknown> = {};
+      const row: Record<string, unknown> = {
+      };
       row.id = x.id;
       row.createdOn = x.createdOn!.toISOString().substring(0, 10);
       row.modifiedOn = x.modifiedOn!.toISOString().substring(0, 10);
@@ -45,6 +49,7 @@ class ExportCSV {
       let document = false;
 
       if (x.tour) {
+        // eslint-disable-next-line prefer-destructuring
         tour = x.tour;
       }
 
@@ -53,36 +58,35 @@ class ExportCSV {
       }
 
       if (x.rasterLagerplatz) {
+        // eslint-disable-next-line prefer-destructuring
         rasterLagerplatz = x.rasterLagerplatz;
       }
 
       if (x.modifiedBy) {
-        modifiedBy = x.modifiedBy.firstName + " " + x.modifiedBy.lastName;
+        modifiedBy = `${x.modifiedBy.firstName} ${x.modifiedBy.lastName}`;
       }
 
       if (x.owner) {
-        owner = x.owner.firstName + " " + x.owner.lastName;
+        owner = `${x.owner.firstName} ${x.owner.lastName}`;
       }
 
       if (x.anlage?.id) {
-        anlage = "ID: " + x.anlage.id + "|" + x.anlage.anlagenname;
+        anlage = `ID: ${x.anlage.id}|${x.anlage.anlagenname}`;
       }
 
       if (x.principal) {
-        principal = "ID: " + x.principal.id + "|" + x.principal.name +
-          "|" + x.principal.street + "|" + x.principal.zipcode + " " + x.principal.place + "|" +
-          x.principal.email + "|" + x.principal.phone;
+        principal = `ID: ${x.principal.id}|${x.principal.name
+        }|${x.principal.street}|${x.principal.zipcode} ${x.principal.place}|${x.principal.email}|${x.principal.phone}`;
       }
 
       if (x.receiver) {
-        receiver = "ID: " + x.receiver.id + "|" + x.receiver.name +
-          "|" + x.receiver.street + "|" + x.receiver.zipcode + " " + x.receiver.place + "|" +
-          x.receiver.email + "|" + x.receiver.phone;
+        receiver = `ID: ${x.receiver.id}|${x.receiver.name
+          // eslint-disable-next-line indent
+          }|${x.receiver.street}|${x.receiver.zipcode} ${x.receiver.place}|${x.receiver.email}|${x.receiver.phone}`;
       }
       if (x.shipper) {
-        shipper = "ID: " + x.shipper.id + "|" + x.shipper.name +
-          "|" + x.shipper.street + "|" + x.shipper.zipcode + " " + x.shipper.place + "|" +
-          x.shipper.email + "|" + x.shipper.phone;
+        shipper = `ID: ${x.shipper.id}|${x.shipper.name
+          }|${x.shipper.street}|${x.shipper.zipcode} ${x.shipper.place}|${x.shipper.email}|${x.shipper.phone}`;
       }
 
       row.tour = tour;
@@ -99,22 +103,22 @@ class ExportCSV {
         let posNr = 0;
 
         x.goods!.forEach((element) => {
-          posNr++;
-          const position = "Pos: " + posNr + "\n";
-          const dangerousGgoods = "| Gefahrgut: " + element.dangerousGoods;
-          const goodsDescription = "| Beschreibung: " + element.goodsDescription;
-          const grossWeight = "| Brutto(kg): " + element.grossWeight;
-          const netWeight = "| Netto(kg): " + element.netWeight;
-          const dims = "| LxBxH cm: " + element.length + "x" + element.width + "x" + element.height;
-          const marking = "| Markierung: " + element.marking;
-          const packingUnit = "| Verp.Einheit: " + packagingUntisFromIdToDes.get(element.packingUnit!);
-          const quantity = " Anz.: " + element.quantity;
-          const valueChf = "| Warenwert(CHF): " + element.valueChf;
+          posNr += 1;
+          const position = `Pos: ${posNr}\n`;
+          const dangerousGgoods = `| Gefahrgut: ${element.dangerousGoods}`;
+          const goodsDescription = `| Beschreibung: ${element.goodsDescription}`;
+          const grossWeight = `| Brutto(kg): ${element.grossWeight}`;
+          const netWeight = `| Netto(kg): ${element.netWeight}`;
+          const dims = `| LxBxH cm: ${element.length}x${element.width}x${element.height}`;
+          const marking = `| Markierung: ${element.marking}`;
+          const packingUnit = `| Verp.Einheit: ${packagingUntisFromIdToDes.get(element.packingUnit!)}`;
+          const quantity = ` Anz.: ${element.quantity}`;
+          const valueChf = `| Warenwert(CHF): ${element.valueChf}`;
 
-          row["goodsPos" + posNr] = position + quantity + packingUnit + grossWeight + netWeight + goodsDescription + dims + valueChf + dangerousGgoods + marking;
-          fieldsOrder.push("goodsPos" + posNr);
+          row[`goodsPos${posNr}`] = position + quantity + packingUnit + grossWeight + netWeight + goodsDescription + dims + valueChf + dangerousGgoods + marking;
+          fieldsOrder.push(`goodsPos${posNr}`);
         });
-        goods = "Anz. Pos: " + posNr;
+        goods = `Anz. Pos: ${posNr}`;
       }
       row.goods = goods;
 
@@ -122,19 +126,19 @@ class ExportCSV {
         let posNr = 0;
 
         x.people!.forEach((element) => {
-          posNr++;
-          const position = "Pos: " + posNr + "\n";
-          const descriptionOfLuagge = "| Besch. Gepäck: " + element.descriptionOfLuagge;
-          const quantityOfPeople = "Anz. Pers: " + element.quantityOfPeople;
-          const quantityOfLuggage = "| Anz. Gepäck: " + element.quantityOfLuggage;
-          const typePeople = "| Typ. Pers.: " + typePeopleFromIdToDes.get(element.typePeople!);
-          const dims = "| LxBxH cm: " + element.length + "x" + element.width + "x" + element.height;
-          const weight = "| Gewicht(kg): " + element.weight;
+          posNr += 1;
+          const position = `Pos: ${posNr}\n`;
+          const descriptionOfLuagge = `| Besch. Gepäck: ${element.descriptionOfLuagge}`;
+          const quantityOfPeople = `Anz. Pers: ${element.quantityOfPeople}`;
+          const quantityOfLuggage = `| Anz. Gepäck: ${element.quantityOfLuggage}`;
+          const typePeople = `| Typ. Pers.: ${typePeopleFromIdToDes.get(element.typePeople!)}`;
+          const dims = `| LxBxH cm: ${element.length}x${element.width}x${element.height}`;
+          const weight = `| Gewicht(kg): ${element.weight}`;
 
-          row["peoplePos" + posNr] = position + quantityOfPeople + typePeople + quantityOfLuggage + descriptionOfLuagge + weight + dims;
-          fieldsOrder.push("peoplePos" + posNr);
+          row[`peoplePos${posNr}`] = position + quantityOfPeople + typePeople + quantityOfLuggage + descriptionOfLuagge + weight + dims;
+          fieldsOrder.push(`peoplePos${posNr}`);
         });
-        people = "Anz. Pos: " + posNr;
+        people = `Anz. Pos: ${posNr}`;
       }
       row.people = people;
 
@@ -142,26 +146,26 @@ class ExportCSV {
         let posNr = 0;
 
         x.construction!.forEach((element) => {
-          posNr++;
-          const position = "Pos: " + posNr + "\n";
-          const description = "Besch.: " + element.description;
-          const quantity = "| Quantität.: " + element.quantity;
-          const weight = "| Gewicht(kg): " + element.weight;
+          posNr += 1;
+          const position = `Pos: ${posNr}\n`;
+          const description = `Besch.: ${element.description}`;
+          const quantity = `| Quantität.: ${element.quantity}`;
+          const weight = `| Gewicht(kg): ${element.weight}`;
 
-          row["constructionPos" + posNr] = position + description + quantity + weight;
-          fieldsOrder.push("constructionPos" + posNr);
+          row[`constructionPos${posNr}`] = position + description + quantity + weight;
+          fieldsOrder.push(`constructionPos${posNr}`);
         });
-        construction = "Anz. Pos: " + posNr;
+        construction = `Anz. Pos: ${posNr}`;
       }
       row.construction = construction;
       rows.push(row);
     });
 
     const csvWriter = createObjectCsvStringifier({
-      header: fieldsOrder
+      header: fieldsOrder,
     });
 
-    return fieldsOrder.join(",") + "\n" + csvWriter.stringifyRecords(rows);
+    return `${fieldsOrder.join(",")}\n${csvWriter.stringifyRecords(rows)}`;
   }
 
   public sendCsvDownload(name: string, content: string) {
@@ -169,7 +173,7 @@ class ExportCSV {
     link.setAttribute(
       "href",
       // add UTF-8 BOM so Excel doesn't hiccup
-      "data:text/plain;charset=utf-8,%EF%BB%BF" + encodeURIComponent(content)
+      `data:text/plain;charset=utf-8,%EF%BB%BF${encodeURIComponent(content)}`,
     );
     link.setAttribute("download", name);
     link.style.display = "none";

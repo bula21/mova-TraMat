@@ -791,6 +791,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import { format } from "fecha";
 import SearchShipmentTextfieldInit from "@/components/subComponents/SearchShipmentTextfieldInit.vue";
 import SearchShipmentTextfieldAdd from "@/components/subComponents/SearchShipmentTextfieldAdd.vue";
 import NewShipmentGoods from "@/components/subComponents/NewShipmentGoods.vue";
@@ -800,7 +801,6 @@ import PrintTransportOrder from "@/components/subComponents/PrintTransportOrder.
 import Order from "@/model/Order";
 import DirectusAPI from "@/services/DirectusAPI";
 import ExportCSV from "@/services/ExportCSV";
-import { format } from "fecha";
 import PositionGoods from "@/model/PositionGoods";
 import PositionPeople from "@/model/PositionPeople";
 import PositionConstruction from "@/model/PositionConstruction";
@@ -820,11 +820,13 @@ import OrderDisplay from "@/model/OrderDisplay";
     NewShipmentConstruction,
     SearchCustomer,
     PrintTransportOrder,
-    DialogPermissions
-  }
+    DialogPermissions,
+  },
 })
 export default class SearchShipment extends Vue {
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
+  /* eslint-disable no-shadow */
+  /* eslint-disable no-param-reassign */
   private textFields = [SearchShipmentTextfieldAdd];
   private searchChild = "";
   private searchCategoryChild = "";
@@ -834,7 +836,9 @@ export default class SearchShipment extends Vue {
   private limit = 100;
   private limitTypes = [-1, 5, 50, 100, 200];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private orders: any = [{}];
+  private orders: any = [{
+  }];
+
   private printOrder = new Order();
   private editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
@@ -887,26 +891,23 @@ export default class SearchShipment extends Vue {
   private remarksTrpOrder = "";
   private idRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich"
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private orderTypeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich"
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private timeRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v) ||
-      "Wert ungültig (Format hh:mm)"
+    (v: any) => /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v)
+      || "Wert ungültig (Format hh:mm)",
   ];
 
   private idRulesText = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: string) => {
-      return !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig";
-    }
+    (v: string) => !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig",
   ];
 
   private notRequired = true;
@@ -917,11 +918,10 @@ export default class SearchShipment extends Vue {
       if (this.editedOrder.receiver?.type?.id === TRP_TYP_CLIENT.mova) {
         this.notRequired = false;
         return !!v || "Wert ist erforderlich";
-      } else {
-        this.notRequired = true;
-        return true;
       }
-    }
+      this.notRequired = true;
+      return true;
+    },
   ];
 
   private forceRerenderPrint(): void {
@@ -955,7 +955,7 @@ export default class SearchShipment extends Vue {
     this.orderType.push(
       ORDER_TYPE.Warentransport,
       ORDER_TYPE.Personentransport,
-      ORDER_TYPE["Bauleistung mit Fahrzeug"]
+      ORDER_TYPE["Bauleistung mit Fahrzeug"],
     );
   }
 
@@ -964,28 +964,62 @@ export default class SearchShipment extends Vue {
   }
 
   private headers = [
-    { text: "Actions", value: "actions", sortable: false },
+    {
+      text: "Actions", value: "actions", sortable: false,
+    },
     {
       text: "Order ID",
       align: "start",
-      value: "id"
+      value: "id",
     },
-    { text: "Status", value: "state" },
-    { text: "delivery_date", value: "delivery_date" },
-    { text: "pick_up_date", value: "pick_up_date" },
-    { text: "Auftraggeber Name", value: "principal" },
-    { text: "Auftraggeber ID", value: "principal_id" },
-    { text: "Auftraggeber Email", value: "principal_email" },
-    { text: "Ladeadresse Name", value: "shipper" },
-    { text: "Ladeadresse Ort", value: "shipper_place" },
-    { text: "Ladeadresse PLZ", value: "shipper_zip" },
-    { text: "Lieferadresse Name", value: "receiver" },
-    { text: "Lieferadresse Ort", value: "receiver_place" },
-    { text: "Lieferadresse PLZ", value: "receiver_zip" },
-    { text: "Gewicht kg", value: "weight" },
-    { text: "M^3", value: "cbm" },
-    { text: "Positionen", value: "pos" },
-    { text: "Beschreibung Pos.", value: "posDescription" }
+    {
+      text: "Status", value: "state",
+    },
+    {
+      text: "delivery_date", value: "delivery_date",
+    },
+    {
+      text: "pick_up_date", value: "pick_up_date",
+    },
+    {
+      text: "Auftraggeber Name", value: "principal",
+    },
+    {
+      text: "Auftraggeber ID", value: "principal_id",
+    },
+    {
+      text: "Auftraggeber Email", value: "principal_email",
+    },
+    {
+      text: "Ladeadresse Name", value: "shipper",
+    },
+    {
+      text: "Ladeadresse Ort", value: "shipper_place",
+    },
+    {
+      text: "Ladeadresse PLZ", value: "shipper_zip",
+    },
+    {
+      text: "Lieferadresse Name", value: "receiver",
+    },
+    {
+      text: "Lieferadresse Ort", value: "receiver_place",
+    },
+    {
+      text: "Lieferadresse PLZ", value: "receiver_zip",
+    },
+    {
+      text: "Gewicht kg", value: "weight",
+    },
+    {
+      text: "M^3", value: "cbm",
+    },
+    {
+      text: "Positionen", value: "pos",
+    },
+    {
+      text: "Beschreibung Pos.", value: "posDescription",
+    },
   ];
 
   private handleEnter(event: KeyboardEvent) {
@@ -1005,6 +1039,8 @@ export default class SearchShipment extends Vue {
       case "lg":
         return "mt-2";
       case "xl":
+        return "mt-2";
+      default:
         return "mt-2";
     }
   }
@@ -1042,21 +1078,19 @@ export default class SearchShipment extends Vue {
 
       if (value.people!.length > 0) {
         value.people!.forEach((value) => {
-          pos++;
-          posDescription =
-            posDescription +
-            this.typePeopleFromIdToDes.get(value.typePeople) +
-            "\n";
+          pos += 1;
+          posDescription = `${posDescription
+            + this.typePeopleFromIdToDes.get(value.typePeople)}\n`;
         });
       } else if (value.goods!.length > 0) {
         value.goods!.forEach((value) => {
-          pos++;
-          posDescription = posDescription + value.goodsDescription + "\n";
+          pos += 1;
+          posDescription = `${posDescription + value.goodsDescription}\n`;
         });
       } else if (value.construction!.length > 0) {
         value.construction!.forEach((value) => {
-          pos++;
-          posDescription = posDescription + value.description + "\n";
+          pos += 1;
+          posDescription = `${posDescription + value.description}\n`;
         });
       }
 
@@ -1065,7 +1099,7 @@ export default class SearchShipment extends Vue {
         state: value.state?.state,
         delivery_date: format(
           new Date(value.deliveryDate!),
-          "YYYY-MM-DD HH:mm"
+          "YYYY-MM-DD HH:mm",
         ),
         pick_up_date: format(new Date(value.pickUpDate!), "YYYY-MM-DD HH:mm"),
         principal: value.principal?.name,
@@ -1077,10 +1111,10 @@ export default class SearchShipment extends Vue {
         receiver_place: value.receiver?.place,
         shipper_zip: value.shipper?.zipcode,
         receiver_zip: value.receiver?.zipcode,
-        weight: weight,
-        cbm: cbm,
-        pos: pos,
-        posDescription: posDescription
+        weight,
+        cbm,
+        pos,
+        posDescription,
       });
     });
   }
@@ -1105,7 +1139,8 @@ export default class SearchShipment extends Vue {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: any = {};
+    const filter: any = {
+    };
     const orderId: number[] = [];
     const states: number[] = [];
     let principals: number[] = [];
@@ -1116,16 +1151,20 @@ export default class SearchShipment extends Vue {
       for (let i = 0; filteredDataKey.length > i; i++) {
         if (filteredDataKey[i] === "Order ID") {
           orderId.push(filteredDataValue[i]);
-          filter.id = { in: orderId };
+          filter.id = {
+            in: orderId,
+          };
         }
         if (filteredDataKey[i] === "Status") {
           const actualState = this.stateTypeFromStateToId.get(
-            filteredDataValue[i].toLowerCase().trim()
+            filteredDataValue[i].toLowerCase().trim(),
           );
 
           if (actualState) {
             states.push(actualState);
-            filter.state = { in: states };
+            filter.state = {
+              in: states,
+            };
           }
         }
         if (filteredDataKey[i] === "Liefertermin") {
@@ -1138,34 +1177,32 @@ export default class SearchShipment extends Vue {
 
               const dateConvMinusFormat = format(
                 dateConvMinus,
-                "YYYY-MM-DD HH:mm"
+                "YYYY-MM-DD HH:mm",
               );
               const dateConvPlusFormat = format(
                 dateConvPlus,
-                "YYYY-MM-DD HH:mm"
+                "YYYY-MM-DD HH:mm",
               );
 
               filter.delivery_date = {
-                between: [dateConvMinusFormat, dateConvPlusFormat]
+                between: [dateConvMinusFormat, dateConvPlusFormat],
               };
             } catch {
-              this.errorMessage =
-                "Falsches Datum/Uhrzeit Format (YYYY-MM-DD HH:mm oder YYYY-MM-DD für nur Tag)";
+              this.errorMessage = "Falsches Datum/Uhrzeit Format (YYYY-MM-DD HH:mm oder YYYY-MM-DD für nur Tag)";
               break;
             }
           } else {
             try {
               const dateConv = format(
                 new Date(filteredDataValue[i].trim()),
-                "YYYY-MM-DD"
+                "YYYY-MM-DD",
               );
 
               filter.delivery_date = {
-                between: [dateConv + " 00:00", dateConv + " 23:59"]
+                between: [`${dateConv} 00:00`, `${dateConv} 23:59`],
               };
             } catch {
-              this.errorMessage =
-                "Falsches Datum/Uhrzeit Format (YYYY-MM-DD HH:mm oder YYYY-MM-DD für nur Tag)";
+              this.errorMessage = "Falsches Datum/Uhrzeit Format (YYYY-MM-DD HH:mm oder YYYY-MM-DD für nur Tag)";
               break;
             }
           }
@@ -1180,44 +1217,47 @@ export default class SearchShipment extends Vue {
 
               const dateConvMinusFormat = format(
                 dateConvMinus,
-                "YYYY-MM-DD HH:mm"
+                "YYYY-MM-DD HH:mm",
               );
               const dateConvPlusFormat = format(
                 dateConvPlus,
-                "YYYY-MM-DD HH:mm"
+                "YYYY-MM-DD HH:mm",
               );
 
               filter.pick_up_date = {
-                between: [dateConvMinusFormat, dateConvPlusFormat]
+                between: [dateConvMinusFormat, dateConvPlusFormat],
               };
             } catch {
-              this.errorMessage =
-                "Falsches Datum/Uhrzeit Format (YYYY-MM-DD HH:mm oder YYYY-MM-DD für nur Tag)";
+              this.errorMessage = "Falsches Datum/Uhrzeit Format (YYYY-MM-DD HH:mm oder YYYY-MM-DD für nur Tag)";
               break;
             }
           } else {
             try {
               const dateConv = format(
                 new Date(filteredDataValue[i].trim()),
-                "YYYY-MM-DD"
+                "YYYY-MM-DD",
               );
 
               filter.pick_up_date = {
-                between: [dateConv + " 00:00", dateConv + " 23:59"]
+                between: [`${dateConv} 00:00`, `${dateConv} 23:59`],
               };
             } catch {
-              this.errorMessage =
-                "Falsches Datum/Uhrzeit Format (YYYY-MM-DD HH:mm oder YYYY-MM-DD für nur Tag)";
+              this.errorMessage = "Falsches Datum/Uhrzeit Format (YYYY-MM-DD HH:mm oder YYYY-MM-DD für nur Tag)";
               break;
             }
           }
         }
         if (filteredDataKey[i] === "Auftraggeber Firma/Name") {
+          // eslint-disable-next-line no-await-in-loop
           const fetchPrincipals = await DirectusAPI.getTrpClients(
             {
-              filter: { name: { like: filteredDataValue[i].trim() } }
+              filter: {
+                name: {
+                  like: filteredDataValue[i].trim(),
+                },
+              },
             },
-            5
+            5,
           );
           const arrayPricipalsId: number[] = [];
 
@@ -1228,19 +1268,28 @@ export default class SearchShipment extends Vue {
 
           if (arrayPricipalsId.length > 0) {
             principals = principals.concat(arrayPricipalsId);
-            filter.principal = { in: principals };
+            filter.principal = {
+              in: principals,
+            };
           }
         }
         if (filteredDataKey[i] === "Auftraggeber ID") {
           principals.push(filteredDataValue[i].trim());
-          filter.principal = { in: principals };
+          filter.principal = {
+            in: principals,
+          };
         }
         if (filteredDataKey[i] === "Auftraggeber Email") {
+          // eslint-disable-next-line no-await-in-loop
           const fetchPrincipals = await DirectusAPI.getTrpClients(
             {
-              filter: { email: { like: filteredDataValue[i].trim() } }
+              filter: {
+                email: {
+                  like: filteredDataValue[i].trim(),
+                },
+              },
             },
-            5
+            5,
           );
           const arrayPricipalsId: number[] = [];
 
@@ -1251,15 +1300,22 @@ export default class SearchShipment extends Vue {
 
           if (arrayPricipalsId.length > 0) {
             principals = principals.concat(arrayPricipalsId);
-            filter.principal = { in: principals };
+            filter.principal = {
+              in: principals,
+            };
           }
         }
         if (filteredDataKey[i] === "Lieferadresse Name") {
+          // eslint-disable-next-line no-await-in-loop
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: { name: { like: filteredDataValue[i].trim() } }
+              filter: {
+                name: {
+                  like: filteredDataValue[i].trim(),
+                },
+              },
             },
-            5
+            5,
           );
           const arrayRecieverId: number[] = [];
 
@@ -1270,15 +1326,22 @@ export default class SearchShipment extends Vue {
 
           if (arrayRecieverId.length > 0) {
             receivers = receivers.concat(arrayRecieverId);
-            filter.receiver = { in: receivers };
+            filter.receiver = {
+              in: receivers,
+            };
           }
         }
         if (filteredDataKey[i] === "Ladeadresse Name") {
+          // eslint-disable-next-line no-await-in-loop
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: { name: { like: filteredDataValue[i].trim() } }
+              filter: {
+                name: {
+                  like: filteredDataValue[i].trim(),
+                },
+              },
             },
-            5
+            5,
           );
           const arrayShipperId: number[] = [];
 
@@ -1289,15 +1352,22 @@ export default class SearchShipment extends Vue {
 
           if (arrayShipperId.length > 0) {
             shippers = shippers.concat(arrayShipperId);
-            filter.shipper = { in: shippers };
+            filter.shipper = {
+              in: shippers,
+            };
           }
         }
         if (filteredDataKey[i] === "Lieferadresse Ort") {
+          // eslint-disable-next-line no-await-in-loop
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: { place: { like: filteredDataValue[i].trim() } }
+              filter: {
+                place: {
+                  like: filteredDataValue[i].trim(),
+                },
+              },
             },
-            5
+            5,
           );
           const arrayRecieverId: number[] = [];
 
@@ -1308,15 +1378,22 @@ export default class SearchShipment extends Vue {
 
           if (arrayRecieverId.length > 0) {
             receivers = receivers.concat(arrayRecieverId);
-            filter.receiver = { in: receivers };
+            filter.receiver = {
+              in: receivers,
+            };
           }
         }
         if (filteredDataKey[i] === "Ladeadresse Ort") {
+          // eslint-disable-next-line no-await-in-loop
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: { place: { like: filteredDataValue[i].trim() } }
+              filter: {
+                place: {
+                  like: filteredDataValue[i].trim(),
+                },
+              },
             },
-            5
+            5,
           );
           const arrayShipperId: number[] = [];
 
@@ -1326,15 +1403,22 @@ export default class SearchShipment extends Vue {
 
           if (arrayShipperId.length > 0) {
             shippers = shippers.concat(arrayShipperId);
-            filter.shipper = { in: shippers };
+            filter.shipper = {
+              in: shippers,
+            };
           }
         }
         if (filteredDataKey[i] === "Ladeadresse PLZ") {
+          // eslint-disable-next-line no-await-in-loop
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: { zipcode: { like: filteredDataValue[i].trim() } }
+              filter: {
+                zipcode: {
+                  like: filteredDataValue[i].trim(),
+                },
+              },
             },
-            5
+            5,
           );
           const arrayShipperId: number[] = [];
 
@@ -1345,15 +1429,22 @@ export default class SearchShipment extends Vue {
 
           if (arrayShipperId.length > 0) {
             shippers = shippers.concat(arrayShipperId);
-            filter.shipper = { in: shippers };
+            filter.shipper = {
+              in: shippers,
+            };
           }
         }
         if (filteredDataKey[i] === "Lieferadresse PLZ") {
+          // eslint-disable-next-line no-await-in-loop
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: { zipcode: { like: filteredDataValue[i].trim() } }
+              filter: {
+                zipcode: {
+                  like: filteredDataValue[i].trim(),
+                },
+              },
             },
-            5
+            5,
           );
           const arrayRecieverId: number[] = [];
 
@@ -1364,7 +1455,9 @@ export default class SearchShipment extends Vue {
 
           if (arrayRecieverId.length > 0) {
             receivers = receivers.concat(arrayRecieverId);
-            filter.receiver = { in: receivers };
+            filter.receiver = {
+              in: receivers,
+            };
           }
         }
       }
@@ -1383,15 +1476,15 @@ export default class SearchShipment extends Vue {
 
   private printItem(item: OrderDisplay): void {
     if (
-      this.$store.state.authorisation === DIRECTUS_ROLES.Public ||
-      this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten ||
-      this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"] ||
-      this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
-      this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
-      this.$store.state.authorisation ===
-      DIRECTUS_ROLES["Bereichsleitung Infra"] ||
-      this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
-      this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
+      this.$store.state.authorisation === DIRECTUS_ROLES.Public
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
+      || this.$store.state.authorisation
+      === DIRECTUS_ROLES["Bereichsleitung Infra"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
     ) {
       this.warnPermissions = true;
       return;
@@ -1403,9 +1496,7 @@ export default class SearchShipment extends Vue {
     this.editedOrder = new Order();
 
     if (item.id) {
-      editedItems = this.orderTable.filter((value) => {
-        return value.id === item.id;
-      });
+      editedItems = this.orderTable.filter((value) => value.id === item.id);
       // check if found item is not null
       if (editedItems[0]) {
         this.editedOrder = editedItems[0];
@@ -1433,9 +1524,7 @@ export default class SearchShipment extends Vue {
     this.orderPositionsConstruction = [];
 
     if (item.id) {
-      editedItems = this.orderTable.filter((value) => {
-        return value.id === item.id;
-      });
+      editedItems = this.orderTable.filter((value) => value.id === item.id);
       // check if found item is not null
       if (editedItems[0]) {
         this.editedOrder = editedItems[0];
@@ -1461,7 +1550,7 @@ export default class SearchShipment extends Vue {
         this.datePickup = format(this.editedOrder.pickUpDate!, "YYYY-MM-DD");
         this.dateDelivery = format(
           this.editedOrder.deliveryDate!,
-          "YYYY-MM-DD"
+          "YYYY-MM-DD",
         );
         this.pickupTime = format(this.editedOrder.pickUpDate!, "HH:mm");
         this.deliveryTime = format(this.editedOrder.deliveryDate!, "HH:mm");
@@ -1493,16 +1582,16 @@ export default class SearchShipment extends Vue {
         }
         this.dialog = true;
         if (
-          this.$store.state.authorisation === DIRECTUS_ROLES.Public ||
-          this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten ||
-          this.$store.state.authorisation ===
-          DIRECTUS_ROLES["Dienstleiter/in"] ||
-          this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"] ||
-          this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung ||
-          this.$store.state.authorisation ===
-          DIRECTUS_ROLES["Bereichsleitung Infra"] ||
-          this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial ||
-          this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
+          this.$store.state.authorisation === DIRECTUS_ROLES.Public
+          || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
+          || this.$store.state.authorisation
+          === DIRECTUS_ROLES["Dienstleiter/in"]
+          || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
+          || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
+          || this.$store.state.authorisation
+          === DIRECTUS_ROLES["Bereichsleitung Infra"]
+          || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
+          || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
         ) {
           if (this.state === "scheduled" || this.state === "checked") {
             this.warnPermissions = true;
@@ -1544,14 +1633,12 @@ export default class SearchShipment extends Vue {
             await this.persistOrder(this.editedOrder);
           } catch {
             this.titleDialogOrder = "Fehler";
-            this.textDialogOrder =
-              "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen. Ansonsten versuche es bitte später erneut und melde den Fehler via Slack #20_log_21_trp_requests.";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen. Ansonsten versuche es bitte später erneut und melde den Fehler via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
-          this.textDialogOrder =
-            "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
+          this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
           this.dialogWarnOrder = true;
         }
       }
@@ -1567,14 +1654,12 @@ export default class SearchShipment extends Vue {
             await this.persistOrder(this.editedOrder);
           } catch {
             this.titleDialogOrder = "Fehler";
-            this.textDialogOrder =
-              "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen. Ansonsten versuche es bitte später erneut und melde den Fehler via Slack #20_log_21_trp_requests.";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen. Ansonsten versuche es bitte später erneut und melde den Fehler via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
-          this.textDialogOrder =
-            "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
+          this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
           this.dialogWarnOrder = true;
         }
       }
@@ -1590,21 +1675,18 @@ export default class SearchShipment extends Vue {
             await this.persistOrder(this.editedOrder);
           } catch {
             this.titleDialogOrder = "Fehler";
-            this.textDialogOrder =
-              "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen. Ansonsten versuche es bitte später erneut und melde den Fehler via Slack #20_log_21_trp_requests.";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen. Ansonsten versuche es bitte später erneut und melde den Fehler via Slack #20_log_21_trp_requests.";
             this.dialogWarnOrder = true;
           }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
-          this.textDialogOrder =
-            "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
+          this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
           this.dialogWarnOrder = true;
         }
       }
     } else {
       this.titleDialogOrder = "Fehlerhafte Eingaben";
-      this.textDialogOrder =
-        "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
+      this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
       this.dialogWarnOrder = true;
     }
   }
@@ -1612,97 +1694,100 @@ export default class SearchShipment extends Vue {
   private async persistOrder(order: Order) {
     // goods
     if (
-      this.type === this.orderType[0] &&
-      order.goods!.length > 0 &&
-      !(order.people!.length > 0) &&
-      !(order.construction!.length > 0)
+      this.type === this.orderType[0]
+      && order.goods!.length > 0
+      && !(order.people!.length > 0)
+      && !(order.construction!.length > 0)
     ) {
       order.statusdirectus = this.stateTypeFromIdToState.get(order.state);
       const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
       for (let i = 0; order.goods!.length > i; i++) {
         order.goods![i].statusdirectus = this.stateTypeFromIdToState.get(
-          order.state
+          order.state,
         );
         if (order.goods![i].id!) {
+          // eslint-disable-next-line no-await-in-loop
           await DirectusAPI.updateGoodsPos(
             order.goods![i],
             order.goods![i].id!,
-            updateOrder.id!
+            updateOrder.id!,
           );
         } else {
+          // eslint-disable-next-line no-await-in-loop
           await DirectusAPI.createGoodsPosWithState(
             order.goods![i],
-            updateOrder.id!
+            updateOrder.id!,
           );
         }
       }
       // people
     } else if (
-      this.type === this.orderType[1] &&
-      order.people!.length > 0 &&
-      !(order.goods!.length > 0) &&
-      !(order.construction!.length > 0)
+      this.type === this.orderType[1]
+      && order.people!.length > 0
+      && !(order.goods!.length > 0)
+      && !(order.construction!.length > 0)
     ) {
       order.statusdirectus = this.stateTypeFromIdToState.get(order.state);
       const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
       for (let i = 0; order.people!.length > i; i++) {
         order.people![i].statusdirectus = this.stateTypeFromIdToState.get(
-          order.state
+          order.state,
         );
         if (order.people![i].id!) {
+          // eslint-disable-next-line no-await-in-loop
           await DirectusAPI.updatePeoplePos(
             order.people![i],
             order.people![i].id!,
-            updateOrder.id!
+            updateOrder.id!,
           );
         } else {
+          // eslint-disable-next-line no-await-in-loop
           await DirectusAPI.createPeoplePosWithState(
             order.people![i],
-            updateOrder.id!
+            updateOrder.id!,
           );
         }
       }
       // construction
     } else if (
-      this.type === this.orderType[2] &&
-      order.construction!.length > 0 &&
-      !(order.goods!.length > 0) &&
-      !(order.people!.length > 0)
+      this.type === this.orderType[2]
+      && order.construction!.length > 0
+      && !(order.goods!.length > 0)
+      && !(order.people!.length > 0)
     ) {
       order.statusdirectus = this.stateTypeFromIdToState.get(order.state);
       const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
       for (let i = 0; order.construction!.length > i; i++) {
         order.construction![i].statusdirectus = this.stateTypeFromIdToState.get(
-          order.state
+          order.state,
         );
         if (order.construction![i].id!) {
+          // eslint-disable-next-line no-await-in-loop
           await DirectusAPI.updateConstruePos(
             order.construction![i],
             order.construction![i].id!,
-            updateOrder.id!
+            updateOrder.id!,
           );
         } else {
+          // eslint-disable-next-line no-await-in-loop
           await DirectusAPI.createConstruPosWithState(
             order.construction![i],
-            updateOrder.id!
+            updateOrder.id!,
           );
         }
       }
     } else {
       this.titleDialogOrder = "Fehlerhafte Eingaben";
-      this.textDialogOrder =
-        "Bitte Formular überprüfen! Sendungsarten dürfen nicht vermischt werden!";
+      this.textDialogOrder = "Bitte Formular überprüfen! Sendungsarten dürfen nicht vermischt werden!";
       this.dialogWarnOrder = true;
       return;
     }
 
     // update table --> maybe extract this part...
-    const idxOfChange = this.orders.indexOf((value: OrderDisplay) => {
-      return value.id === order.id;
-    });
+    const idxOfChange = this.orders.indexOf((value: OrderDisplay) => value.id === order.id);
 
     let weight = 0;
     let pos = 0;
@@ -1714,21 +1799,19 @@ export default class SearchShipment extends Vue {
 
     if (order.people!.length > 0) {
       order.people!.forEach((value) => {
-        pos++;
-        posDescription =
-          posDescription +
-          this.typePeopleFromIdToDes.get(value.typePeople) +
-          "\n";
+        pos += 1;
+        posDescription = `${posDescription
+          + this.typePeopleFromIdToDes.get(value.typePeople)}\n`;
       });
     } else if (order.goods!.length > 0) {
       order.goods!.forEach((value) => {
-        pos++;
-        posDescription = posDescription + value.goodsDescription + "\n";
+        pos += 1;
+        posDescription = `${posDescription + value.goodsDescription}\n`;
       });
     } else if (order.construction!.length > 0) {
       order.construction!.forEach((value) => {
-        pos++;
-        posDescription = posDescription + value.description + "\n";
+        pos += 1;
+        posDescription = `${posDescription + value.description}\n`;
       });
     }
 
@@ -1746,10 +1829,10 @@ export default class SearchShipment extends Vue {
       receiver_place: order.receiver?.place,
       shipper_zip: order.shipper?.zipcode,
       receiver_zip: order.receiver?.zipcode,
-      weight: weight,
-      cbm: cbm,
-      pos: pos,
-      posDescription: posDescription
+      weight,
+      cbm,
+      pos,
+      posDescription,
     };
 
     this.dialog = false;
@@ -1760,6 +1843,7 @@ export default class SearchShipment extends Vue {
   AddButtonClicked(): void {
     if (this.type === this.orderType[0]) {
       this.orderPositionsGoods.push(NewShipmentGoods);
+      // eslint-disable-next-line no-unused-expressions
       this.editedOrder.goods?.push(new PositionGoods());
       this.editedOrder.goods![
         this.editedOrder.goods!.length - 1
@@ -1768,11 +1852,13 @@ export default class SearchShipment extends Vue {
     }
     if (this.type === this.orderType[1]) {
       this.orderPositionsPeople.push(NewShipmentPeople);
+      // eslint-disable-next-line no-unused-expressions
       this.editedOrder.people?.push(new PositionPeople());
       this.validFormPeople.push(true);
     }
     if (this.type === this.orderType[2]) {
       this.orderPositionsConstruction.push(NewShipmentConstruction);
+      // eslint-disable-next-line no-unused-expressions
       this.editedOrder.construction?.push(new PositionConstruction());
       this.validFormConst.push(true);
     }
@@ -1800,20 +1886,15 @@ export default class SearchShipment extends Vue {
     }
   }
 
+  // eslint-disable-next-line class-methods-use-this
   private printAdress(client: Client): string {
     let adress = "";
-    adress =
-      client.name +
-      "\n" +
-      client.street +
-      "\n" +
-      client.zipcode +
-      " " +
-      client.place +
-      "\n" +
-      client.phone +
-      "\n" +
-      client.email;
+    adress = `${client.name
+    }\n${client.street
+    }\n${client.zipcode
+    } ${client.place
+    }\n${client.phone
+    }\n${client.email}`;
     return adress;
   }
 
@@ -1844,7 +1925,7 @@ export default class SearchShipment extends Vue {
         this.pickupAddress = this.printAdress(client);
         this.editedOrder.shipper = client;
         break;
-      case "undefined":
+      default:
         this.deliveryID = 0;
         this.deliveryAddress = "";
         this.pickupID = 0;
@@ -1865,6 +1946,7 @@ export default class SearchShipment extends Vue {
 
     (this.$refs.formFirst as Vue & { resetValidation: () => boolean; }).resetValidation();
 
+    // eslint-disable-next-line default-case
     switch (kindOfUpdate) {
       case "delivery":
         try {
@@ -1872,11 +1954,11 @@ export default class SearchShipment extends Vue {
             {
               filter: {
                 id: {
-                  eq: this.deliveryID
-                }
-              }
+                  eq: this.deliveryID,
+                },
+              },
             },
-            5
+            5,
           );
         } catch {
           this.deliveryAddress = "Kunden ID nicht vorhanden";
@@ -1898,11 +1980,11 @@ export default class SearchShipment extends Vue {
             {
               filter: {
                 id: {
-                  eq: this.principalID
-                }
-              }
+                  eq: this.principalID,
+                },
+              },
             },
-            5
+            5,
           );
         } catch {
           this.principalAddress = "Kunden ID nicht vorhanden";
@@ -1929,9 +2011,9 @@ export default class SearchShipment extends Vue {
           resp = await DirectusAPI.getTrpClients({
             filter: {
               id: {
-                eq: this.pickupID
-              }
-            }
+                eq: this.pickupID,
+              },
+            },
           }, 5);
         } catch {
           this.pickupAddress = "Kunden ID nicht vorhanden";
@@ -1951,9 +2033,9 @@ export default class SearchShipment extends Vue {
           resp2 = await DirectusAPI.getAnlage({
             filter: {
               anlagen_id: {
-                eq: this.anlagenID
-              }
-            }
+                eq: this.anlagenID,
+              },
+            },
           }, 5);
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
@@ -1962,7 +2044,7 @@ export default class SearchShipment extends Vue {
         }
         if (resp[0].id!) {
           this.editedOrder.anlage = resp2[0];
-          this.anlagenDescription = this.editedOrder.anlage?.anlagenname + ", " + this.editedOrder.anlage?.standort;
+          this.anlagenDescription = `${this.editedOrder.anlage?.anlagenname}, ${this.editedOrder.anlage?.standort}`;
           this.rasterLagerplatz = this.editedOrder.anlage!.standortcode!;
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
@@ -1984,7 +2066,7 @@ export default class SearchShipment extends Vue {
       collectionFields1,
       this.orderTable,
       this.packagingUntisFromIdToDes,
-      this.typePeopleFromIdToDes
+      this.typePeopleFromIdToDes,
     );
     ExportCSV.sendCsvDownload("orders.csv", csv);
   }
@@ -1995,13 +2077,13 @@ export default class SearchShipment extends Vue {
   }
 
   private triggerUpdateDatePickUp(): void {
-    const upade = this.datePickup + " " + this.pickupTime;
+    const upade = `${this.datePickup} ${this.pickupTime}`;
     const upadeDateTime = new Date(upade);
     this.editedOrder.pickUpDate = upadeDateTime;
   }
 
   private triggerUpdateDateDelivery(): void {
-    const upade = this.dateDelivery + " " + this.deliveryTime;
+    const upade = `${this.dateDelivery} ${this.deliveryTime}`;
     const upadeDateTime = new Date(upade);
     this.editedOrder.deliveryDate = upadeDateTime;
   }

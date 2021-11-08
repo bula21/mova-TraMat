@@ -45,10 +45,13 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
-  components: {}
+  components: {
+  },
 })
 export default class DialogPermissions extends Vue {
-  @Prop({ type: Boolean, required: true })
+  @Prop({
+    type: Boolean, required: true,
+  })
   dialogWarnPermissions!: boolean;
 
   private closePermissions(): void {

@@ -195,8 +195,8 @@
 </template>
 
 <script lang="ts">
-import DirectusAPI from "@/services/DirectusAPI";
 import { Component, Vue } from "vue-property-decorator";
+import DirectusAPI from "@/services/DirectusAPI";
 
 @Component
 export default class NavigationMenu extends Vue {
@@ -208,17 +208,20 @@ export default class NavigationMenu extends Vue {
     try {
       await DirectusAPI.logout();
     } finally {
-      await this.$router.push({ name: "login" });
+      await this.$router.push({
+        name: "login",
+      });
     }
   }
 
+  // eslint-disable-next-line class-methods-use-this
   async openTap(): Promise<void> {
     const newTap = await window.open(window.location.href);
 
     setTimeout(async () => {
       await newTap?.postMessage(
         await sessionStorage.getItem(DirectusAPI.STORAGE_KEY),
-        window.location.protocol + "//" + window.location.host
+        `${window.location.protocol}//${window.location.host}`,
       );
     }, 2000);
   }

@@ -125,13 +125,15 @@
 </template>
 
 <script lang="ts">
+import { Component, Prop, Vue } from "vue-property-decorator";
 import PositionGoods from "@/model/PositionGoods";
 import DirectusAPI from "@/services/DirectusAPI";
-import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class NewShipmentGoods extends Vue {
-  @Prop({ type: PositionGoods, required: true })
+  @Prop({
+    type: PositionGoods, required: true,
+  })
   currenpos!: PositionGoods;
 
   private packingUnit: string[] = [];
@@ -155,49 +157,44 @@ export default class NewShipmentGoods extends Vue {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt"
+    (v: any) => /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt",
   ];
 
   private requiredRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => !!v || "Wert ist erforderlich"
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private weightRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v) ||
-      "Nur Zahlen mit max. 3 Kommastellen"
+    (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v)
+      || "Nur Zahlen mit max. 3 Kommastellen",
   ];
 
   private dimRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v) ||
-      "Nur Zahlen mit max. 1 Kommastelle"
+    (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v)
+      || "Nur Zahlen mit max. 1 Kommastelle",
   ];
 
   private valueCHFRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0-9]{1,11}(?:\.[0-9]{1,2})?$/.test(v) ||
-      "Nur Zahlen mit max. 2 Kommastelle"
+    (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1,2})?$/.test(v)
+      || "Nur Zahlen mit max. 2 Kommastelle",
   ];
 
   async mounted(): Promise<void> {
     const resp1 = await DirectusAPI.fetchPackaging();
     resp1.forEach((value) => {
       this.packagingUntisConv.set(value.id,
-        value.abbreviation + "=" + value.description
-      );
-      this.packingUnit.push(value.abbreviation + "=" + value.description);
+        `${value.abbreviation}=${value.description}`);
+      this.packingUnit.push(`${value.abbreviation}=${value.description}`);
     });
 
     (this.$refs.formGoods as Vue & { validate: () => boolean; }).validate();

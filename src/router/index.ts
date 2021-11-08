@@ -1,25 +1,26 @@
+/* eslint-disable no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import DirectusAPI from "@/services/DirectusAPI";
 import Vue from "vue";
 import VueRouter, { Location, Route, RouteConfig } from "vue-router";
+import DirectusAPI from "@/services/DirectusAPI";
 import Login from "../views/LoginView.vue";
 
 Vue.use(VueRouter);
 
 // eslint-disable-next-line no-unused-vars
 function ensureLoggedIn(to: Route, from: Route, next: { (to?: string | false | void | Location | ((vm: Vue) => any) | undefined): void; (): void; }) {
-  if (!(to.matched.some(record => record.meta.public))) {
+  if (!(to.matched.some((record) => record.meta.public))) {
     if (DirectusAPI.getToken()) {
       if (DirectusAPI.getlocalExp() > Date.now()) {
         next();
       } else {
         next({
-          name: "login"
+          name: "login",
         });
       }
     } else {
       next({
-        name: "login"
+        name: "login",
       });
     }
   } else {
@@ -29,11 +30,11 @@ function ensureLoggedIn(to: Route, from: Route, next: { (to?: string | false | v
 
 // eslint-disable-next-line no-unused-vars
 function redirectLoggedIn(to: Route, from: Route, next: { (to?: string | false | void | Location | ((vm: Vue) => any) | undefined): void; (): void; }) {
-  if (to.matched.some(record => record.meta.disableIfLoggedIn)) {
+  if (to.matched.some((record) => record.meta.disableIfLoggedIn)) {
     if (DirectusAPI.getToken()) {
       if (DirectusAPI.getlocalExp() > Date.now()) {
         next({
-          name: "home"
+          name: "home",
         });
       } else {
         next();
@@ -56,8 +57,8 @@ const routes: Array<RouteConfig> = [
     },
     meta: {
       public: true,
-      disableIfLoggedIn: true
-    }
+      disableIfLoggedIn: true,
+    },
   },
   {
     path: "/main",
@@ -70,9 +71,11 @@ const routes: Array<RouteConfig> = [
       ensureLoggedIn(to, from, next);
     },
     meta: {
-      public: false
+      public: false,
     },
-    redirect: { name: "home" },
+    redirect: {
+      name: "home",
+    },
     children: [
       {
         path: "/home",
@@ -85,8 +88,8 @@ const routes: Array<RouteConfig> = [
           ensureLoggedIn(to, from, next);
         },
         meta: {
-          public: false
-        }
+          public: false,
+        },
       },
       {
         path: "/search",
@@ -99,8 +102,8 @@ const routes: Array<RouteConfig> = [
           ensureLoggedIn(to, from, next);
         },
         meta: {
-          public: false
-        }
+          public: false,
+        },
       },
       {
         path: "/account",
@@ -110,8 +113,8 @@ const routes: Array<RouteConfig> = [
           ensureLoggedIn(to, from, next);
         },
         meta: {
-          public: false
-        }
+          public: false,
+        },
       },
       {
         path: "/customer",
@@ -121,8 +124,8 @@ const routes: Array<RouteConfig> = [
           ensureLoggedIn(to, from, next);
         },
         meta: {
-          public: false
-        }
+          public: false,
+        },
       },
       {
         path: "/scheduling",
@@ -132,8 +135,8 @@ const routes: Array<RouteConfig> = [
           ensureLoggedIn(to, from, next);
         },
         meta: {
-          public: false
-        }
+          public: false,
+        },
       },
       {
         path: "/new",
@@ -143,22 +146,22 @@ const routes: Array<RouteConfig> = [
           ensureLoggedIn(to, from, next);
         },
         meta: {
-          public: false
-        }
-      }
-    ]
+          public: false,
+        },
+      },
+    ],
   },
   {
     // catch all 404 - define at the very end
     path: "*",
-    component: () => import("../views/NotFound.vue")
-  }
+    component: () => import("../views/NotFound.vue"),
+  },
 ];
 
 const router = new VueRouter({
   mode: "history",
   base: process.env.BASE_URL,
-  routes
+  routes,
 });
 
 export default router;

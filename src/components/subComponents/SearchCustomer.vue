@@ -167,8 +167,8 @@
 </template>
 
 <script lang="ts">
-import DirectusAPI from "@/services/DirectusAPI";
 import { Component, Vue } from "vue-property-decorator";
+import DirectusAPI from "@/services/DirectusAPI";
 import Client from "@/model/Client";
 import { TRP_TYP_CLIENT } from "../Const";
 
@@ -185,25 +185,48 @@ export default class SearchCustomer extends Vue {
   private customerTypes: string[] = [];
   private choosenItem = new Client();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private clients: any = [{}];
+  private clients: any = [{
+  }];
 
   private headers = [
-    { text: "Actions", value: "actions", sortable: false },
+    {
+      text: "Actions", value: "actions", sortable: false,
+    },
     {
       text: "Kunden ID",
       align: "start",
-      value: "id"
+      value: "id",
     },
-    { text: "Typ", value: "type" },
-    { text: "Firma/Name", value: "name" },
-    { text: "Strasse", value: "street" },
-    { text: "PLZ", value: "zipcode" },
-    { text: "Ort", value: "place" },
-    { text: "Telefon", value: "phone" },
-    { text: "Email", value: "email" },
-    { text: "modified_on", value: "modified_on" },
-    { text: "created_on", value: "created_on" },
-    { text: "modified_by", value: "modified_by" }
+    {
+      text: "Typ", value: "type",
+    },
+    {
+      text: "Firma/Name", value: "name",
+    },
+    {
+      text: "Strasse", value: "street",
+    },
+    {
+      text: "PLZ", value: "zipcode",
+    },
+    {
+      text: "Ort", value: "place",
+    },
+    {
+      text: "Telefon", value: "phone",
+    },
+    {
+      text: "Email", value: "email",
+    },
+    {
+      text: "modified_on", value: "modified_on",
+    },
+    {
+      text: "created_on", value: "created_on",
+    },
+    {
+      text: "modified_by", value: "modified_by",
+    },
   ];
 
   async mounted(): Promise<void> {
@@ -247,7 +270,7 @@ export default class SearchCustomer extends Vue {
         modified_on: value.modifiedOn,
         created_on: value.createdOn,
         modified_by:
-          value.modifiedBy?.firstName + " " + value.modifiedBy?.lastName
+          `${value.modifiedBy?.firstName} ${value.modifiedBy?.lastName}`,
       });
     });
   }
@@ -304,12 +327,15 @@ export default class SearchCustomer extends Vue {
 
     if (filteredData.size > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const filter: any = {};
+      const filter: any = {
+      };
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       await filteredData.forEach((value, key) => {
         if (key !== "id" || key !== "type") {
-          filter[key] = { like: value };
+          filter[key] = {
+            like: value,
+          };
         }
         if (key === "id") {
           filter[key] = value;

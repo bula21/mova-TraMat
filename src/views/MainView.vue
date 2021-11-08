@@ -11,8 +11,8 @@ import DirectusAPI from "@/services/DirectusAPI";
 
 @Component({
   components: {
-    NavigationMenu
-  }
+    NavigationMenu,
+  },
 })
 export default class MainView extends Vue {
   private firstAndLastName = "";
@@ -27,12 +27,12 @@ export default class MainView extends Vue {
     this.authorisationDescript = auth[1];
     const nameEmail = await DirectusAPI.fetchNameEmail();
     this.Email = nameEmail[2];
-    this.firstAndLastName = nameEmail[0] + " " + nameEmail[1];
+    this.firstAndLastName = `${nameEmail[0]} ${nameEmail[1]}`;
     this.abbreviation = nameEmail[0].substr(0, 1) + nameEmail[1].substr(0, 1);
     this.$store.commit("updateAuthorisation", this.authorisation);
     this.$store.commit(
       "updateAuthorisationDescript",
-      this.authorisationDescript
+      this.authorisationDescript,
     );
     this.$store.commit("updateEmail", this.Email);
     this.$store.commit("updatefirstAndLastName", this.firstAndLastName);

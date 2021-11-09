@@ -1889,12 +1889,7 @@ export default class SearchShipment extends Vue {
   // eslint-disable-next-line class-methods-use-this
   private printAdress(client: Client): string {
     let adress = "";
-    adress = `${client.name
-    }\n${client.street
-    }\n${client.zipcode
-    } ${client.place
-    }\n${client.phone
-    }\n${client.email}`;
+    adress = `${client.name}\n${client.street}\n${client.zipcode}${client.place}\n${client.phone}\n${client.email}`;
     return adress;
   }
 

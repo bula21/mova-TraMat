@@ -1,15 +1,15 @@
-/* eslint-disable no-plusplus */
-/* eslint-disable no-restricted-globals */
-/* eslint-disable no-shadow */
-/* eslint-disable no-use-before-define */
-/* eslint-disable no-nested-ternary */
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-return-assign */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-empty */
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-prototype-builtins */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-nested-ternary */
+/* eslint-disable no-restricted-globals */
+/* eslint-disable no-empty */
+/* eslint-disable no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-return-assign */
+/* eslint-disable object-curly-newline */
+/* eslint-disable no-use-before-define */
 // To parse this data:
 //
 //   import { Convert } from "./file";

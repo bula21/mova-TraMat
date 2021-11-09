@@ -1,6 +1,8 @@
-import { AnlageClass } from "@/services/TrpOrder";
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Anlage } from "@/services/TrpOrder";
 
-class Anlage implements AnlageClass {
+class AnlageClass implements Anlage {
   id?: number;
   status?: string | undefined;
   sort?: null | undefined;
@@ -8,15 +10,15 @@ class Anlage implements AnlageClass {
   createdOn?: Date | undefined;
   modifiedBy?: number | undefined;
   modifiedOn?: Date | undefined;
-  beschreibung?: string | undefined;
-  avantiLink?: null | undefined;
+  beschreibung?: string | null | undefined;
+  avantiLink?: string | null | undefined;
   anlagenname?: string | undefined;
   kontaktperson?: number | undefined;
   standort?: null | undefined;
   standortcode?: null | undefined;
   plannachfuehrung?: null | undefined;
-  anlagenID?: string | undefined;
+  anlagenId?: string | undefined;
   ordnerLink?: string | undefined;
 }
 
-export default Anlage;
+export default AnlageClass;

@@ -34,6 +34,7 @@ export interface TrpClient {
 }
 
 export interface ModifiedBy {
+  id?: number;
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -204,6 +205,7 @@ const typeMap: any = {
     { json: "type", js: "type", typ: u(undefined, r("Type")) },
   ], false),
   ModifiedBy: o([
+    { json: "id", js: "id", typ: u(undefined, 0) },
     { json: "first_name", js: "firstName", typ: u(undefined, "") },
     { json: "last_name", js: "lastName", typ: u(undefined, "") },
     { json: "email", js: "email", typ: u(undefined, "") },

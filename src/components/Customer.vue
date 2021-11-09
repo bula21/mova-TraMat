@@ -652,8 +652,6 @@ export default class NewShipment extends Vue {
         }
       });
       const resp = await DirectusAPI.getTrpClients(filter, this.limit);
-      console.log(filter);
-      console.log(resp);
       return resp;
     }
     return client;

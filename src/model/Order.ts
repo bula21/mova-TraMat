@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AnlageClass, Construction, Good, OwnerClass, Person, Principal, State, TrpOrder } from "@/services/TrpOrder";
+import { Anlage, Construction, Good, ModifiedBy, Person, Principal, State, TrpOrder } from "@/services/TrpOrder";
 
 class Order implements TrpOrder {
   id?: number;
   createdOn?: Date | undefined;
-  modifiedBy?: OwnerClass | undefined;
+  modifiedBy?: ModifiedBy | undefined;
   modifiedOn?: Date | undefined;
   remarks?: string | null | undefined;
   state?: State | undefined;
@@ -14,9 +14,9 @@ class Order implements TrpOrder {
   deliveryDate?: Date | undefined;
   pickUpDate?: Date | undefined;
   tour?: null | undefined;
-  owner?: OwnerClass | undefined;
+  owner?: ModifiedBy | undefined;
   rasterLagerplatz?: string | null | undefined;
-  anlage?: AnlageClass | null | undefined;
+  anlage?: Anlage | null | undefined;
   deliveryOnly?: boolean | undefined;
   document?: null | undefined;
   statusdirectus?: string | undefined;

@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/no-deprecated-v-bind-sync -->
 <template>
   <!-- search transport-->
   <v-container>
@@ -602,9 +601,10 @@
                 v-for="(posGoods, indxGoods) in orderPositionsGoods"
                 :key="indxGoods"
               >
+                <!--:currenpos="editedOrder.goods[indxGoods]" -->
                 <component
                   :is="posGoods"
-                  :currenpos="editedOrder.goods[indxGoods]"
+                  :currenpos="test"
                   :quantity.sync="editedOrder.goods[indxGoods].quantity"
                   :brutto-weight.sync="editedOrder.goods[indxGoods].grossWeight"
                   :netto-weight.sync="editedOrder.goods[indxGoods].netWeight"
@@ -808,8 +808,9 @@ import Client from "@/model/Client";
 import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
 import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
 import { DIRECTUS_ROLES, ORDER_TYPE, TRP_TYP_CLIENT } from "./Const";
-import { AnlageClass, TrpOrder } from "@/services/TrpOrder";
+import { Anlage, TrpOrder } from "@/services/TrpOrder";
 import OrderDisplay from "@/model/OrderDisplay";
+import AnlageClass from "@/model/Anlage";
 
 @Component({
   components: {
@@ -839,6 +840,7 @@ export default class SearchShipment extends Vue {
   private orders: any = [{
   }];
 
+  private test = new PositionGoods();
   private printOrder = new Order();
   private editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
@@ -1138,9 +1140,9 @@ export default class SearchShipment extends Vue {
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: any = {
+    const filter: Record<string, unknown> = {
     };
+
     const orderId: number[] = [];
     const states: number[] = [];
     let principals: number[] = [];
@@ -1251,10 +1253,8 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchPrincipals = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                name: {
-                  like: filteredDataValue[i].trim(),
-                },
+              name: {
+                like: filteredDataValue[i].trim(),
               },
             },
             5,
@@ -1283,10 +1283,8 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchPrincipals = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                email: {
-                  like: filteredDataValue[i].trim(),
-                },
+              email: {
+                like: filteredDataValue[i].trim(),
               },
             },
             5,
@@ -1309,10 +1307,8 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                name: {
-                  like: filteredDataValue[i].trim(),
-                },
+              name: {
+                like: filteredDataValue[i].trim(),
               },
             },
             5,
@@ -1335,10 +1331,8 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                name: {
-                  like: filteredDataValue[i].trim(),
-                },
+              name: {
+                like: filteredDataValue[i].trim(),
               },
             },
             5,
@@ -1361,10 +1355,8 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                place: {
-                  like: filteredDataValue[i].trim(),
-                },
+              place: {
+                like: filteredDataValue[i].trim(),
               },
             },
             5,
@@ -1387,10 +1379,8 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                place: {
-                  like: filteredDataValue[i].trim(),
-                },
+              place: {
+                like: filteredDataValue[i].trim(),
               },
             },
             5,
@@ -1412,10 +1402,8 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchShipper = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                zipcode: {
-                  like: filteredDataValue[i].trim(),
-                },
+              zipcode: {
+                like: filteredDataValue[i].trim(),
               },
             },
             5,
@@ -1438,10 +1426,8 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchReciever = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                zipcode: {
-                  like: filteredDataValue[i].trim(),
-                },
+              zipcode: {
+                like: filteredDataValue[i].trim(),
               },
             },
             5,
@@ -1466,9 +1452,7 @@ export default class SearchShipment extends Vue {
       if (Object.keys(filter).length === 0 && filter.constructor === Object) {
         return order;
       }
-
       order = await DirectusAPI.getTrpOrder(filter, this.limit);
-
       return order;
     }
     return order;
@@ -1533,6 +1517,7 @@ export default class SearchShipment extends Vue {
           this.anlagenID = this.editedOrder.anlage!.id!;
         } catch {
           this.anlagenID = 0;
+          this.editedOrder.anlage = new AnlageClass();
           this.editedOrder.anlage!.id = undefined;
         }
         try {
@@ -1580,6 +1565,20 @@ export default class SearchShipment extends Vue {
             this.type = this.orderType[2];
           }
         }
+        // todo
+        this.test = new PositionGoods();
+        this.test.id = 1;
+        this.test.marking = "blabla";
+        this.test.length = 110;
+        this.test.goodsDescription = "miau11";
+        this.test.valueChf = 110;
+        this.test.width = 110;
+        this.test.height = 110;
+        this.test.grossWeight = 100;
+        this.test.netWeight = 100;
+        this.test.dangerousGoods = true;
+
+
         this.dialog = true;
         if (
           this.$store.state.authorisation === DIRECTUS_ROLES.Public
@@ -1613,7 +1612,6 @@ export default class SearchShipment extends Vue {
   private async close(): Promise<void> {
     (this.$refs.formFirst as Vue & { reset: () => boolean; }).reset();
     (this.$refs.formSecond as Vue & { reset: () => boolean; }).reset();
-    await this.search();
     this.dialog = false;
   }
 
@@ -1937,7 +1935,7 @@ export default class SearchShipment extends Vue {
 
   private async triggerUdatePickupID(kindOfUpdate: string): Promise<void> {
     let resp: Client[] = [];
-    let resp2: AnlageClass[] = [];
+    let resp2: Anlage[] = [];
 
     (this.$refs.formFirst as Vue & { resetValidation: () => boolean; }).resetValidation();
 

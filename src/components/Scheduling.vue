@@ -85,6 +85,7 @@ import { Component, Vue } from "vue-property-decorator";
 
 @Component
 export default class Scheduling extends Vue {
+  private orders = [];
   private headers = [
     {
       text: "Actions", value: "actions", sortable: false,

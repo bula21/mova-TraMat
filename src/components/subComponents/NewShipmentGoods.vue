@@ -1,7 +1,7 @@
 <template>
   <v-form
     ref="formGoods"
-    v-model="validFormGoods"
+    v-model="validFormGoods1"
     eager-validation
   >
     <v-divider />
@@ -9,7 +9,7 @@
     <v-row>
       <v-col cols="2">
         <v-text-field
-          v-model="quantity"
+          v-model="quantity1"
           :rules="quanityRules"
           label="Anzahl (Stk.)*"
           required
@@ -17,7 +17,7 @@
       </v-col>
       <v-col cols="4">
         <v-select
-          v-model="packingUnitSelected"
+          v-model="packingUnitSelected1"
           :rules="requiredRules"
           label="Verpackungseinheit*"
           :items="packingUnit"
@@ -29,7 +29,7 @@
       </v-col>
       <v-col cols="3">
         <v-text-field
-          v-model="bruttoWeight"
+          v-model="bruttoWeight1"
           :rules="weightRules"
           label="Brutto Gewicht (kg)*"
           required
@@ -37,7 +37,7 @@
       </v-col>
       <v-col cols="3">
         <v-text-field
-          v-model="nettoWeight"
+          v-model="nettoWeight1"
           :rules="weightRules"
           label="Netto Gewicht (kg)*"
           required
@@ -48,7 +48,7 @@
         class="mt-n7"
       >
         <v-textarea
-          v-model="goodsDescripttion"
+          v-model="goodsDescripttion1"
           :rules="requiredRules"
           rows="2"
           label="Warenbeschreibung*"
@@ -61,7 +61,7 @@
         class="mt-n7"
       >
         <v-text-field
-          v-model="length"
+          v-model="length1"
           :rules="dimRules"
           required
           label="Länge (cm)*"
@@ -72,7 +72,7 @@
         class="mt-n7"
       >
         <v-text-field
-          v-model="width"
+          v-model="width1"
           :rules="dimRules"
           required
           label="Breite (cm)*"
@@ -83,7 +83,7 @@
         class="mt-n7"
       >
         <v-text-field
-          v-model="height"
+          v-model="height1"
           :rules="dimRules"
           required
           label="Höhe (cm)*"
@@ -94,7 +94,7 @@
         class="mt-n7"
       >
         <v-text-field
-          v-model="marking"
+          v-model="marking1"
           label="Markierung"
         />
       </v-col>
@@ -103,7 +103,7 @@
         class="mt-n7"
       >
         <v-checkbox
-          v-model="dangerousGoods"
+          v-model="dangerousGoods1"
           label="Gefahrgut"
           color="red"
           hide-details
@@ -114,7 +114,7 @@
         class="mt-n7"
       >
         <v-text-field
-          v-model="valueCHF"
+          v-model="valueCHF1"
           :rules="valueCHFRules"
           label="Warenwert in CHF*"
           required
@@ -213,111 +213,111 @@ export default class NewShipmentGoods extends Vue {
     this.pDangerousGoods = this.currenpos.dangerousGoods;
   }
 
-  public get quantity(): number | undefined {
+  public get quantity1(): number | undefined {
     return this.pQuantity;
   }
 
-  public set quantity(v: number | undefined) {
+  public set quantity1(v: number | undefined) {
     this.pQuantity = v;
     this.$emit("update:quantity", this.pQuantity);
   }
 
-  public get bruttoWeight(): number | undefined {
+  public get bruttoWeight1(): number | undefined {
     return this.pBruttoWeight;
   }
 
-  public set bruttoWeight(v: number | undefined) {
+  public set bruttoWeight1(v: number | undefined) {
     this.pBruttoWeight = v;
     this.$emit("update:bruttoWeight", this.pBruttoWeight);
   }
 
-  public get nettoWeight(): number | undefined {
+  public get nettoWeight1(): number | undefined {
     return this.pNettoWeight;
   }
 
-  public set nettoWeight(v: number | undefined) {
+  public set nettoWeight1(v: number | undefined) {
     this.pNettoWeight = v;
     this.$emit("update:nettoWeight", this.pNettoWeight);
   }
 
-  public get goodsDescripttion(): string | undefined {
+  public get goodsDescripttion1(): string | undefined {
     return this.pGoodsDescripttion;
   }
 
-  public set goodsDescripttion(v: string | undefined) {
+  public set goodsDescripttion1(v: string | undefined) {
     this.pGoodsDescripttion = v;
     this.$emit("update:goodsDescripttion", this.pGoodsDescripttion);
   }
 
-  public get length(): number | undefined {
+  public get length1(): number | undefined {
     return this.pLength;
   }
 
-  public set length(v: number | undefined) {
+  public set length1(v: number | undefined) {
     this.pLength = v;
     this.$emit("update:length", this.pLength);
   }
 
-  public get width(): number | undefined {
+  public get width1(): number | undefined {
     return this.pWidth;
   }
 
-  public set width(v: number | undefined) {
+  public set width1(v: number | undefined) {
     this.pWidth = v;
     this.$emit("update:width", this.pWidth);
   }
 
-  public get height(): number | undefined {
+  public get height1(): number | undefined {
     return this.pHeight;
   }
 
-  public set height(v: number | undefined) {
+  public set height1(v: number | undefined) {
     this.pHeight = v;
     this.$emit("update:height", this.pHeight);
   }
 
-  public get marking(): string | undefined | null {
+  public get marking1(): string | undefined | null {
     return this.pMarking;
   }
 
-  public set marking(v: string | undefined | null) {
+  public set marking1(v: string | undefined | null) {
     this.pMarking = v;
     this.$emit("update:marking", this.pMarking);
   }
 
-  public get valueCHF(): number | undefined {
+  public get valueCHF1(): number | undefined {
     return this.pValueCHF;
   }
 
-  public set valueCHF(v: number | undefined) {
+  public set valueCHF1(v: number | undefined) {
     this.pValueCHF = v;
     this.$emit("update:valueCHF", this.pValueCHF);
   }
 
-  public get dangerousGoods(): boolean | undefined {
+  public get dangerousGoods1(): boolean | undefined {
     return this.pDangerousGoods;
   }
 
-  public set dangerousGoods(v: boolean | undefined) {
+  public set dangerousGoods1(v: boolean | undefined) {
     this.pDangerousGoods = v;
     this.$emit("update:dangerousGoods", this.pDangerousGoods);
   }
 
-  public get packingUnitSelected(): string | undefined {
+  public get packingUnitSelected1(): string | undefined {
     return this.pPackingUnitSelected;
   }
 
-  public set packingUnitSelected(v: string | undefined) {
+  public set packingUnitSelected1(v: string | undefined) {
     this.pPackingUnitSelected = v;
     this.$emit("update:packingUnitSelected", this.pPackingUnitSelected);
   }
 
-  public set validFormGoods(v: boolean) {
+  public set validFormGoods1(v: boolean) {
     this.pValidFormGoods = v;
     this.$emit("update:validFormGoods", this.pValidFormGoods);
   }
 
-  public get validFormGoods(): boolean {
+  public get validFormGoods1(): boolean {
     return this.pValidFormGoods;
   }
 }

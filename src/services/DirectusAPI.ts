@@ -3,7 +3,8 @@ import fecha from "fecha";
 import store from "@/store";
 import { Convert, Packaging, TransportState, TrpTypeClient, TrpTypePeople } from "./Quicktype";
 import { ConvertTrpClient, TrpClient } from "./TrpClient";
-import { AnlageClass, Construction, ConvertTrpOrder, Good, Person, TrpOrder } from "./TrpOrder";
+import { Anlage, Construction, ConvertTrpOrder, Good, Person, TrpOrder } from "./TrpOrder";
+import Order from "@/model/Order";
 
 // https://web.archive.org/web/20201028134719/https://docs.directus.io/guides/js-sdk.html
 // https://web.archive.org/web/20200811211652/https://docs.directus.io/api/authentication.html#tokens
@@ -142,12 +143,12 @@ class DirectusAPI {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async getAnlage(filter: any, limit: number): Promise<AnlageClass[]> {
+  public async getAnlage(filter: any, limit: number): Promise<Anlage[]> {
     const resp = await this.directusSDK.getItems("anlage", {
       filter,
       limit,
     });
-    const anlage: AnlageClass[] = ConvertTrpOrder.toAnlage(JSON.stringify(resp.data));
+    const anlage: Anlage[] = ConvertTrpOrder.toAnlage(JSON.stringify(resp.data));
     return anlage;
   }
 
@@ -157,7 +158,7 @@ class DirectusAPI {
     const resp = await this.directusSDK.getItems("trp_client", {
       filter,
       limit,
-      fields: ["*", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "type.*.*"],
+      fields: ["*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "type.*.*"],
     });
     const clients: TrpClient[] = ConvertTrpClient.toTrpClient(JSON.stringify(resp.data));
     return clients;
@@ -189,14 +190,18 @@ class DirectusAPI {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async getTrpOrder(filter: any, limit: number): Promise<TrpOrder[]> {
+  public async getTrpOrder(filter: any, limit: number): Promise<Order[]> {
     const resp = await this.directusSDK.getItems("trp_order", {
       filter,
       limit,
-      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "receiver.*", "receiver.type.*", "principal.*", "principal.type.*", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*"],
+      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "shipper.modified_by.id", "shipper.modified_by.first_name", "shipper.modified_by.last_name", "shipper.modified_by.email", "receiver.*", "receiver.type.*", "receiver.modified_by.id", "receiver.modified_by.first_name", "receiver.modified_by.last_name", "receiver.modified_by.email", "principal.*", "principal.type.*", "principal.modified_by.id", "principal.modified_by.first_name", "principal.modified_by.last_name", "principal.modified_by.email", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*"],
     });
     const orders: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
-    return orders;
+    const orderObj: Order[] = [];
+    orders.forEach((odr) => {
+      orderObj.push(Object.assign(new Order(), odr));
+    });
+    return orderObj;
   }
 
   public async createTrpOrder(order: TrpOrder): Promise<TrpOrder> {
@@ -258,8 +263,8 @@ class DirectusAPI {
       dangerous_goods: goods.dangerousGoods,
       order: orderId,
     });
-    const newPos: Good = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
-    return newPos;
+    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify(resp.data));
+    return newPos[0];
   }
 
   public async createGoodsPosWithState(goods: Good, orderId: number): Promise<Good> {
@@ -278,8 +283,8 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: goods.statusdirectus,
     });
-    const newPos: Good = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
-    return newPos;
+    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify(resp.data));
+    return newPos[0];
   }
 
   public async updateGoodsPos(goods: Good, posId: number, orderId: number): Promise<Good> {
@@ -298,8 +303,8 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: goods.statusdirectus,
     });
-    const newPos: Good = ConvertTrpOrder.toTrpGood(JSON.stringify(resp.data));
-    return newPos;
+    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify(resp.data));
+    return newPos[0];
   }
 
   public deletePeoplePos(id: number): void {
@@ -318,8 +323,8 @@ class DirectusAPI {
       weight: people.weight,
       order: orderId,
     });
-    const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
-    return newPos;
+    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify(resp.data));
+    return newPos[0];
   }
 
   public async createPeoplePosWithState(people: Person, orderId: number): Promise<Person> {
@@ -335,8 +340,8 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: people.statusdirectus,
     });
-    const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
-    return newPos;
+    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify(resp.data));
+    return newPos[0];
   }
 
   public async updatePeoplePos(people: Person, posId: number, orderId: number): Promise<Person> {
@@ -352,8 +357,8 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: people.statusdirectus,
     });
-    const newPos: Person = ConvertTrpOrder.toTrpPerson(JSON.stringify(resp.data));
-    return newPos;
+    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify(resp.data));
+    return newPos[0];
   }
 
   public deleteConstPos(id: number): void {
@@ -367,8 +372,8 @@ class DirectusAPI {
       description: constru.description,
       order: orderId,
     });
-    const newPos: Construction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
-    return newPos;
+    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify(resp.data));
+    return newPos[0];
   }
 
   public async createConstruPosWithState(constru: Construction, orderId: number): Promise<Construction> {
@@ -379,8 +384,8 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: constru.statusdirectus,
     });
-    const newPos: Construction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
-    return newPos;
+    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify(resp.data));
+    return newPos[0];
   }
 
   public async updateConstruePos(constru: Construction, posId: number, orderId: number): Promise<Construction> {
@@ -391,8 +396,8 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: constru.statusdirectus,
     });
-    const newPos: Construction = ConvertTrpOrder.toTrpConst(JSON.stringify(resp.data));
-    return newPos;
+    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify(resp.data));
+    return newPos[0];
   }
 
   public getToken(): string | undefined {

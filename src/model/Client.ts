@@ -8,7 +8,7 @@ class Client implements TrpClient {
   name?: string | undefined;
   street?: string | undefined;
   place?: string | undefined;
-  phone?: null | string;
+  phone?: string | null | undefined;
   zipcode?: number | undefined;
   email?: string | null | undefined;
   type?: Type | undefined;

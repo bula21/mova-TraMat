@@ -850,13 +850,12 @@ import NewShipmentPeople from "@/components/subComponents/NewShipmentPeople.vue"
 import NewShipmentConstruction from "@/components/subComponents/NewShipmentConstruction.vue";
 import Client from "@/model/Client";
 import Order from "@/model/Order";
-import Anlage from "@/model/Anlage";
+import AnlageClass from "@/model/Anlage";
 import DirectusAPI from "@/services/DirectusAPI";
 import PositionGoods from "@/model/PositionGoods";
 import PositionPeople from "@/model/PositionPeople";
 import PositionConstruction from "@/model/PositionConstruction";
 import { ORDER_TYPE, TRP_TYP_CLIENT } from "./Const";
-import { AnlageClass } from "@/services/TrpOrder";
 
 const countOfSteps = 3;
 
@@ -1447,7 +1446,7 @@ export default class NewShipment extends Vue {
         if (resp2[0].id!) {
           this.anlagenDescription = `${resp2[0].anlagenname}, ${resp2[0].standort}`;
           this.rasterLagerplatz = resp2[0].standortcode!;
-          this.currentOrder.anlage = new Anlage();
+          this.currentOrder.anlage = new AnlageClass();
           this.currentOrder.anlage = resp2[0];
           this.currentOrder.rasterLagerplatz = resp2[0].standortcode!;
         } else {

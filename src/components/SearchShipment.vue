@@ -601,10 +601,9 @@
                 v-for="(posGoods, indxGoods) in orderPositionsGoods"
                 :key="indxGoods"
               >
-                <!--:currenpos="editedOrder.goods[indxGoods]" -->
                 <component
                   :is="posGoods"
-                  :currenpos="test"
+                  :currenpos="editedOrder.goods[indxGoods]"
                   :quantity.sync="editedOrder.goods[indxGoods].quantity"
                   :brutto-weight.sync="editedOrder.goods[indxGoods].grossWeight"
                   :netto-weight.sync="editedOrder.goods[indxGoods].netWeight"
@@ -840,7 +839,6 @@ export default class SearchShipment extends Vue {
   private orders: any = [{
   }];
 
-  private test = new PositionGoods();
   private printOrder = new Order();
   private editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
@@ -1495,7 +1493,7 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private editItem(item: OrderDisplay): void {
+  private async editItem(item: OrderDisplay): Promise<void> {
     this.printOrder = new Order();
     this.editedOrder = new Order();
     let editedItems: TrpOrder[] = [];
@@ -1541,44 +1539,39 @@ export default class SearchShipment extends Vue {
         this.deliveryTime = format(this.editedOrder.deliveryDate!, "HH:mm");
         this.remarksTrpOrder = this.editedOrder.remarks!;
         this.onlyDelivery = this.editedOrder.deliveryOnly!;
-        this.state = this.stateTypeFromIdToState.get(this.editedOrder.state);
+        this.state = this.stateTypeFromIdToState.get(this.editedOrder.state?.id);
 
         if (this.editedOrder.goods) {
           if (this.editedOrder.goods.length > 0) {
-            this.editedOrder.goods.forEach(() => {
+            this.editedOrder.goods.forEach((value, idx) => {
               this.orderPositionsGoods.push(NewShipmentGoods);
+              // fix since NewSHipmentGoods does otherwise not reconise it is an Object of PositionGoods()
+              this.editedOrder.goods![idx] = Object.assign(new PositionGoods(), value);
             });
             this.type = this.orderType[0];
           }
-        } else if (this.editedOrder.people) {
+        }
+
+        if (this.editedOrder.people) {
           if (this.editedOrder.people.length > 0) {
-            this.editedOrder.people.forEach(() => {
+            this.editedOrder.people.forEach((value, idx) => {
               this.orderPositionsPeople.push(NewShipmentPeople);
+              this.editedOrder.people![idx] = Object.assign(new PositionPeople(), value);
             });
             this.type = this.orderType[1];
           }
-        } else if (this.editedOrder.construction) {
+        }
+
+        if (this.editedOrder.construction) {
           if (this.editedOrder.construction.length > 0) {
-            this.editedOrder.construction.forEach(() => {
+            this.editedOrder.construction.forEach((value, idx) => {
               this.orderPositionsConstruction.push(NewShipmentConstruction);
+              this.editedOrder.construction![idx] = Object.assign(new PositionConstruction(), value);
             });
             this.type = this.orderType[2];
           }
         }
-        // todo
-        this.test = new PositionGoods();
-        this.test.id = 1;
-        this.test.marking = "blabla";
-        this.test.length = 110;
-        this.test.goodsDescription = "miau11";
-        this.test.valueChf = 110;
-        this.test.width = 110;
-        this.test.height = 110;
-        this.test.grossWeight = 100;
-        this.test.netWeight = 100;
-        this.test.dangerousGoods = true;
-
-
+        await this.$nextTick();
         this.dialog = true;
         if (
           this.$store.state.authorisation === DIRECTUS_ROLES.Public

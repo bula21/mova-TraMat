@@ -181,6 +181,7 @@ export default class NewShipmentPeople extends Vue {
     this.pWidth = this.currenpos.width;
     this.pHeight = this.currenpos.height;
     this.pSelectedTypeOfPeople = this.typeOfPeopleConv.get(this.currenpos.typePeople);
+    await this.$nextTick();
   }
 
   public get quantity(): number | undefined {

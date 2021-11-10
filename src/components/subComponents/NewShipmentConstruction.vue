@@ -78,10 +78,11 @@ export default class NewShipmentConstruction extends Vue {
   async mounted(): Promise<void> {
     (this.$refs.formConst as Vue & { validate: () => boolean; }).validate();
     (this.$refs.formConst as Vue & { resetValidation: () => boolean; }).resetValidation();
-
+    
     this.pQuantity = this.currenpos.quantity;
     this.pBruttoWeight = this.currenpos.weight;
     this.pGoodsDescripttion = this.currenpos.description;
+    await this.$nextTick();
   }
 
   public get quantity(): number | undefined {

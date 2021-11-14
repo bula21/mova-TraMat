@@ -219,8 +219,8 @@ class DirectusAPI {
       raster_lagerplatz: order.rasterLagerplatz,
       delivery_only: order.deliveryOnly,
     });
-    const newOrder: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
-    return newOrder[0];
+    const newOrder: TrpOrder = Object.assign(new Order(), (JSON.stringify(resp.data)));
+    return newOrder;
   }
 
   public async updateTrpOrder(order: TrpOrder): Promise<TrpOrder> {
@@ -249,6 +249,8 @@ class DirectusAPI {
   }
 
   public async createGoodsPos(goods: Good, orderId: number): Promise<Good> {
+    // packaing units dos not match smehow only a string not number
+    console.log(goods);
     const resp = await this.directusSDK.createItem("trp_order_goods", {
       quantity: goods.quantity,
       packing_unit: goods.packingUnit,

@@ -330,7 +330,6 @@ export default class SearchCustomer extends Vue {
       const filter: any = {
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       await filteredData.forEach((value, key) => {
         if (key !== "id" || key !== "type") {
           filter[key] = {
@@ -355,7 +354,6 @@ export default class SearchCustomer extends Vue {
           }
         }
       });
-
       const response = await DirectusAPI.getTrpClients(filter, -1);
       return response;
     }

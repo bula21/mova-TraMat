@@ -856,6 +856,7 @@ import PositionGoods from "@/model/PositionGoods";
 import PositionPeople from "@/model/PositionPeople";
 import PositionConstruction from "@/model/PositionConstruction";
 import { ORDER_TYPE, TRP_TYP_CLIENT } from "./Const";
+import { Construction, Good, Person } from "@/services/TrpOrder";
 
 const countOfSteps = 3;
 
@@ -1063,13 +1064,10 @@ export default class NewShipment extends Vue {
     construction?: PositionConstruction[] | undefined,
   ): string {
     let details = "";
-    const newLine = "\n";
 
     try {
       details = `Ladetermin: ${pickupDate?.toLocaleString().substring(0, 16)}\n`;
-
       details = `${details}Liefertermin: ${deliveryDate?.toLocaleString().substring(0, 16)}\n`;
-
       details = `${details}Sendungstyp: ${this.type}\n`;
     } catch {
       details = "Ladetermin: \n";
@@ -1081,46 +1079,35 @@ export default class NewShipment extends Vue {
 
     if (ORDER_TYPE.Warentransport === this.type && !!goods) {
       goods.forEach((element, idx) => {
-        posDetails = `${posDetails}*******Sendungs Position ${idx}*******
-        ${newLine}Anzahl: ${element.quantity}${newLine}Verpackungseinheit: ${element.packingUnit}${newLine}
-        Brutto Gewicht: ${element.grossWeight}${newLine}Netto Gewicht: ${element.netWeight}${newLine}
-        Warenbeschreibung: ${element.goodsDescription}${newLine}Warenwert: ${element.valueChf}${newLine}
-        Gefahrgut: ${element.dangerousGoods}${newLine}Markierung: ${element.marking}${newLine}
-        Dims: ${element.length}x${element.width}x${element.height}${newLine}`;
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantity}\nVerpackungseinheit: ${element.packingUnit}\nBrutto Gewicht: ${element.grossWeight}\nNetto Gewicht: ${element.netWeight}\nWarenbeschreibung: ${element.goodsDescription}\nWarenwert: ${element.valueChf}\nGefahrgut: ${element.dangerousGoods}\nMarkierung: ${element.marking}\nDims: ${element.length}x${element.width}x${element.height}\n`;
       });
     }
 
     if (ORDER_TYPE.Personentransport === this.type && !!people) {
       people.forEach((element, idx) => {
-        posDetails = `${posDetails}*******Sendungs Position ${idx}*******
-        ${newLine}Anzahl: ${element.quantityOfPeople}${newLine}Typ Personen: ${element.typePeople}
-        ${newLine}Anzahl Gepäck Stk.: ${element.quantityOfLuggage}${newLine}
-        Warenbeschreibung: ${element.descriptionOfLuagge}${newLine}Gewicht: ${element.weight}${newLine}
-        Dims: ${element.length}x${element.width}x${element.height}${newLine}`;
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantityOfPeople}\nTyp Personen: ${element.typePeople}\nAnzahl Gepäck Stk.: ${element.quantityOfLuggage}\nWarenbeschreibung: ${element.descriptionOfLuagge}\nGewicht: ${element.weight}\nDims: ${element.length}x${element.width}x${element.height}\n`;
       });
     }
 
     if (ORDER_TYPE["Bauleistung mit Fahrzeug"] === this.type && !!construction) {
       construction.forEach((element, idx) => {
-        posDetails = `${posDetails}*******Sendungs Position ${idx}*******${newLine}Anzahl: ${element.quantity}
-        ${newLine}Beschreibung Bauleistung mit Fhrz.: ${element.description}${newLine}Gewicht: ${element.weight}${newLine}`;
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantity}\nBeschreibung Bauleistung mit Fhrz.: ${element.description}\nGewicht: ${element.weight}\n`;
       });
     }
 
     details += posDetails;
-    details = `${details}**************${newLine}Bemerkungen: ${remarks}`;
+    details = `${details}**************\nBemerkungen: ${remarks}\n`;
+    details = `${details}Nur Anlieferung/Abholung: ${this.onlyDelivery}\n`;
 
     return details;
   }
 
-
   private next(): void {
-    this.step = +1;
+    this.step += 1;
   }
 
-
   private back(): void {
-    this.step = -1;
+    this.step += -1;
   }
 
   private async submit(): Promise<void> {
@@ -1135,13 +1122,13 @@ export default class NewShipment extends Vue {
           newVal = newVal && value;
         });
         if (newVal) {
-          try {
-            await this.persistOrder(this.currentOrder);
-          } catch {
-            this.titleDialogOrder = "Fehler";
-            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
-            this.dialogWarnOrder = true;
-          }
+          //  try {
+          await this.persistOrder(this.currentOrder);
+          //   } catch {
+          this.titleDialogOrder = "Fehler";
+          this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
+          this.dialogWarnOrder = true;
+          // }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
           this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
@@ -1200,31 +1187,43 @@ export default class NewShipment extends Vue {
   private async persistOrder(order: Order) {
     // goods
     if (this.type === ORDER_TYPE.Warentransport) {
-      const newOrder = await DirectusAPI.createTrpOrder(order);
+      if (order.goods) {
+        const newOrder = await DirectusAPI.createTrpOrder(order);
 
-      for (let i = 0; order.goods!.length > i; i++) {
-        // eslint-disable-next-line no-await-in-loop
-        await DirectusAPI.createGoodsPos(order.goods![i], newOrder.id!);
+        const goods: Promise<Good>[] = [];
+
+        for (let i = 0; order.goods!.length > i; i++) {
+          goods.push(DirectusAPI.createGoodsPos(order.goods![i], newOrder.id!));
+        }
+        await Promise.all(goods);
       }
     }
 
     // people
     if (this.type === ORDER_TYPE.Personentransport) {
-      const newOrder = await DirectusAPI.createTrpOrder(order);
+      if (order.people) {
+        const newOrder = await DirectusAPI.createTrpOrder(order);
 
-      for (let i = 0; order.people!.length > i; i++) {
-        // eslint-disable-next-line no-await-in-loop
-        await DirectusAPI.createPeoplePos(order.people![i], newOrder.id!);
+        const perso: Promise<Person>[] = [];
+
+        for (let i = 0; order.people!.length > i; i++) {
+          perso.push(DirectusAPI.createPeoplePos(order.people![i], newOrder.id!));
+        }
+        await Promise.all(perso);
       }
     }
 
     // construction
     if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
-      const newOrder = await DirectusAPI.createTrpOrder(order);
+      if (order.construction) {
+        const newOrder = await DirectusAPI.createTrpOrder(order);
 
-      for (let i = 0; order.construction!.length > i; i++) {
-        // eslint-disable-next-line no-await-in-loop
-        await DirectusAPI.createConstPos(order.construction![i], newOrder.id!);
+        const constru: Promise<Construction>[] = [];
+
+        for (let i = 0; order.construction!.length > i; i++) {
+          constru.push(DirectusAPI.createConstPos(order.construction![i], newOrder.id!));
+        }
+        await Promise.all(constru);
       }
     }
 
@@ -1358,22 +1357,19 @@ export default class NewShipment extends Vue {
       case "delivery":
         try {
           resp = await DirectusAPI.getTrpClients({
-            filter: {
-              id: {
-                eq: this.deliveryID,
-              },
+            id: {
+              eq: this.deliveryID,
             },
           }, 5);
         } catch {
           this.deliveryAddress = "Kunden ID nicht vorhanden";
         }
-
-        if (resp[0].id!) {
+        try {
           this.searchClient = resp[0];
           this.deliveryID = this.searchClient.id!;
           this.deliveryAddress = this.printAdress(this.searchClient);
           this.currentOrder.receiver = this.searchClient;
-        } else {
+        } catch {
           this.deliveryAddress = "Kunden ID nicht vorhanden";
         }
         break;
@@ -1381,19 +1377,16 @@ export default class NewShipment extends Vue {
       case "principal":
         try {
           resp = await DirectusAPI.getTrpClients({
-            filter: {
-              id: {
-                eq: this.principalID,
-              },
+            id: {
+              eq: this.principalID,
             },
           }, 5);
         } catch {
           this.principalAddress = "Kunden ID nicht vorhanden";
         }
-
-        if (resp[0].id!) {
+        try {
           this.searchClient = resp[0];
-          if (this.searchClient.type === TRP_TYP_CLIENT.mova) {
+          if (this.searchClient.type?.id === TRP_TYP_CLIENT.mova) {
             this.principalID = this.searchClient.id!;
             this.principalAddress = this.printAdress(this.searchClient);
           } else {
@@ -1402,7 +1395,7 @@ export default class NewShipment extends Vue {
             this.principalAddress = this.printAdress(this.searchClient);
           }
           this.currentOrder.principal = this.searchClient;
-        } else {
+        } catch {
           this.principalAddress = "Kunden ID nicht vorhanden";
         }
         break;
@@ -1410,21 +1403,19 @@ export default class NewShipment extends Vue {
       case "pickup":
         try {
           resp = await DirectusAPI.getTrpClients({
-            filter: {
-              id: {
-                eq: this.pickupID,
-              },
+            id: {
+              eq: this.pickupID,
             },
           }, 5);
         } catch {
           this.pickupAddress = "Kunden ID nicht vorhanden";
         }
-        if (resp[0].id!) {
+        try {
           this.searchClient = resp[0];
           this.pickupID = this.searchClient.id!;
           this.pickupAddress = this.printAdress(this.searchClient);
           this.currentOrder.shipper = this.searchClient;
-        } else {
+        } catch {
           this.pickupAddress = "Kunden ID nicht vorhanden";
         }
         break;
@@ -1432,33 +1423,28 @@ export default class NewShipment extends Vue {
       case "anlagen":
         try {
           resp2 = await DirectusAPI.getAnlage({
-            filter: {
-              anlagen_id: {
-                eq: this.anlagenID,
-              },
+            anlagen_id: {
+              eq: this.anlagenID,
             },
           }, 5);
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          this.anlagenID = 0;
           this.currentOrder.anlage = null;
         }
-        if (resp2[0].id!) {
+        try {
           this.anlagenDescription = `${resp2[0].anlagenname}, ${resp2[0].standort}`;
           this.rasterLagerplatz = resp2[0].standortcode!;
           this.currentOrder.anlage = new AnlageClass();
           this.currentOrder.anlage = resp2[0];
           this.currentOrder.rasterLagerplatz = resp2[0].standortcode!;
-        } else {
+        } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          this.anlagenID = 0;
           this.currentOrder.anlage = null;
         }
         break;
 
       default:
         this.anlagenDescription = "Analgen ID nicht vorhanden";
-        this.anlagenID = 0;
         this.currentOrder.anlage = null;
         this.pickupAddress = "Kunden ID nicht vorhanden";
         this.principalAddress = "Kunden ID nicht vorhanden";

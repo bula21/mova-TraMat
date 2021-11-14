@@ -121,14 +121,14 @@ export default class NewShipmentPeople extends Vue {
 
   private typeOfPeople: string[] = [];
   private typeOfPeopleConv = new Map();
-  private pQuantity: number | undefined = undefined;
-  private pQuantityOfLuagge: number | undefined = undefined;
-  private pBruttoWeight: number | undefined = undefined;
-  private pGoodsDescripttion: string | undefined = "";
-  private pLength: number | undefined = undefined;
-  private pWidth: number | undefined = undefined;
-  private pHeight: number | undefined = undefined;
-  private pSelectedTypeOfPeople: string | undefined = "";
+  private pQuantity: number | undefined = 0;
+  private pQuantityOfLuagge: number | undefined = 0;
+  private pBruttoWeight: number | undefined = 0;
+  private pGoodsDescripttion: string | undefined = " ";
+  private pLength: number | undefined = 0;
+  private pWidth: number | undefined = 0;
+  private pHeight: number | undefined = 0;
+  private pSelectedTypeOfPeople: string | undefined = " ";
 
   // formPeople
   private pValidFormPeople = true;
@@ -172,7 +172,7 @@ export default class NewShipmentPeople extends Vue {
 
     (this.$refs.formPeople as Vue & { validate: () => boolean; }).validate();
     (this.$refs.formPeople as Vue & { resetValidation: () => boolean; }).resetValidation();
-
+    
     this.pQuantity = this.currenpos.quantityOfPeople;
     this.pQuantityOfLuagge = this.currenpos.quantityOfLuggage;
     this.pBruttoWeight = this.currenpos.weight;
@@ -181,7 +181,6 @@ export default class NewShipmentPeople extends Vue {
     this.pWidth = this.currenpos.width;
     this.pHeight = this.currenpos.height;
     this.pSelectedTypeOfPeople = this.typeOfPeopleConv.get(this.currenpos.typePeople);
-    await this.$nextTick();
   }
 
   public get quantity(): number | undefined {

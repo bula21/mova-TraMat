@@ -211,7 +211,6 @@ export default class NewShipmentGoods extends Vue {
     this.pMarking = this.currenpos.marking;
     this.pValueCHF = this.currenpos.valueChf;
     this.pDangerousGoods = this.currenpos.dangerousGoods;
-    await this.$nextTick();
   }
 
   public get quantity(): number | undefined {

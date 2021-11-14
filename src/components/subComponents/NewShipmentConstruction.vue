@@ -48,9 +48,9 @@ export default class NewShipmentConstruction extends Vue {
   })
   currenpos!: PositionConstruction;
 
-  private pQuantity: number | undefined = undefined;
-  private pBruttoWeight: number | undefined = undefined;
-  private pGoodsDescripttion: string | undefined = "";
+  private pQuantity: number | undefined = 0;
+  private pBruttoWeight: number | undefined = 0;
+  private pGoodsDescripttion: string | undefined = " ";
   // formConst
   private pValidFormConst = true;
   private quanityRules = [
@@ -82,7 +82,6 @@ export default class NewShipmentConstruction extends Vue {
     this.pQuantity = this.currenpos.quantity;
     this.pBruttoWeight = this.currenpos.weight;
     this.pGoodsDescripttion = this.currenpos.description;
-    await this.$nextTick();
   }
 
   public get quantity(): number | undefined {

@@ -1571,7 +1571,7 @@ export default class SearchShipment extends Vue {
             this.type = this.orderType[2];
           }
         }
-        await this.$nextTick();
+
         this.dialog = true;
         if (
           this.$store.state.authorisation === DIRECTUS_ROLES.Public
@@ -1858,22 +1858,37 @@ export default class SearchShipment extends Vue {
   MinusButtonClicked(): void {
     if (this.type === this.orderType[0]) {
       const deletedPos = this.editedOrder.goods!.pop();
-      DirectusAPI.deleteGoodsPos(deletedPos!.id!);
-      this.orderPositionsGoods.splice(-1, 1);
-      this.validFormGoods.splice(-1, 1);
+      try {
+        DirectusAPI.deleteGoodsPos(deletedPos!.id!);
+      } catch {
+        console.log(`Pos with ${deletedPos!.id!} could not be deleted`);
+      } finally {
+        this.orderPositionsGoods.splice(-1, 1);
+        this.validFormGoods.splice(-1, 1);
+      }
     }
 
     if (this.type === this.orderType[1]) {
       const deletedPos = this.editedOrder.people!.pop();
-      DirectusAPI.deletePeoplePos(deletedPos!.id!);
-      this.orderPositionsPeople.splice(-1, 1);
-      this.validFormPeople.splice(-1, 1);
+      try {
+        DirectusAPI.deletePeoplePos(deletedPos!.id!);
+      } catch {
+        console.log(`Pos with ${deletedPos!.id!} could not be deleted`);
+      } finally {
+        this.orderPositionsPeople.splice(-1, 1);
+        this.validFormPeople.splice(-1, 1);
+      }
     }
     if (this.type === this.orderType[2]) {
       const deletedPos = this.editedOrder.construction!.pop();
-      DirectusAPI.deleteConstPos(deletedPos!.id!);
-      this.orderPositionsConstruction.splice(-1, 1);
-      this.validFormConst.splice(-1, 1);
+      try {
+        DirectusAPI.deleteConstPos(deletedPos!.id!);
+      } catch {
+        console.log(`Pos with ${deletedPos!.id!} could not be deleted`);
+      } finally {
+        this.orderPositionsConstruction.splice(-1, 1);
+        this.validFormConst.splice(-1, 1);
+      }
     }
   }
 

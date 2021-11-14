@@ -150,6 +150,10 @@ export class ConvertTrpOrder {
     return cast(JSON.parse(json), a(r("TrpOrder")));
   }
 
+  public static toTrpOrderNotArray(json: string): TrpOrder {
+    return cast(JSON.parse(json), r("TrpOrder"));
+  }
+
   public static trpOrderToJson(value: TrpOrder[]): string {
     return JSON.stringify(uncast(value, a(r("TrpOrder"))), null, 2);
   }

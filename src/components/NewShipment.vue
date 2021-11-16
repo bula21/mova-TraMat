@@ -1066,8 +1066,8 @@ export default class NewShipment extends Vue {
     let details = "";
 
     try {
-      details = `Ladetermin: ${pickupDate?.toLocaleString().substring(0, 16)}\n`;
-      details = `${details}Liefertermin: ${deliveryDate?.toLocaleString().substring(0, 16)}\n`;
+      details = `Ladetermin: ${pickupDate?.toLocaleString().substring(0, 17)}\n`;
+      details = `${details}Liefertermin: ${deliveryDate?.toLocaleString().substring(0, 17)}\n`;
       details = `${details}Sendungstyp: ${this.type}\n`;
     } catch {
       details = "Ladetermin: \n";
@@ -1189,6 +1189,8 @@ export default class NewShipment extends Vue {
     if (this.type === ORDER_TYPE.Warentransport) {
       if (order.goods) {
         const newOrder = await DirectusAPI.createTrpOrder(order);
+        // somehow order is empty
+        console.log(newOrder.id);
 
         const goods: Promise<Good>[] = [];
 

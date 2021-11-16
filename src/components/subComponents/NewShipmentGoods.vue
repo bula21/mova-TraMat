@@ -132,7 +132,8 @@ import DirectusAPI from "@/services/DirectusAPI";
 @Component
 export default class NewShipmentGoods extends Vue {
   @Prop({
-    type: PositionGoods, required: true,
+    type: PositionGoods,
+    required: true,
   })
   currenpos!: PositionGoods;
 
@@ -167,7 +168,7 @@ export default class NewShipmentGoods extends Vue {
 
   private weightRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
+    (v: any) => v !== null || v !== undefined || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v)
       || "Nur Zahlen mit max. 3 Kommastellen",
@@ -175,7 +176,7 @@ export default class NewShipmentGoods extends Vue {
 
   private dimRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
+    (v: any) => v !== null || v !== undefined || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v)
       || "Nur Zahlen mit max. 1 Kommastelle",
@@ -192,15 +193,21 @@ export default class NewShipmentGoods extends Vue {
   async mounted(): Promise<void> {
     const resp1 = await DirectusAPI.fetchPackaging();
     resp1.forEach((value) => {
-      this.packagingUntisConv.set(value.id,
-        `${value.abbreviation}=${value.description}`);
+      this.packagingUntisConv.set(
+        value.id,
+        `${value.abbreviation}=${value.description}`,
+      );
       this.packingUnit.push(`${value.abbreviation}=${value.description}`);
     });
 
-    (this.$refs.formGoods as Vue & { validate: () => boolean; }).validate();
-    (this.$refs.formGoods as Vue & { resetValidation: () => boolean; }).resetValidation();
+    (this.$refs.formGoods as Vue & { validate: () => boolean }).validate();
+    (
+      this.$refs.formGoods as Vue & { resetValidation: () => boolean }
+    ).resetValidation();
 
-    this.pPackingUnitSelected = this.packagingUntisConv.get(this.currenpos.packingUnit);
+    this.pPackingUnitSelected = this.packagingUntisConv.get(
+      this.currenpos.packingUnit,
+    );
     this.pQuantity = this.currenpos.quantity;
     this.pBruttoWeight = this.currenpos.grossWeight;
     this.pNettoWeight = this.currenpos.netWeight;
@@ -309,7 +316,15 @@ export default class NewShipmentGoods extends Vue {
 
   public set packingUnitSelected(v: string | undefined) {
     this.pPackingUnitSelected = v;
-    this.$emit("update:packingUnitSelected", this.pPackingUnitSelected);
+    const packUnits = Array.from(this.packagingUntisConv.values());
+    let idx = 0;
+
+    for (let i = 0; i < packUnits.length; i++) {
+      if (packUnits[i] === this.pPackingUnitSelected) {
+        idx = i;
+      }
+    }
+    this.$emit("update:packingUnitSelected", idx);
   }
 
   public set validFormGoods(v: boolean) {

@@ -252,13 +252,12 @@ export default class NewShipmentPeople extends Vue {
 
   public set selectedTypeOfPeople(v: string | undefined) {
     this.pSelectedTypeOfPeople = v;
-    const typePeople = Array.from(this.typeOfPeopleConv.values());
     let idx = 0;
-    for (let i = 0; i < typePeople.length; i++) {
-      if (typePeople[i] === this.pSelectedTypeOfPeople) {
-        idx = i;
+    this.typeOfPeopleConv.forEach((descrp, id) => {
+      if (descrp === this.selectedTypeOfPeople) {
+        idx = id;
       }
-    }
+    });
     this.$emit("update:selectedTypeOfPeople", idx);
   }
 

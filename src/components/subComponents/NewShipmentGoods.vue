@@ -316,14 +316,12 @@ export default class NewShipmentGoods extends Vue {
 
   public set packingUnitSelected(v: string | undefined) {
     this.pPackingUnitSelected = v;
-    const packUnits = Array.from(this.packagingUntisConv.values());
     let idx = 0;
-
-    for (let i = 0; i < packUnits.length; i++) {
-      if (packUnits[i] === this.pPackingUnitSelected) {
-        idx = i;
+    this.packagingUntisConv.forEach((descrip, id) => {
+      if (descrip === this.packingUnitSelected) {
+        idx = id;
       }
-    }
+    });
     this.$emit("update:packingUnitSelected", idx);
   }
 

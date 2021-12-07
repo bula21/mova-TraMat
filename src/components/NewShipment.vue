@@ -871,6 +871,9 @@ const countOfSteps = 3;
 export default class NewShipment extends Vue {
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
   private dialog = false;
+  // eslint-disable-next-line no-undef
+  private timer: NodeJS.Timeout|undefined;
+  private orderDetails = "";
   private dialogWarn = false;
   private dialogWarnOrder = false;
   private titleDialogOrder = "";
@@ -913,7 +916,9 @@ export default class NewShipment extends Vue {
   // formConst
   private validFormConst = [true];
   private packagingUntis = new Map();
+  private packagingUntisIdToDesc = new Map();
   private typePeople = new Map();
+  private typePeopleIdToDesc = new Map();
   private idRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
@@ -986,14 +991,22 @@ export default class NewShipment extends Vue {
         `${value.abbreviation}=${value.description}`,
         value.id,
       );
+      this.packagingUntisIdToDesc.set(value.id, `${value.abbreviation}=${value.description}`);
     });
 
     const typPeopleResp = await DirectusAPI.fetchTrpTypePeople();
     typPeopleResp.forEach((value) => {
       this.typePeople.set(value.description, value.id);
+      this.typePeopleIdToDesc.set(value.id, value.description);
     });
 
     this.orderType.push(ORDER_TYPE.Warentransport, ORDER_TYPE.Personentransport, ORDER_TYPE["Bauleistung mit Fahrzeug"]);
+
+    this.timer = setInterval(this.genereateDetails, 2000);
+  }
+
+  beforeDestroy(): void {
+    this.cancelAutoUpdate();
   }
 
   destroyed(): void {
@@ -1003,6 +1016,10 @@ export default class NewShipment extends Vue {
   get getProgress(): number {
     this.progress = (this.step / countOfSteps) * 100;
     return this.progress;
+  }
+
+  private cancelAutoUpdate(): void {
+    clearInterval(this.timer!);
   }
 
   private handleEnter(event: KeyboardEvent) {
@@ -1052,6 +1069,7 @@ export default class NewShipment extends Vue {
         orderDetails = "";
         break;
     }
+    this.orderDetails = orderDetails;
     return orderDetails;
   }
 
@@ -1079,13 +1097,18 @@ export default class NewShipment extends Vue {
 
     if (ORDER_TYPE.Warentransport === this.type && !!goods) {
       goods.forEach((element, idx) => {
-        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantity}\nVerpackungseinheit: ${element.packingUnit}\nBrutto Gewicht: ${element.grossWeight}\nNetto Gewicht: ${element.netWeight}\nWarenbeschreibung: ${element.goodsDescription}\nWarenwert: ${element.valueChf}\nGefahrgut: ${element.dangerousGoods}\nMarkierung: ${element.marking}\nDims: ${element.length}x${element.width}x${element.height}\n`;
+        console.log(this.packagingUntisIdToDesc);
+        console.log(element.packingUnit);
+        console.log(this.packagingUntisIdToDesc.get(element.packingUnit));
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantity}\nVerpackungseinheit: ${this.packagingUntisIdToDesc.get(element.packingUnit!)}\nBrutto Gewicht: ${element.grossWeight}\nNetto Gewicht: ${element.netWeight}\nWarenbeschreibung: ${element.goodsDescription}\nWarenwert: ${element.valueChf}\nGefahrgut: ${element.dangerousGoods}\nMarkierung: ${element.marking}\nDims: ${element.length}x${element.width}x${element.height}\n`;
       });
     }
-
     if (ORDER_TYPE.Personentransport === this.type && !!people) {
       people.forEach((element, idx) => {
-        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantityOfPeople}\nTyp Personen: ${element.typePeople}\nAnzahl Gepäck Stk.: ${element.quantityOfLuggage}\nWarenbeschreibung: ${element.descriptionOfLuagge}\nGewicht: ${element.weight}\nDims: ${element.length}x${element.width}x${element.height}\n`;
+        console.log(this.typePeopleIdToDesc);
+        console.log(element.typePeople);
+        console.log(this.typePeopleIdToDesc.get(element.typePeople));
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantityOfPeople}\nTyp Personen: ${this.typePeopleIdToDesc.get(element.typePeople!)}\nAnzahl Gepäck Stk.: ${element.quantityOfLuggage}\nWarenbeschreibung: ${element.descriptionOfLuagge}\nGewicht: ${element.weight}\nDims: ${element.length}x${element.width}x${element.height}\n`;
       });
     }
 
@@ -1190,7 +1213,7 @@ export default class NewShipment extends Vue {
       if (order.goods) {
         const newOrder = await DirectusAPI.createTrpOrder(order);
         // somehow order is empty
-        console.log(newOrder.id);
+        console.log(newOrder);
 
         const goods: Promise<Good>[] = [];
 
@@ -1495,14 +1518,6 @@ export default class NewShipment extends Vue {
       this.currentOrder.construction?.splice(-1, 1);
       this.validFormConst.splice(-1, 1);
     }
-  }
-
-  get orderDetails(): string {
-    return this.genereateDetails();
-  }
-
-  set orderDetails(v: string) {
-    this.orderDetails = v;
   }
 
   get overViewAnlage(): string {

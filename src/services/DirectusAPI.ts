@@ -204,7 +204,7 @@ class DirectusAPI {
     return orderObj;
   }
 
-  public async createTrpOrder(order: TrpOrder): Promise<TrpOrder> {
+  public async createTrpOrder(order: TrpOrder): Promise<number> {
     const resp = await this.directusSDK.createItem("trp_order", {
       remarks: order.remarks,
       state: 1, // means new shipment
@@ -219,15 +219,17 @@ class DirectusAPI {
       raster_lagerplatz: order.rasterLagerplatz,
       delivery_only: order.deliveryOnly,
     });
-    const newOrder: TrpOrder = Object.assign(new Order(), (JSON.stringify(resp.data)));
-    return newOrder;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const newOrderId = resp.data.id;
+    return newOrderId;
   }
 
-  public async updateTrpOrder(order: TrpOrder): Promise<TrpOrder> {
+  public async updateTrpOrder(order: TrpOrder): Promise<number> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const resp = await this.directusSDK.updateItem("trp_order", order.id!, {
       remarks: order.remarks,
-      state: order.state,
+      state: order.state?.id,
       shipper: order.shipper?.id,
       receiver: order.receiver?.id,
       principal: order.principal?.id,
@@ -235,13 +237,15 @@ class DirectusAPI {
       delivery_date: fecha.format(order.deliveryDate!, "YYYY-MM-DD HH:mm:ss"),
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       pick_up_date: fecha.format(order.pickUpDate!, "YYYY-MM-DD HH:mm:ss"),
-      anlage: order.anlage,
+      anlage: order.anlage?.id,
       raster_lagerplatz: order.rasterLagerplatz,
       delivery_only: order.deliveryOnly,
       statusdirectus: order.statusdirectus,
     });
-    const updateTrpOrder: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
-    return updateTrpOrder[0];
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const newOrderId = resp.data.id;
+    return newOrderId;
   }
 
   public deleteGoodsPos(id: number): void {
@@ -249,8 +253,6 @@ class DirectusAPI {
   }
 
   public async createGoodsPos(goods: Good, orderId: number): Promise<Good> {
-    // packaing units dos not match smehow only a string not number
-    console.log(goods);
     const resp = await this.directusSDK.createItem("trp_order_goods", {
       quantity: goods.quantity,
       packing_unit: goods.packingUnit,
@@ -265,7 +267,7 @@ class DirectusAPI {
       dangerous_goods: goods.dangerousGoods,
       order: orderId,
     });
-    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify(resp.data));
+    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify([resp.data]));
     return newPos[0];
   }
 
@@ -285,7 +287,7 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: goods.statusdirectus,
     });
-    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify(resp.data));
+    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify([resp.data]));
     return newPos[0];
   }
 
@@ -305,7 +307,7 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: goods.statusdirectus,
     });
-    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify(resp.data));
+    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify([resp.data]));
     return newPos[0];
   }
 
@@ -325,7 +327,7 @@ class DirectusAPI {
       weight: people.weight,
       order: orderId,
     });
-    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify(resp.data));
+    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify([resp.data]));
     return newPos[0];
   }
 
@@ -342,7 +344,7 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: people.statusdirectus,
     });
-    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify(resp.data));
+    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify([resp.data]));
     return newPos[0];
   }
 
@@ -359,7 +361,7 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: people.statusdirectus,
     });
-    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify(resp.data));
+    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify([resp.data]));
     return newPos[0];
   }
 
@@ -374,7 +376,7 @@ class DirectusAPI {
       description: constru.description,
       order: orderId,
     });
-    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify(resp.data));
+    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify([resp.data]));
     return newPos[0];
   }
 
@@ -386,7 +388,7 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: constru.statusdirectus,
     });
-    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify(resp.data));
+    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify([resp.data]));
     return newPos[0];
   }
 
@@ -398,7 +400,7 @@ class DirectusAPI {
       order: orderId,
       statusdirectus: constru.statusdirectus,
     });
-    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify(resp.data));
+    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify([resp.data]));
     return newPos[0];
   }
 

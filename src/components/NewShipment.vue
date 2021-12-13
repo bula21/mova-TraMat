@@ -44,10 +44,7 @@
         </v-progress-linear>
       </v-col>
     </v-row>
-    <v-window
-      :key="componentKey"
-      v-model="step"
-    >
+    <v-window v-model="step">
       <v-window-item :value="1">
         <v-form
           ref="formFirst"
@@ -839,6 +836,28 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Dialog Sendung erfasst -->
+    <v-dialog
+      v-model="dialogWarnOrder"
+      max-width="400"
+    >
+      <v-card>
+        <v-card-title class="headline">
+          {{ titleDialogOrder }}
+        </v-card-title>
+        <v-card-text> {{ textDialogOrder }} </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue darken-1"
+            text
+            @click="forceReRender()"
+          >
+            Ok, verstanden!
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -872,7 +891,7 @@ export default class NewShipment extends Vue {
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
   private dialog = false;
   // eslint-disable-next-line no-undef
-  private timer: NodeJS.Timeout|undefined;
+  private timer: NodeJS.Timeout | undefined;
   private orderDetails = "";
   private dialogWarn = false;
   private dialogWarnOrder = false;
@@ -904,7 +923,6 @@ export default class NewShipment extends Vue {
   private onlyDelivery = false;
   private remarksTrpOrder = "";
   private currentOrder = new Order();
-  private componentKey = 0;
   // formFirst
   private validFormFirst = true;
   // formSecond
@@ -1097,17 +1115,11 @@ export default class NewShipment extends Vue {
 
     if (ORDER_TYPE.Warentransport === this.type && !!goods) {
       goods.forEach((element, idx) => {
-        console.log(this.packagingUntisIdToDesc);
-        console.log(element.packingUnit);
-        console.log(this.packagingUntisIdToDesc.get(element.packingUnit));
         posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantity}\nVerpackungseinheit: ${this.packagingUntisIdToDesc.get(element.packingUnit!)}\nBrutto Gewicht: ${element.grossWeight}\nNetto Gewicht: ${element.netWeight}\nWarenbeschreibung: ${element.goodsDescription}\nWarenwert: ${element.valueChf}\nGefahrgut: ${element.dangerousGoods}\nMarkierung: ${element.marking}\nDims: ${element.length}x${element.width}x${element.height}\n`;
       });
     }
     if (ORDER_TYPE.Personentransport === this.type && !!people) {
       people.forEach((element, idx) => {
-        console.log(this.typePeopleIdToDesc);
-        console.log(element.typePeople);
-        console.log(this.typePeopleIdToDesc.get(element.typePeople));
         posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantityOfPeople}\nTyp Personen: ${this.typePeopleIdToDesc.get(element.typePeople!)}\nAnzahl Gepäck Stk.: ${element.quantityOfLuggage}\nWarenbeschreibung: ${element.descriptionOfLuagge}\nGewicht: ${element.weight}\nDims: ${element.length}x${element.width}x${element.height}\n`;
       });
     }
@@ -1145,13 +1157,13 @@ export default class NewShipment extends Vue {
           newVal = newVal && value;
         });
         if (newVal) {
-          //  try {
-          await this.persistOrder(this.currentOrder);
-          //   } catch {
-          this.titleDialogOrder = "Fehler";
-          this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
-          this.dialogWarnOrder = true;
-          // }
+          try {
+            await this.persistOrder(this.currentOrder);
+          } catch {
+            this.titleDialogOrder = "Fehler";
+            this.textDialogOrder = "Prüfe zuerst, ob du die Berechtigungen hast, diese Aktion vorzunehmen und kontrolliere, dass alle Felder korrekt ausgefüllt sind. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
+            this.dialogWarnOrder = true;
+          }
         } else {
           this.titleDialogOrder = "Fehlerhafte Eingaben";
           this.textDialogOrder = "Bitte Formular überprüfen! Hinweise und Pflichtfelder beachten.";
@@ -1211,14 +1223,12 @@ export default class NewShipment extends Vue {
     // goods
     if (this.type === ORDER_TYPE.Warentransport) {
       if (order.goods) {
-        const newOrder = await DirectusAPI.createTrpOrder(order);
-        // somehow order is empty
-        console.log(newOrder);
+        const newOrderId = await DirectusAPI.createTrpOrder(order);
 
         const goods: Promise<Good>[] = [];
 
         for (let i = 0; order.goods!.length > i; i++) {
-          goods.push(DirectusAPI.createGoodsPos(order.goods![i], newOrder.id!));
+          goods.push(DirectusAPI.createGoodsPos(order.goods![i], newOrderId));
         }
         await Promise.all(goods);
       }
@@ -1227,12 +1237,12 @@ export default class NewShipment extends Vue {
     // people
     if (this.type === ORDER_TYPE.Personentransport) {
       if (order.people) {
-        const newOrder = await DirectusAPI.createTrpOrder(order);
+        const newOrderId = await DirectusAPI.createTrpOrder(order);
 
         const perso: Promise<Person>[] = [];
 
         for (let i = 0; order.people!.length > i; i++) {
-          perso.push(DirectusAPI.createPeoplePos(order.people![i], newOrder.id!));
+          perso.push(DirectusAPI.createPeoplePos(order.people![i], newOrderId));
         }
         await Promise.all(perso);
       }
@@ -1241,12 +1251,12 @@ export default class NewShipment extends Vue {
     // construction
     if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
       if (order.construction) {
-        const newOrder = await DirectusAPI.createTrpOrder(order);
+        const newOrderId = await DirectusAPI.createTrpOrder(order);
 
         const constru: Promise<Construction>[] = [];
 
         for (let i = 0; order.construction!.length > i; i++) {
-          constru.push(DirectusAPI.createConstPos(order.construction![i], newOrder.id!));
+          constru.push(DirectusAPI.createConstPos(order.construction![i], newOrderId));
         }
         await Promise.all(constru);
       }
@@ -1259,31 +1269,10 @@ export default class NewShipment extends Vue {
 
     (this.$refs.formFirst as Vue & { reset: () => void; }).reset();
     (this.$refs.formSecond as Vue & { reset: () => void; }).reset();
-
-    this.searchClient = new Client();
-    this.pickupID = 0;
-    this.pickupAddress = "";
-    this.deliveryID = 0;
-    this.deliveryAddress = "";
-    this.principalID = 0;
-    this.anlagenID = 0;
-    this.anlagenDescription = "--";
-    this.rasterLagerplatz = "";
-    this.principalAddress = "";
-    this.remarksTrpOrder = "";
-    this.datePickup = new Date().toISOString().substring(0, 10);
-    this.dateDelivery = new Date().toISOString().substring(0, 10);
-    this.pickupTime = "00:00";
-    this.deliveryTime = "00:00";
-    this.onlyDelivery = false;
-    this.currentOrder = new Order();
-    this.forceReRender();
-    this.triggerUpdateDatePickUp();
-    this.triggerUpdateDateDelivery();
   }
 
   private forceReRender(): void {
-    this.componentKey += 1;
+    this.$router.go(0);
   }
 
   private async searchCustomer(searchOption: string): Promise<void> {
@@ -1456,13 +1445,16 @@ export default class NewShipment extends Vue {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
           this.currentOrder.anlage = null;
         }
-        try {
-          this.anlagenDescription = `${resp2[0].anlagenname}, ${resp2[0].standort}`;
-          this.rasterLagerplatz = resp2[0].standortcode!;
-          this.currentOrder.anlage = new AnlageClass();
-          this.currentOrder.anlage = resp2[0];
-          this.currentOrder.rasterLagerplatz = resp2[0].standortcode!;
-        } catch {
+        if (resp2.length > 0) {
+          try {
+            this.rasterLagerplatz = resp2[0].standortcode!;
+            this.currentOrder.rasterLagerplatz = resp2[0].standortcode!;
+          } finally {
+            this.anlagenDescription = `${resp2[0].anlagenname}, ${resp2[0].standort}`;
+            this.currentOrder.anlage = new AnlageClass();
+            this.currentOrder.anlage = resp2[0];
+          }
+        } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
           this.currentOrder.anlage = null;
         }

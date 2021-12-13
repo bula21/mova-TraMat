@@ -128,17 +128,6 @@ const routes: Array<RouteConfig> = [
         },
       },
       {
-        path: "/scheduling",
-        name: "scheduling",
-        component: () => import(/* webpackChunkName: "search" */ "../components/Scheduling.vue"),
-        beforeEnter(to, from, next) {
-          ensureLoggedIn(to, from, next);
-        },
-        meta: {
-          public: false,
-        },
-      },
-      {
         path: "/new",
         name: "new",
         component: () => import(/* webpackChunkName: "search" */ "../components/NewShipment.vue"),

@@ -126,16 +126,6 @@
                 </v-list-item-icon>
                 <v-list-item-title>Transport erfassen</v-list-item-title>
               </v-list-item>
-
-              <v-list-item
-                router
-                :to="{path:'scheduling'}"
-              >
-                <v-list-item-icon>
-                  <v-icon>mdi-chart-timeline</v-icon>
-                </v-list-item-icon>
-                <v-list-item-title>Disposition</v-list-item-title>
-              </v-list-item>
             </v-list-item-group>
           </v-list>
         </v-navigation-drawer>

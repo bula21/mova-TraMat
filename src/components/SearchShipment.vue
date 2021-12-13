@@ -1,7 +1,6 @@
 <template>
   <!-- search transport-->
   <v-container>
-    <input @keyup.enter="search()">
     <v-row
       class="my-2"
       dense
@@ -810,6 +809,7 @@ import { DIRECTUS_ROLES, ORDER_TYPE, TRP_TYP_CLIENT } from "./Const";
 import { Anlage, TrpOrder } from "@/services/TrpOrder";
 import OrderDisplay from "@/model/OrderDisplay";
 import AnlageClass from "@/model/Anlage";
+import ClassState from "@/model/State";
 
 @Component({
   components: {
@@ -1512,7 +1512,7 @@ export default class SearchShipment extends Vue {
         this.editedOrder = editedItems[0];
         this.printOrder = editedItems[0];
         try {
-          this.anlagenID = this.editedOrder.anlage!.id!;
+          this.anlagenID = Number(this.editedOrder.anlage!.anlagenId);
         } catch {
           this.anlagenID = 0;
           this.editedOrder.anlage = new AnlageClass();
@@ -1690,7 +1690,7 @@ export default class SearchShipment extends Vue {
       && !(order.people!.length > 0)
       && !(order.construction!.length > 0)
     ) {
-      order.statusdirectus = this.stateTypeFromIdToState.get(order.state);
+      order.statusdirectus = this.stateTypeFromIdToState.get(order.state?.id);
       const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
       for (let i = 0; order.goods!.length > i; i++) {
@@ -1702,13 +1702,13 @@ export default class SearchShipment extends Vue {
           await DirectusAPI.updateGoodsPos(
             order.goods![i],
             order.goods![i].id!,
-            updateOrder.id!,
+            updateOrder,
           );
         } else {
           // eslint-disable-next-line no-await-in-loop
           await DirectusAPI.createGoodsPosWithState(
             order.goods![i],
-            updateOrder.id!,
+            updateOrder,
           );
         }
       }
@@ -1719,7 +1719,7 @@ export default class SearchShipment extends Vue {
       && !(order.goods!.length > 0)
       && !(order.construction!.length > 0)
     ) {
-      order.statusdirectus = this.stateTypeFromIdToState.get(order.state);
+      order.statusdirectus = this.stateTypeFromIdToState.get(order.state?.id);
       const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
       for (let i = 0; order.people!.length > i; i++) {
@@ -1731,13 +1731,13 @@ export default class SearchShipment extends Vue {
           await DirectusAPI.updatePeoplePos(
             order.people![i],
             order.people![i].id!,
-            updateOrder.id!,
+            updateOrder,
           );
         } else {
           // eslint-disable-next-line no-await-in-loop
           await DirectusAPI.createPeoplePosWithState(
             order.people![i],
-            updateOrder.id!,
+            updateOrder,
           );
         }
       }
@@ -1748,7 +1748,7 @@ export default class SearchShipment extends Vue {
       && !(order.goods!.length > 0)
       && !(order.people!.length > 0)
     ) {
-      order.statusdirectus = this.stateTypeFromIdToState.get(order.state);
+      order.statusdirectus = this.stateTypeFromIdToState.get(order.state?.id);
       const updateOrder = await DirectusAPI.updateTrpOrder(order);
 
       for (let i = 0; order.construction!.length > i; i++) {
@@ -1760,13 +1760,13 @@ export default class SearchShipment extends Vue {
           await DirectusAPI.updateConstruePos(
             order.construction![i],
             order.construction![i].id!,
-            updateOrder.id!,
+            updateOrder,
           );
         } else {
           // eslint-disable-next-line no-await-in-loop
           await DirectusAPI.createConstruPosWithState(
             order.construction![i],
-            updateOrder.id!,
+            updateOrder,
           );
         }
       }
@@ -1778,7 +1778,7 @@ export default class SearchShipment extends Vue {
     }
 
     // update table --> maybe extract this part...
-    const idxOfChange = this.orders.indexOf((value: OrderDisplay) => value.id === order.id);
+    const idxOfChange = this.orders.findIndex((value: OrderDisplay) => value.id === order.id);
 
     let weight = 0;
     let pos = 0;
@@ -1825,6 +1825,11 @@ export default class SearchShipment extends Vue {
       pos,
       posDescription,
     };
+
+    this.orders.push({
+    });
+    
+    this.orders.pop();
 
     this.dialog = false;
     (this.$refs.formFirst as Vue & { reset: () => boolean; }).reset();
@@ -1953,10 +1958,8 @@ export default class SearchShipment extends Vue {
         try {
           resp = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                id: {
-                  eq: this.deliveryID,
-                },
+              id: {
+                eq: this.deliveryID,
               },
             },
             5,
@@ -1979,10 +1982,8 @@ export default class SearchShipment extends Vue {
         try {
           resp = await DirectusAPI.getTrpClients(
             {
-              filter: {
-                id: {
-                  eq: this.principalID,
-                },
+              id: {
+                eq: this.principalID,
               },
             },
             5,
@@ -1993,7 +1994,7 @@ export default class SearchShipment extends Vue {
 
         if (resp[0].id!) {
           this.searchClient = resp[0];
-          if (this.searchClient.type === TRP_TYP_CLIENT.mova) {
+          if (this.searchClient.type?.id === TRP_TYP_CLIENT.mova) {
             this.principalID = this.searchClient.id!;
             this.principalAddress = this.printAdress(this.searchClient);
           } else {
@@ -2010,10 +2011,8 @@ export default class SearchShipment extends Vue {
       case "pickup":
         try {
           resp = await DirectusAPI.getTrpClients({
-            filter: {
-              id: {
-                eq: this.pickupID,
-              },
+            id: {
+              eq: this.pickupID,
             },
           }, 5);
         } catch {
@@ -2032,24 +2031,25 @@ export default class SearchShipment extends Vue {
       case "anlagen":
         try {
           resp2 = await DirectusAPI.getAnlage({
-            filter: {
-              anlagen_id: {
-                eq: this.anlagenID,
-              },
+            anlagen_id: {
+              eq: this.anlagenID,
             },
           }, 5);
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          this.anlagenID = 0;
           this.editedOrder.anlage = null;
         }
-        if (resp[0].id!) {
-          this.editedOrder.anlage = resp2[0];
-          this.anlagenDescription = `${this.editedOrder.anlage?.anlagenname}, ${this.editedOrder.anlage?.standort}`;
-          this.rasterLagerplatz = this.editedOrder.anlage!.standortcode!;
+        if (resp2.length > 0) {
+          try {
+            this.rasterLagerplatz = resp2[0].standortcode!;
+            this.editedOrder.rasterLagerplatz = resp2[0].standortcode!;
+          } finally {
+            this.anlagenDescription = `${resp2[0].anlagenname}, ${resp2[0].standort}`;
+            this.editedOrder.anlage = new AnlageClass();
+            this.editedOrder.anlage = resp2[0];
+          }
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          this.anlagenID = 0;
           this.editedOrder.anlage = null;
         }
         break;
@@ -2074,7 +2074,9 @@ export default class SearchShipment extends Vue {
 
   private triggerUpdateState(): void {
     const update = this.state;
-    this.editedOrder.state = this.stateTypeFromStateToId.get(update);
+    this.editedOrder.state = new ClassState();
+    this.editedOrder.state.id = this.stateTypeFromStateToId.get(update);
+    this.editedOrder.state.state = update;
   }
 
   private triggerUpdateDatePickUp(): void {

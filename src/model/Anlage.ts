@@ -14,9 +14,9 @@ class AnlageClass implements Anlage {
   avantiLink?: string | null | undefined;
   anlagenname?: string | undefined;
   kontaktperson?: number | undefined;
-  standort?: null | undefined;
-  standortcode?: null | undefined;
-  plannachfuehrung?: null | undefined;
+  standort?: string | null | undefined;
+  standortcode?: string | null | undefined;
+  plannachfuehrung?: Date | null | undefined;
   anlagenId?: string | undefined;
   ordnerLink?: string | undefined;
 }

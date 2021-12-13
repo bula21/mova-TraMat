@@ -61,9 +61,9 @@ export interface Anlage {
   avantiLink?: null | string;
   anlagenname?: string;
   kontaktperson?: number;
-  standort?: null;
-  standortcode?: null;
-  plannachfuehrung?: null;
+  standort?: string | null;
+  standortcode?: string | null;
+  plannachfuehrung?: Date | null;
   anlagenId?: string;
   ordnerLink?: string;
 }
@@ -150,10 +150,6 @@ export class ConvertTrpOrder {
     return cast(JSON.parse(json), a(r("TrpOrder")));
   }
 
-  public static toTrpOrderNotArray(json: string): TrpOrder {
-    return cast(JSON.parse(json), r("TrpOrder"));
-  }
-
   public static trpOrderToJson(value: TrpOrder[]): string {
     return JSON.stringify(uncast(value, a(r("TrpOrder"))), null, 2);
   }
@@ -175,11 +171,11 @@ export class ConvertTrpOrder {
   }
 
   public static toPeople(json: string): Person[] {
-    return cast(JSON.parse(json), a(r("People")));
+    return cast(JSON.parse(json), a(r("Person")));
   }
 
   public static peopleToJson(value: Person[]): string {
-    return JSON.stringify(uncast(value, a(r("People"))), null, 2);
+    return JSON.stringify(uncast(value, a(r("Person"))), null, 2);
   }
 
   public static toConstruction(json: string): Construction[] {
@@ -359,9 +355,9 @@ const typeMap: any = {
     { json: "avanti_link", js: "avantiLink", typ: u(undefined, u(null, "")) },
     { json: "anlagenname", js: "anlagenname", typ: u(undefined, "") },
     { json: "kontaktperson", js: "kontaktperson", typ: u(undefined, 0) },
-    { json: "standort", js: "standort", typ: u(undefined, null) },
-    { json: "standortcode", js: "standortcode", typ: u(undefined, null) },
-    { json: "plannachfuehrung", js: "plannachfuehrung", typ: u(undefined, null) },
+    { json: "standort", js: "standort", typ: u(undefined, null, "") },
+    { json: "standortcode", js: "standortcode", typ: u(undefined, null, "") },
+    { json: "plannachfuehrung", js: "plannachfuehrung", typ: u(undefined, null, Date) },
     { json: "anlagen_id", js: "anlagenId", typ: u(undefined, "") },
     { json: "ordner_link", js: "ordnerLink", typ: u(undefined, "") },
   ], false),

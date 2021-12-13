@@ -470,7 +470,9 @@ export default class NewShipment extends Vue {
     this.customerTypes.forEach((clientType) => {
       this.customerTypesNew.push(clientType.acronym);
     });
-    this.customerTypesSearch = this.customerTypesNew;
+    this.customerTypes.forEach((clientType) => {
+      this.customerTypesSearch.push(clientType.acronym);
+    });
     this.customerTypesSearch.push("ohne Typ suchen");
   }
 
@@ -533,6 +535,30 @@ export default class NewShipment extends Vue {
       this.editedItem.type.id = this.customerTypes.find((typeClient) => (
         typeClient.acronym === this.typeNewCustomer
       ))?.id;
+
+      if (this.editing) {
+        const idxOfChange = this.clients.findIndex((value: ClientDisplay) => value.id === this.editedItem.id);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.editedItem.createdOn = new Date(this.clients[idxOfChange].created_on!);
+        this.editedItem.modifiedOn = new Date();
+        this.editedItem.type.acronym = this.typeNewCustomer;
+        this.clients[idxOfChange] = {
+          id: this.editedItem.id,
+          type: this.editedItem.type.acronym,
+          name: this.editedItem.name,
+          street: this.editedItem.street,
+          place: this.editedItem.place,
+          zipcode: this.editedItem.zipcode,
+          phone: this.editedItem.phone,
+          email: this.editedItem.email,
+          modified_on: format(new Date(this.editedItem.modifiedOn), "YYYY-MM-DD HH:mm"),
+          created_on: format(new Date(this.editedItem.createdOn), "YYYY-MM-DD HH:mm"),
+          modified_by: this.$store.state.firstAndLastName,
+        };
+        this.clients.push({
+        });
+        this.clients.pop();
+      }
 
       await this.$nextTick(async () => {
         await this.persistClient(this.editedItem);

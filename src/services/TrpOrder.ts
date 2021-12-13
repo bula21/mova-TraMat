@@ -335,7 +335,7 @@ const typeMap: any = {
     { json: "tour", js: "tour", typ: u(undefined, null) },
     { json: "owner", js: "owner", typ: u(undefined, r("ModifiedBy")) },
     { json: "raster_lagerplatz", js: "rasterLagerplatz", typ: u(undefined, u(null, "")) },
-    { json: "anlage", js: "anlage", typ: u(undefined, u(r("Anlage"), null)) },
+    { json: "anlage", js: "anlage", typ: u(undefined, u(r("Anlage"), null, 0)) },
     { json: "delivery_only", js: "deliveryOnly", typ: u(undefined, true) },
     { json: "document", js: "document", typ: u(undefined, null) },
     { json: "statusdirectus", js: "statusdirectus", typ: u(undefined, "") },

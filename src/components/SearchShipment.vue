@@ -2037,7 +2037,8 @@ export default class SearchShipment extends Vue {
           }, 5);
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          this.editedOrder.anlage = null;
+          this.editedOrder.anlage = new AnlageClass();
+          this.editedOrder.anlage.id = 0;
         }
         if (resp2.length > 0) {
           try {
@@ -2050,7 +2051,8 @@ export default class SearchShipment extends Vue {
           }
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          this.editedOrder.anlage = null;
+          this.editedOrder.anlage = new AnlageClass();
+          this.editedOrder.anlage.id = 0;
         }
         break;
     }

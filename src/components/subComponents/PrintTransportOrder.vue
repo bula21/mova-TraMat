@@ -217,7 +217,7 @@ export default class PrintTransportOrder extends Vue {
     pdf.setFont("Helvetica", "italic");
 
     try {
-      pdf.text(`Anlagen ID:      \t${this.order.anlage?.id}`, 10.5, 6);
+      pdf.text(`Anlagen ID:      \t${this.order.anlage?.anlagenId} ${this.order.anlage?.anlagenname} `, 10.5, 6);
     } catch {
       console.log("no Anlage ID by print PDF");
     }

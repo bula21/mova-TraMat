@@ -1443,7 +1443,8 @@ export default class NewShipment extends Vue {
           }, 5);
         } catch {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          this.currentOrder.anlage = null;
+          this.currentOrder.anlage = new AnlageClass();
+          this.currentOrder.anlage.id = 0;
         }
         if (resp2.length > 0) {
           try {
@@ -1456,13 +1457,15 @@ export default class NewShipment extends Vue {
           }
         } else {
           this.anlagenDescription = "Analgen ID nicht vorhanden";
-          this.currentOrder.anlage = null;
+          this.currentOrder.anlage = new AnlageClass();
+          this.currentOrder.anlage.id = 0;
         }
         break;
 
       default:
         this.anlagenDescription = "Analgen ID nicht vorhanden";
-        this.currentOrder.anlage = null;
+        this.currentOrder.anlage = new AnlageClass();
+        this.currentOrder.anlage.id = 0;
         this.pickupAddress = "Kunden ID nicht vorhanden";
         this.principalAddress = "Kunden ID nicht vorhanden";
         this.deliveryAddress = "Kunden ID nicht vorhanden";

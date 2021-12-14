@@ -1,5 +1,5 @@
 # build environment
-FROM node:latest as build-stage
+FROM node:lts as build-stage
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY package*.json ./

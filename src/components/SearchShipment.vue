@@ -676,6 +676,42 @@
             </v-col>
           </v-col>
         </v-row>
+        <v-row class="mt-n7">
+          <v-col
+            :lg="4"
+            :md="4"
+            :sm="6"
+          >
+            <v-file-input
+              label="Lade eine Datei zur Sendung hoch"
+              hint="max. 2 MB"
+              v-model="file"
+              :show-size="1000"
+              @change="deleteDocumentTrpOrder()"
+            ></v-file-input>
+          </v-col>
+          <v-col
+            :lg="2"
+            :md="2"
+            :sm="4"
+            class="mt-3"
+          >
+            <v-btn
+              rounded
+              color="blue"
+              dark
+              @click="sendDownloadFile()"
+            >
+              download datei
+              <v-icon
+                right
+                dark
+              >
+                mdi-download
+              </v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
         <v-row class="mt-n10">
           <v-col class="ml-2 ">
             <v-checkbox
@@ -839,6 +875,8 @@ export default class SearchShipment extends Vue {
   private orders: any = [{
   }];
 
+  private file: File | null = null;
+  private fileOld: File | null = null;
   private printOrder = new Order();
   private editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
@@ -1506,6 +1544,8 @@ export default class SearchShipment extends Vue {
     this.orderPositionsConstruction = [];
 
     if (item.id) {
+      this.downloadDocument(item.id);
+
       editedItems = this.orderTable.filter((value) => value.id === item.id);
       // check if found item is not null
       if (editedItems[0]) {
@@ -1777,6 +1817,23 @@ export default class SearchShipment extends Vue {
       return;
     }
 
+    if (this.file) {
+      if (this.fileOld?.size !== this.file.size && this.fileOld?.type !== this.file.type) {
+        const formData = new FormData();
+        formData.append("file", this.file!);
+        DirectusAPI.uploadFileTrpOrder(order.id!, formData).then((resp: boolean) => {
+          if (resp) {
+            console.log(`upload done of file ${this.file?.name}`);
+            this.fileOld = this.file;
+          } else {
+            this.titleDialogOrder = "Fehler";
+            this.textDialogOrder = "Upload fehlgeschlagen! Beachte die maximale File Grösse von 2 MB. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
+            this.dialogWarnOrder = true;
+          }
+        });
+      }
+    }
+
     // update table --> maybe extract this part...
     const idxOfChange = this.orders.findIndex((value: OrderDisplay) => value.id === order.id);
 
@@ -1828,7 +1885,7 @@ export default class SearchShipment extends Vue {
 
     this.orders.push({
     });
-    
+
     this.orders.pop();
 
     this.dialog = false;
@@ -2072,6 +2129,53 @@ export default class SearchShipment extends Vue {
       this.typePeopleFromIdToDes,
     );
     ExportCSV.sendCsvDownload("orders.csv", csv);
+  }
+
+  private async sendDownloadFile(): Promise<void> {
+    if (this.file) {
+      const pic = document.createElement("a");
+      pic.href = URL.createObjectURL(this.file);
+      pic.setAttribute("download", this.file!.name);
+      pic.style.display = "none";
+      document.body.appendChild(pic);
+      pic.click();
+      document.body.removeChild(pic);
+    }
+  }
+
+  private async downloadDocument(trpOrderId: number): Promise<void> {
+    const resp = await DirectusAPI.getTrpOrder({
+      id: {
+        eq: trpOrderId,
+      },
+    }, 1);
+    if (resp[0].document?.id) {
+      this.file = await DirectusAPI.downloadFileTrpOrder(resp[0].document?.id);
+    }
+  }
+
+  private async deleteDocumentTrpOrder(): Promise<void> {
+    if (this.file) {
+      console.log("file exists");
+    } else {
+      try {
+        DirectusAPI.getTrpOrder({
+          id: {
+            eq: this.editedOrder.id,
+          },
+        }, 1).then((orders) => {
+          try {
+            DirectusAPI.deleteFileTrpOrder(this.editedOrder.id!, orders[0].document!.id!);
+          } catch {
+            console.log("file does not exist in backend");
+          }
+        });
+      } catch {
+        console.log("file does not exist in backend");
+      } finally {
+        this.fileOld = null;
+      }
+    }
   }
 
   private triggerUpdateState(): void {

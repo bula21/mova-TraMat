@@ -194,7 +194,7 @@ class DirectusAPI {
     const resp = await this.directusSDK.getItems("trp_order", {
       filter,
       limit,
-      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "shipper.modified_by.id", "shipper.modified_by.first_name", "shipper.modified_by.last_name", "shipper.modified_by.email", "receiver.*", "receiver.type.*", "receiver.modified_by.id", "receiver.modified_by.first_name", "receiver.modified_by.last_name", "receiver.modified_by.email", "principal.*", "principal.type.*", "principal.modified_by.id", "principal.modified_by.first_name", "principal.modified_by.last_name", "principal.modified_by.email", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*"],
+      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "shipper.modified_by.id", "shipper.modified_by.first_name", "shipper.modified_by.last_name", "shipper.modified_by.email", "receiver.*", "receiver.type.*", "receiver.modified_by.id", "receiver.modified_by.first_name", "receiver.modified_by.last_name", "receiver.modified_by.email", "principal.*", "principal.type.*", "principal.modified_by.id", "principal.modified_by.first_name", "principal.modified_by.last_name", "principal.modified_by.email", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*", "document.id"],
     });
     const orders: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
     const orderObj: Order[] = [];
@@ -246,6 +246,54 @@ class DirectusAPI {
     // @ts-ignore
     const newOrderId = resp.data.id;
     return newOrderId;
+  }
+
+  public async uploadFileTrpOrder(TrpOrderId: number, file: FormData): Promise<boolean> {
+    const headers = {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${this.getToken()}`,
+    };
+    const resp = await this.directusSDK.api.xhr.post(`${this.BASE_URL + this.PROJECT}/files`, file, {
+      headers,
+    });
+    if (resp.data.data.id) {
+      const resp2 = await this.directusSDK.updateItem("trp_order", TrpOrderId, {
+        document: resp.data.data.id,
+      });
+      if (resp2.data.document) {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+
+  public async deleteFileTrpOrder(trpOrderId: number, fileId: number): Promise<void> {
+    await this.directusSDK.updateItem("trp_order", trpOrderId, {
+      document: null,
+    });
+    const headers = {
+      Authorization: `Bearer ${this.getToken()}`,
+    };
+    await this.directusSDK.api.xhr.delete(`${this.BASE_URL + this.PROJECT}/files/${fileId}`, {
+      headers,
+    });
+  }
+
+  public async downloadFileTrpOrder(documentId: number): Promise<File> {
+    const headers = {
+      Authorization: `Bearer ${this.getToken()}`,
+    };
+    const resp = await this.directusSDK.api.xhr.get(`${this.BASE_URL + this.PROJECT}/files/${documentId}`, {
+      headers,
+    });
+    const resp1 = await this.directusSDK.api.xhr.get(`${this.BASE_URL}_/assets/${resp.data.data.private_hash}`, {
+      responseType: "blob",
+    });
+    const file = new File([resp1.data], resp.data.data.filename_download, {
+      type: resp.data.data.type,
+    });
+    return file;
   }
 
   public deleteGoodsPos(id: number): void {

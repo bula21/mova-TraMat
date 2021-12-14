@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Anlage, Construction, Good, ModifiedBy, Person, Principal, State, TrpOrder } from "@/services/TrpOrder";
+import { Anlage, Construction, Doc, Good, ModifiedBy, Person, Principal, State, TrpOrder } from "@/services/TrpOrder";
 
 class Order implements TrpOrder {
   id?: number;
@@ -18,7 +18,7 @@ class Order implements TrpOrder {
   rasterLagerplatz?: string | null | undefined;
   anlage?: Anlage | null | undefined;
   deliveryOnly?: boolean | undefined;
-  document?: null | undefined;
+  document?: null | undefined | Doc;
   statusdirectus?: string | undefined;
   construction?: Construction[] | undefined;
   goods?: Good[] | undefined;

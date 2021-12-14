@@ -37,7 +37,7 @@ export interface TrpOrder {
   rasterLagerplatz?: null | string;
   anlage?: Anlage | null;
   deliveryOnly?: boolean;
-  document?: null;
+  document?: null | Doc;
   statusdirectus?: string;
   construction?: Construction[];
   goods?: Good[];
@@ -47,6 +47,10 @@ export interface TrpOrder {
   calcLuaggage(): number;
   calcQuantity(): number;
   calcWeight(): number;
+}
+
+export interface Doc {
+  id?: number;
 }
 
 export interface Anlage {
@@ -337,7 +341,7 @@ const typeMap: any = {
     { json: "raster_lagerplatz", js: "rasterLagerplatz", typ: u(undefined, u(null, "")) },
     { json: "anlage", js: "anlage", typ: u(undefined, u(r("Anlage"), null, 0)) },
     { json: "delivery_only", js: "deliveryOnly", typ: u(undefined, true) },
-    { json: "document", js: "document", typ: u(undefined, null) },
+    { json: "document", js: "document", typ: u(undefined, null, r("Doc")) },
     { json: "statusdirectus", js: "statusdirectus", typ: u(undefined, "") },
     { json: "construction", js: "construction", typ: u(undefined, a(r("Construction"))) },
     { json: "goods", js: "goods", typ: u(undefined, a(r("Good"))) },
@@ -428,5 +432,8 @@ const typeMap: any = {
   "State": o([
     { json: "id", js: "id", typ: u(undefined, 0) },
     { json: "state", js: "state", typ: u(undefined, "") },
+  ], false),
+  "Doc": o([
+    { json: "id", js: "id", typ: u(undefined, 0) },
   ], false),
 };

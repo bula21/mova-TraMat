@@ -650,6 +650,22 @@
         </v-row>
         <v-row class="mt-n7">
           <v-col
+            :lg="8"
+            :md="8"
+            :sm="11"
+          >
+            <v-col cols="5">
+              <v-file-input
+                label="Lade eine Datei zur Sendung hoch"
+                hint="max. 2 MB"
+                v-model="file"
+                :show-size="1000"
+              ></v-file-input>
+            </v-col>
+          </v-col>
+        </v-row>
+        <v-row class="mt-n7">
+          <v-col
             :lg="4"
             :md="4"
             :sm="4"
@@ -838,7 +854,7 @@
     </v-dialog>
     <!-- Dialog Sendung erfasst -->
     <v-dialog
-      v-model="dialogWarnOrder"
+      v-model="dialogFinishOrder"
       max-width="400"
     >
       <v-card>
@@ -892,9 +908,11 @@ export default class NewShipment extends Vue {
   private dialog = false;
   // eslint-disable-next-line no-undef
   private timer: NodeJS.Timeout | undefined;
+  private file: File | null = null;
   private orderDetails = "";
   private dialogWarn = false;
   private dialogWarnOrder = false;
+  private dialogFinishOrder = false;
   private titleDialogOrder = "";
   private textDialogOrder = "";
   private progress = 0.0;
@@ -970,7 +988,6 @@ export default class NewShipment extends Vue {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: string) => !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig",
   ];
-
 
   private marginButtons() {
     switch (this.$vuetify.breakpoint.name) {
@@ -1220,10 +1237,12 @@ export default class NewShipment extends Vue {
   }
 
   private async persistOrder(order: Order) {
+    let newOrderId = 0;
+
     // goods
     if (this.type === ORDER_TYPE.Warentransport) {
       if (order.goods) {
-        const newOrderId = await DirectusAPI.createTrpOrder(order);
+        newOrderId = await DirectusAPI.createTrpOrder(order);
 
         const goods: Promise<Good>[] = [];
 
@@ -1237,7 +1256,7 @@ export default class NewShipment extends Vue {
     // people
     if (this.type === ORDER_TYPE.Personentransport) {
       if (order.people) {
-        const newOrderId = await DirectusAPI.createTrpOrder(order);
+        newOrderId = await DirectusAPI.createTrpOrder(order);
 
         const perso: Promise<Person>[] = [];
 
@@ -1251,7 +1270,7 @@ export default class NewShipment extends Vue {
     // construction
     if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
       if (order.construction) {
-        const newOrderId = await DirectusAPI.createTrpOrder(order);
+        newOrderId = await DirectusAPI.createTrpOrder(order);
 
         const constru: Promise<Construction>[] = [];
 
@@ -1261,10 +1280,25 @@ export default class NewShipment extends Vue {
         await Promise.all(constru);
       }
     }
+    if (newOrderId !== 0) {
+      if (this.file) {
+        const formData = new FormData();
+        formData.append("file", this.file!);
+        DirectusAPI.uploadFileTrpOrder(newOrderId, formData).then((resp: boolean) => {
+          if (resp) {
+            console.log(`upload done of file ${this.file?.name}`);
+          } else {
+            this.titleDialogOrder = "Fehler";
+            this.textDialogOrder = "Upload fehlgeschlagen! Beachte die maximale File Grösse von 2 MB. Ansonsten versuche es bitte später erneut und melde den Fehler mit einem Screenshot via Slack #20_log_21_trp_requests.";
+            this.dialogWarnOrder = true;
+          }
+        });
+      }
+    }
 
     this.titleDialogOrder = "Sendung erfolgreich erfasst";
     this.textDialogOrder = "Merci für deinen Auftrag. Eine Auftragsbestätigung folgt sobald wie möglich.";
-    this.dialogWarnOrder = true;
+    this.dialogFinishOrder = true;
     this.step = 1;
 
     (this.$refs.formFirst as Vue & { reset: () => void; }).reset();
@@ -1273,6 +1307,7 @@ export default class NewShipment extends Vue {
 
   private forceReRender(): void {
     this.$router.go(0);
+    this.dialogFinishOrder = false;
   }
 
   private async searchCustomer(searchOption: string): Promise<void> {

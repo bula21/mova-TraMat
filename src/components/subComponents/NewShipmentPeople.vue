@@ -108,173 +108,164 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { Component, Prop, Vue } from "vue-property-decorator";
 import PositionPeople from "@/model/PositionPeople";
 import DirectusAPI from "@/services/DirectusAPI";
-import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class NewShipmentPeople extends Vue {
-  @Prop({ type: PositionPeople, required: true })
+  @Prop({
+    type: PositionPeople, required: true,
+  })
   currenpos!: PositionPeople;
-  // @ts-ignore
+
   private typeOfPeople: string[] = [];
-  // @ts-ignore
   private typeOfPeopleConv = new Map();
-  // @ts-ignore
-  private pQuantity: number = null;
-  // @ts-ignore
-  private pQuantityOfLuagge: number = null;
-  // @ts-ignore
-  private pBruttoWeight: number = null;
-  // @ts-ignore
-  private pGoodsDescripttion = " ";
-  // @ts-ignore
-  private pLength: number = null;
-  // @ts-ignore
-  private pWidth: number = null;
-  // @ts-ignore
-  private pHeight: number = null;
-  // @ts-ignore
-  private pSelectedTypeOfPeople = "";
-  // @ts-ignore
-  //formPeople
+  private pQuantity: number | undefined = 0;
+  private pQuantityOfLuagge: number | undefined = 0;
+  private pBruttoWeight: number | undefined = 0;
+  private pGoodsDescripttion: string | undefined = " ";
+  private pLength: number | undefined = 0;
+  private pWidth: number | undefined = 0;
+  private pHeight: number | undefined = 0;
+  private pSelectedTypeOfPeople: string | undefined = " ";
+
+  // formPeople
   private pValidFormPeople = true;
-  // @ts-ignore
+
   private quanityRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt",
+    (v: any) => /^[0123456789]+$/.test(v) || "Nur ganze positive Zahlen erlaubt",
   ];
-  // @ts-ignore
+
   private requiredRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => v !== " " || "Wert ist erforderlich",
   ];
-  // @ts-ignore
+
   private dimRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>  (v !== null || v!==undefined) || "Wert ist erforderlich",
+    (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v) ||
-      "Nur Zahlen mit max. 1 Kommastelle",
+    (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v)
+      || "Nur Zahlen mit max. 1 Kommastelle",
   ];
-  // @ts-ignore
+
   private weightRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => (v !== null || v!==undefined) || "Wert ist erforderlich",
+    (v: any) => (v !== null || v !== undefined) || "Wert ist erforderlich",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) =>
-      /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v) ||
-      "Nur Zahlen mit max. 3 Kommastellen",
+    (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v)
+      || "Nur Zahlen mit max. 3 Kommastellen",
   ];
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async mounted() {
-    const resp = await this.fetchTypeOfPeople();
-    this.typeOfPeople = resp;
-    // @ts-ignore
-    this.$refs.formPeople.validate();
-    // @ts-ignore
-    this.$refs.formPeople.resetValidation();
-
-    // @ts-ignore
-    this.pQuantity = this.currenpos.quantity_of_people;
-    // @ts-ignore
-    this.pQuantityOfLuagge = this.currenpos.quantity_of_luggage;
-    // @ts-ignore
-    this.pBruttoWeight = this.currenpos.weight;
-    // @ts-ignore
-    this.pGoodsDescripttion = this.currenpos.description_of_luagge;
-    // @ts-ignore
-    this.pLength = this.currenpos.length;
-    // @ts-ignore
-    this.pWidth = this.currenpos.width;
-    // @ts-ignore
-    this.pHeight = this.currenpos.height;
-    // @ts-ignore
-    this.pSelectedTypeOfPeople = this.typeOfPeopleConv.get(this.currenpos.type_people);
-    // @ts-ignore
-  }
-
-  private async fetchTypeOfPeople(): Promise<string[]> {
-    let typeOfPeople: string[] = [];
-    const data = await DirectusAPI.directusAPI.getItems("trp_typ_people");
-    await data.data.forEach((value) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      typeOfPeople.push(value.description);
-      // @ts-ignore
+  async mounted(): Promise<void> {
+    const resp = await DirectusAPI.fetchTrpTypePeople();
+    resp.forEach((value) => {
+      this.typeOfPeople.push(value.description);
       this.typeOfPeopleConv.set(value.id, value.description);
     });
-    return typeOfPeople;
+
+    (this.$refs.formPeople as Vue & { validate: () => boolean; }).validate();
+    (this.$refs.formPeople as Vue & { resetValidation: () => boolean; }).resetValidation();
+    
+    this.pQuantity = this.currenpos.quantityOfPeople;
+    this.pQuantityOfLuagge = this.currenpos.quantityOfLuggage;
+    this.pBruttoWeight = this.currenpos.weight;
+    this.pGoodsDescripttion = this.currenpos.descriptionOfLuagge;
+    this.pLength = this.currenpos.length;
+    this.pWidth = this.currenpos.width;
+    this.pHeight = this.currenpos.height;
+    this.pSelectedTypeOfPeople = this.typeOfPeopleConv.get(this.currenpos.typePeople);
   }
-  public get quantity(): number {
+
+  public get quantity(): number | undefined {
     return this.pQuantity;
   }
-  public set quantity(v: number) {
+
+  public set quantity(v: number | undefined) {
     this.pQuantity = v;
     this.$emit("update:quantity", this.pQuantity);
   }
-  public get bruttoWeight(): number {
+
+  public get bruttoWeight(): number | undefined {
     return this.pBruttoWeight;
   }
-  public set bruttoWeight(v: number) {
+
+  public set bruttoWeight(v: number | undefined) {
     this.pBruttoWeight = v;
     this.$emit("update:bruttoWeight", this.pBruttoWeight);
   }
 
-  public get quantityOfLuagge(): number {
+  public get quantityOfLuagge(): number | undefined {
     return this.pQuantityOfLuagge;
   }
-  public set quantityOfLuagge(v: number) {
+
+  public set quantityOfLuagge(v: number | undefined) {
     this.pQuantityOfLuagge = v;
     this.$emit("update:quantityOfLuagge", this.pQuantityOfLuagge);
   }
-  public get goodsDescripttion(): string {
+
+  public get goodsDescripttion(): string | undefined {
     return this.pGoodsDescripttion;
   }
-  public set goodsDescripttion(v: string) {
+
+  public set goodsDescripttion(v: string | undefined) {
     this.pGoodsDescripttion = v;
     this.$emit("update:goodsDescripttion", this.pGoodsDescripttion);
   }
-  public get length(): number {
+
+  public get length(): number | undefined {
     return this.pLength;
   }
-  public set length(v: number) {
+
+  public set length(v: number | undefined) {
     this.pLength = v;
     this.$emit("update:length", this.pLength);
   }
-  public get width(): number {
+
+  public get width(): number | undefined {
     return this.pWidth;
   }
-  public set width(v: number) {
+
+  public set width(v: number | undefined) {
     this.pWidth = v;
     this.$emit("update:width", this.pWidth);
   }
-  public get height(): number {
+
+  public get height(): number | undefined {
     return this.pHeight;
   }
-  public set height(v: number) {
+
+  public set height(v: number | undefined) {
     this.pHeight = v;
     this.$emit("update:height", this.pHeight);
   }
-  public get selectedTypeOfPeople(): string {
+
+  public get selectedTypeOfPeople(): string | undefined {
     return this.pSelectedTypeOfPeople;
   }
-  public set selectedTypeOfPeople(v: string) {
+
+  public set selectedTypeOfPeople(v: string | undefined) {
     this.pSelectedTypeOfPeople = v;
-    this.$emit("update:selectedTypeOfPeople", this.pSelectedTypeOfPeople);
+    let idx = 0;
+    this.typeOfPeopleConv.forEach((descrp, id) => {
+      if (descrp === this.selectedTypeOfPeople) {
+        idx = id;
+      }
+    });
+    this.$emit("update:selectedTypeOfPeople", idx);
   }
+
   public set validFormPeople(v: boolean) {
     this.pValidFormPeople = v;
     this.$emit("update:validFormPeople", this.pValidFormPeople);
   }
+
   public get validFormPeople(): boolean {
     return this.pValidFormPeople;
   }

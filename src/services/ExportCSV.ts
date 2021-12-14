@@ -1,220 +1,221 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
+/* eslint-disable indent */
+/* eslint-disable class-methods-use-this */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { createObjectCsvStringifier } from "csv-writer";
+import { format } from "fecha";
+import ClientDisplay from "@/model/ClientDisplay";
+import { TrpOrder } from "./TrpOrder";
 
 class ExportCSV {
+  createCsvClients(fieldsClients: string[], clients: ClientDisplay[]): string {
+    const csvWriter = createObjectCsvStringifier({
+      header: fieldsClients,
+    });
+    return `${fieldsClients.join(",")}\n${csvWriter.stringifyRecords(clients)}`;
+  }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public createCsvClients(fieldsClients: any[], rows: any[]): string {
-        const csvWriter = createObjectCsvStringifier({
-            header: fieldsClients,
+  public createCsvOrder(fieldsOrder: string[], trpOrders: TrpOrder[], packagingUntisFromIdToDes: Map<number, string>): string {
+    const rows = [{
+    }];
+
+    let maxPosNr = 0;
+
+    fieldsOrder.push("cbm");
+    fieldsOrder.push("totalweight");
+    fieldsOrder.push("deliveryTime");
+    fieldsOrder.push("pickUpTime");
+    fieldsOrder.push("anlagen_name");
+    fieldsOrder.push("principal_name");
+    fieldsOrder.push("principal_street");
+    fieldsOrder.push("principal_zipcode");
+    fieldsOrder.push("principal_place");
+    fieldsOrder.push("principal_email");
+    fieldsOrder.push("principal_phone");
+    fieldsOrder.push("receiver_name");
+    fieldsOrder.push("receiver_street");
+    fieldsOrder.push("receiver_zipcode");
+    fieldsOrder.push("receiver_place");
+    fieldsOrder.push("receiver_email");
+    fieldsOrder.push("receiver_phone");
+    fieldsOrder.push("shipper_name");
+    fieldsOrder.push("shipper_street");
+    fieldsOrder.push("shipper_zipcode");
+    fieldsOrder.push("shipper_place");
+    fieldsOrder.push("shipper_email");
+    fieldsOrder.push("shipper_phone");
+
+    trpOrders.forEach((x: TrpOrder) => {
+      const row: Record<string, unknown> = {
+      };
+      row.id = x.id;
+      row.createdOn = x.createdOn!.toISOString().substring(0, 10);
+      row.modifiedOn = x.modifiedOn!.toISOString().substring(0, 10);
+      row.remarks = x.remarks;
+      row.state = x.state?.state;
+      row.deliveryDate = format(x.deliveryDate!, "YYYY-MM-DD");
+      row.deliveryTime = format(x.deliveryDate!, "HH:mm");
+      row.pickUpDate = format(x.pickUpDate!, "YYYY-MM-DD");
+      row.pickUpTime = format(x.pickUpDate!, "HH:mm");
+      row.cbm = x.calcCBM();
+      row.totalweight = x.calcWeight();
+      row.deliveryOnly = x.deliveryOnly;
+      row.statusdirectus = x.statusdirectus;
+
+      let modifiedBy = "";
+      let owner = "";
+      let anlage = "";
+      let goods = "";
+      let people = "";
+      let construction = "";
+      let tour = "";
+      let rasterLagerplatz = "";
+      let document = false;
+
+      if (x.tour) {
+        // eslint-disable-next-line prefer-destructuring
+        tour = x.tour;
+      }
+
+      if (x.document) {
+        document = true;
+      }
+
+      if (x.rasterLagerplatz) {
+        // eslint-disable-next-line prefer-destructuring
+        rasterLagerplatz = x.rasterLagerplatz;
+      }
+
+      if (x.modifiedBy) {
+        modifiedBy = `${x.modifiedBy.firstName} ${x.modifiedBy.lastName}`;
+      }
+
+      if (x.owner) {
+        owner = `${x.owner.firstName} ${x.owner.lastName}`;
+      }
+
+      if (x.anlage) {
+        anlage = x.anlage.anlagenId!;
+      }
+
+      row.tour = tour;
+      row.document = document;
+      row.rasterLagerplatz = rasterLagerplatz;
+      row.modifiedBy = modifiedBy;
+      row.owner = owner;
+      row.anlage = anlage;
+      row.anlagen_name = x.anlage?.anlagenname;
+      row.principal = x.principal?.id;
+      row.principal_name = x.principal?.name;
+      row.principal_street = x.principal?.street;
+      row.principal_zipcode = x.principal?.zipcode;
+      row.principal_place = x.principal?.place;
+      row.principal_email = x.principal?.email;
+      row.principal_phone = x.principal?.phone;
+      row.receiver = x.receiver?.id;
+      row.receiver_name = x.receiver?.name;
+      row.receiver_street = x.receiver?.street;
+      row.receiver_zipcode = x.receiver?.zipcode;
+      row.receiver_place = x.receiver?.place;
+      row.receiver_email = x.receiver?.email;
+      row.receiver_phone = x.receiver?.phone;
+      row.shipper = x.shipper?.id;
+      row.shipper_name = x.shipper?.name;
+      row.shipper_street = x.shipper?.street;
+      row.shipper_zipcode = x.shipper?.zipcode;
+      row.shipper_place = x.shipper?.place;
+      row.shipper_email = x.shipper?.email;
+      row.shipper_phone = x.shipper?.phone;
+
+      if (x.goods!.length > 0) {
+        let posNr = 0;
+        let position = "";
+
+        x.goods!.forEach((element) => {
+          posNr += 1;
+          position = `pos_${posNr}_`;
+          row[`${position}dangerousGoods`] = element.dangerousGoods;
+          row[`${position}goodsDescription`] = element.goodsDescription;
+          row[`${position}grossWeight`] = element.grossWeight;
+          row[`${position}netWeight`] = element.netWeight;
+          row[`${position}goodsDescription`] = element.goodsDescription;
+          row[`${position}length`] = element.length;
+          row[`${position}width`] = element.width;
+          row[`${position}height`] = element.height;
+          row[`${position}packingUnit`] = packagingUntisFromIdToDes.get(element.packingUnit!);
+          row[`${position}marking`] = element.marking;
+          row[`${position}quantity`] = element.quantity;
+          row[`${position}valueChf`] = element.valueChf;
+          if (maxPosNr < posNr) {
+            maxPosNr = posNr;
+          }
         });
-        return fieldsClients.join(",") + "\n" + csvWriter.stringifyRecords(rows);
-    }
+        goods = `Anz. Pos: ${posNr}`;
+      }
+      row.goods = goods;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public createCsvOrder(fieldsOrder: any[], rows: any[]): string {
-        const fieldNames = fieldsOrder.map((x) => x.field);
-        fieldNames.push("cbm");
-        fieldNames.push("totalweight");
+      if (x.people!.length > 0) {
+        let posNr = 0;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        rows.forEach((x: any) => {
-
-            const weightCBM = this.calcWeightCBM(x);
-            x.cbm = weightCBM[1];
-            x.totalweight = weightCBM[0];
-
-            //@ts-ignore
-            if (x.modified_by) {
-                //@ts-ignore
-                const newRow = x.modified_by.first_name + " " + x.modified_by.last_name;
-                //@ts-ignore
-                x.modified_by = newRow;
-            }
-
-            //@ts-ignore
-            if (x.owner) {
-                //@ts-ignore
-                const newRow = x.owner.first_name + " " + x.owner.last_name;
-                //@ts-ignore
-                x.owner = newRow;
-            }
-
-            if (x.anlage) {
-                //@ts-ignore
-                const newRow = x.anlage.id;
-                //@ts-ignore
-                x.anlage = newRow;
-            }
-
-            if (x.state) {
-                //@ts-ignore
-                const newState = x.state.state;
-                //@ts-ignore
-                x.state = newState;
-            }
-
-            if (x.principal) {
-                //@ts-ignore
-                const newAdress = "ID: " + x.principal.id + "|" + x.principal.name +
-                    "|" + x.principal.street + "|" + x.principal.street + "|" +
-                    x.principal.zipcode + " " + x.principal.place + "|" +
-                    x.principal.email + "|" + x.principal.phone;
-                x.principal = newAdress;
-            }
-            if (x.receiver) {
-                //@ts-ignore
-                const newAdress = "ID: " + x.receiver.id + "|" + x.receiver.name +
-                    "|" + x.receiver.street + "|" + x.receiver.street + "|" +
-                    x.receiver.zipcode + " " + x.receiver.place + "|" +
-                    x.receiver.email + "|" + x.receiver.phone;
-                x.receiver = newAdress;
-            }
-            if (x.shipper) {
-                //@ts-ignore
-                const newAdress = "ID: " + x.shipper.id + "|" + x.shipper.name +
-                    "|" + x.shipper.street + "|" + x.shipper.street + "|" +
-                    x.shipper.zipcode + " " + x.shipper.place + "|" +
-                    x.shipper.email + "|" + x.shipper.phone;
-                x.shipper = newAdress;
-            }
-
-            if (x.goods.length > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let posNr = 0;
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                x.goods.forEach((element: any) => {
-                    posNr++;
-                    const position = "Pos: " + posNr + "\n";
-                    const dangerous_goods = "| Gefahrgut: " + element.dangerous_goods;
-                    const goods_description = "| Beschreibung: " + element.goods_description;
-                    const gross_weight = "| Brutto(kg): " + element.gross_weight;
-                    const net_weight = "| Netto(kg): " + element.net_weight;
-                    const dims = "| LxBxH cm: " + element.length + "x" + element.width + "x" + element.height;
-                    const marking = "| Markierung: " + element.marking;
-                    const packing_unit = "| Verp.Einheit: " + element.packing_unit.description;
-                    const quantity = " Anz.: " + element.quantity;
-                    const value_chf = "| Warenwert(CHF): " + element.value_chf;
-
-                    x["goodsPos" + posNr] = position + quantity + packing_unit + gross_weight + net_weight + goods_description + dims + value_chf + dangerous_goods + marking;
-                    fieldNames.push("goodsPos" + posNr);
-                });
-                x.goods = "Anz. Pos: " + posNr;
-            }
-
-            if (x.people.length > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let posNr = 0;
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                x.people.forEach((element: any) => {
-                    posNr++;
-                    const position = "Pos: " + posNr + "\n";
-                    const description_of_luagge = "| Besch. Gepäck: " + element.description_of_luagge;
-                    const quantity_of_people = "Anz. Pers: " + element.quantity_of_people;
-                    const quantity_of_luggage = "| Anz. Gepäck: " + element.quantity_of_luggage;
-                    const type_people = "| Typ. Pers.: " + element.type_people.description;
-                    const dims = "| LxBxH cm: " + element.length + "x" + element.width + "x" + element.height;
-                    const weight = "| Gewicht(kg): " + element.weight;
-
-                    x["peoplePos" + posNr] = position + quantity_of_people + type_people + quantity_of_luggage + description_of_luagge + weight + dims;
-                    fieldNames.push("peoplePos" + posNr);
-                });
-                x.people = "Anz. Pos: " + posNr;
-            }
-
-            if (x.construction.length > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let posNr = 0;
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                x.construction.forEach((element: any) => {
-                    posNr++;
-                    const position = "Pos: " + posNr + "\n";
-                    const description = "Besch.: " + element.description;
-                    const quantity = "| Quantität.: " + element.quantity;
-                    const weight = "| Gewicht(kg): " + element.weight;
-
-                    x["constructionPos" + posNr] = position + description + quantity + weight;
-                    fieldNames.push("constructionPos" + posNr);
-                });
-                x.construction = "Anz. Pos: " + posNr;
-            }
+        x.people!.forEach(() => {
+          posNr += 1;
+          if (maxPosNr < posNr) {
+            maxPosNr = posNr;
+          }
         });
+        people = `Anz. Pos: ${posNr}`;
+      }
+      row.people = people;
 
-        const csvWriter = createObjectCsvStringifier({
-            header: fieldNames,
+
+      if (x.construction!.length > 0) {
+        let posNr = 0;
+        let position = "";
+
+        x.construction!.forEach((element) => {
+          posNr += 1;
+          position = `pos_${posNr}_`;
+          row[`${position}description`] = element.description;
+          row[`${position}quantity`] = element.quantity;
+          row[`${position}weight`] = element.weight;
+          if (maxPosNr < posNr) {
+            maxPosNr = posNr;
+          }
         });
+        construction = `Anz. Pos: ${posNr}`;
+      }
+      row.construction = construction;
+      rows.push(row);
+    });
 
-        return fieldNames.join(",") + "\n" + csvWriter.stringifyRecords(rows);
-    }
-    public sendCsvDownload(name: string, content: string) {
-        const link = document.createElement("a");
-        link.setAttribute(
-            "href",
-            // add UTF-8 BOM so Excel doesn't hiccup
-            "data:text/plain;charset=utf-8,%EF%BB%BF" + encodeURIComponent(content)
-        );
-        link.setAttribute("download", name);
-        link.style.display = "none";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    for (let z = 0; z < maxPosNr; z++) {
+      const position = `pos_${z + 1}_`;
+      fieldsOrder.push(`${position}dangerousGoods`, `${position}goodsDescription`,
+        `${position}grossWeight`, `${position}netWeight`, `${position}goodsDescription`, `${position}length`,
+        `${position}width`, `${position}height`, `${position}packingUnit`, `${position}marking`, `${position}quantity`,
+        `${position}valueChf`);
+      fieldsOrder.push(`${position}description`, `${position}quantity`, `${position}weight`);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private calcWeightCBM(order: any): [number, number] {
-        let weight = 0;
-        let cbm = 0;
+    const csvWriter = createObjectCsvStringifier({
+      header: fieldsOrder,
+    });
 
-        if (order.people.length > 0) {
-            // @ts-ignore
-            order.people.forEach((value) => {
-                // @ts-ignore
-                weight = value.weight * value.quantity_of_luggage + weight;
-                cbm =
-                    // @ts-ignore
-                    ((((value.length / 100) * value.height) / 100) * value.width) /
-                    100 * value.quantity_of_luggage +
-                    cbm;
-            });
-            // @ts-ignore
-            cbm = cbm.toFixed(3);
-            return [weight, cbm];
-        }
-        if (order.goods.length > 0) {
-            // @ts-ignore
-            order.goods.forEach((value) => {
-                // @ts-ignore
-                weight = value.gross_weight * value.quantity + weight;
+    return `${fieldsOrder.join(",")}\n${csvWriter.stringifyRecords(rows)}`;
+  }
 
-                cbm =
-                    // @ts-ignore
-                    ((((value.length / 100) * value.height) / 100) * value.width) /
-                    100 * value.quantity +
-                    cbm;
-            });
-            // @ts-ignore
-            cbm = cbm.toFixed(3);
-            return [weight, cbm];
-
-        }
-        if (order.construction.length > 0) {
-            // @ts-ignore
-            order.construction.forEach((value) => {
-                // @ts-ignore
-                weight = value.weight * value.quantity + weight;
-                // @ts-ignore
-                cbm = 0;
-            });
-            return [weight, cbm];
-        } else {
-            return [weight, cbm];
-        }
-    }
+  public sendCsvDownload(name: string, content: string) {
+    const link = document.createElement("a");
+    link.setAttribute(
+      "href",
+      // add UTF-8 BOM so Excel doesn't hiccup
+      `data:text/plain;charset=utf-8,%EF%BB%BF${encodeURIComponent(content)}`,
+    );
+    link.setAttribute("download", name);
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }
 
 export default new ExportCSV();

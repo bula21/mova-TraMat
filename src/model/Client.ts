@@ -1,31 +1,17 @@
-class Client {
+import { ModifiedBy, TrpClient, Type } from "@/services/TrpClient";
 
-    id?: number;
-    type?: number;
-    name?: string;
-    street?: string;
-    place?: string;
-    zipcode?: number;
-    phone?: string;
-    email?: string;
-    modified_on?: Date;
-    created_on?: Date;
-    modified_by?: number;
-
-
-    constructor(id?: number, type?: number, name?: string, street?: string, place?: string, zipcode?: number, phone?: string, email?: string, modified_on?: Date, created_on?: Date, modified_by?: number) {
-        this.id = id;
-        this.type = type;
-        this.name = name;
-        this.street = street;
-        this.place = place;
-        this.zipcode = zipcode;
-        this.phone = phone;
-        this.email = email;
-        this.modified_on = modified_on;
-        this.created_on = created_on;
-        this.modified_by = modified_by;
-    }
+class Client implements TrpClient {
+  id?: number;
+  createdOn?: Date | undefined;
+  modifiedBy?: ModifiedBy | undefined;
+  modifiedOn?: Date | undefined;
+  name?: string | undefined;
+  street?: string | undefined;
+  place?: string | undefined;
+  phone?: string | null | undefined;
+  zipcode?: number | undefined;
+  email?: string | null | undefined;
+  type?: Type | undefined;
 }
 
 export default Client;

@@ -10,17 +10,20 @@ import router from "./router";
 import DirectusAPI from "./services/DirectusAPI";
 
 @Component({
-  components: {},
+  components: {
+  },
 })
 export default class App extends Vue {
   constructor() {
     super();
     window.addEventListener("storage", (event) => {
       if (event.key === "LOGOUT") {
-        DirectusAPI.directusAPI.config.reset();
+        DirectusAPI.reset();
         localStorage.clear();
         sessionStorage.clear();
-        router.push({ name: "login" });
+        router.push({
+          name: "login",
+        });
       }
     });
 
@@ -29,7 +32,7 @@ export default class App extends Vue {
       // different from what we originally opened, for example).
 
       if (
-        event.origin === window.location.protocol + "//" + window.location.host
+        event.origin === `${window.location.protocol}//${window.location.host}`
       ) {
         // all good
       } else {
@@ -40,6 +43,7 @@ export default class App extends Vue {
       let token: string;
 
       try {
+        // eslint-disable-next-line prefer-destructuring
         token = JSON.parse(event.data).token;
       } catch {
         token = "";

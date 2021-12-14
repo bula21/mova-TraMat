@@ -20,7 +20,7 @@
     >
       <v-col cols="4">
         <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
-          Neue Transportaufträge
+          Status: New
         </h5>
         <v-progress-circular
           class="mt-4"
@@ -35,7 +35,7 @@
       </v-col>
       <v-col cols="4">
         <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
-          Undisponierte Transportaufträge
+          Status: Checked
         </h5>
         <v-progress-circular
           class="mt-4"
@@ -50,7 +50,7 @@
       </v-col>
       <v-col cols="4">
         <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
-          Geplante Transportaufträge
+          Status: Scheduled
         </h5>
         <v-progress-circular
           class="mt-4"
@@ -68,50 +68,35 @@
 </template>
 
 <script lang="ts">
-import DirectusAPI from "@/services/DirectusAPI";
 import { Component, Vue } from "vue-property-decorator";
+import DirectusAPI from "@/services/DirectusAPI";
 
 @Component
 export default class Home extends Vue {
-  /* eslint-disable @typescript-eslint/ban-ts-comment */
-  // @ts-ignore
   private newOrders = 0;
-  // @ts-ignore
   private currentOrder = 0;
-  // @ts-ignore
   private inProcessOrders = 0;
 
-
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async mounted() {
-    const orders = await this.fetchHomeOrders();
+  async mounted(): Promise<void> {
+    const orders = await Home.fetchHomeOrders();
     this.newOrders = orders[0];
     this.currentOrder = orders[1];
     this.inProcessOrders = orders[2];
   }
 
-  private async fetchHomeOrders(): Promise<number[]> {
-    const ordersNew = await DirectusAPI.directusAPI.getItems("trp_order", {
-      filter: {
-        // @ts-ignore
-        state: "1"
-      }
-    });
+  private static async fetchHomeOrders(): Promise<number[]> {
+    const ordersNew = await DirectusAPI.getTrpOrder({
+      state: "1",
+    }, -1);
 
-    const orderCurrent = await DirectusAPI.directusAPI.getItems("trp_order", {
-      filter: {
-        // @ts-ignore
-        state: "3"
-      }
-    });
+    const orderCurrent = await DirectusAPI.getTrpOrder({
+      state: "3",
+    }, -1);
 
-    const orderInProcess = await DirectusAPI.directusAPI.getItems("trp_order", {
-      filter: {
-        // @ts-ignore
-        state: "2"
-      }
-    });
-    return [ordersNew.data.length, orderCurrent.data.length, orderInProcess.data.length];
+    const orderInProcess = await DirectusAPI.getTrpOrder({
+      state: "2",
+    }, -1);
+    return [ordersNew.length, orderCurrent.length, orderInProcess.length];
   }
 }
 

@@ -11,7 +11,7 @@ export default new Vuex.Store({
     authorisation: "",
     authorisationDescript: "",
     firstAndLastName: "",
-    abbreviation:"",
+    abbreviation: "",
   },
   mutations: {
     loginSuccess(state) {
@@ -20,7 +20,7 @@ export default new Vuex.Store({
     logout(state) {
       state.userStatus = "LOGOUT";
       sessionStorage.clear();
-      localStorage.setItem("LOGOUT", state.userStatus + "." + Date.now());
+      localStorage.setItem("LOGOUT", `${state.userStatus}.${Date.now()}`);
       setTimeout(() => {
         localStorage.clear();
       }, 3000);
@@ -58,5 +58,5 @@ export default new Vuex.Store({
   modules: {
   },
   getters: {
-  }
+  },
 });

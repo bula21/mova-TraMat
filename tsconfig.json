@@ -11,13 +11,14 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
       "webpack-env",
-      "node"
+      "node",
+      "vuetify"
     ],
     "paths": {
       "@/*": [

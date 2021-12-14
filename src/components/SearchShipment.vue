@@ -1495,21 +1495,6 @@ export default class SearchShipment extends Vue {
   }
 
   private printItem(item: OrderDisplay): void {
-    if (
-      this.$store.state.authorisation === DIRECTUS_ROLES.Public
-      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
-      || this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"]
-      || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
-      || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
-      || this.$store.state.authorisation
-      === DIRECTUS_ROLES["Bereichsleitung Infra"]
-      || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
-      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
-    ) {
-      this.warnPermissions = true;
-      return;
-    }
-
     this.forceRerenderPrint();
     let editedItems: TrpOrder[] = [];
     this.printOrder = new Order();
@@ -2126,7 +2111,6 @@ export default class SearchShipment extends Vue {
       collectionFields1,
       this.orderTable,
       this.packagingUntisFromIdToDes,
-      this.typePeopleFromIdToDes,
     );
     ExportCSV.sendCsvDownload("orders.csv", csv);
   }

@@ -590,7 +590,7 @@ export default class PrintTransportOrder extends Vue {
           pdf.setFont("Helvetica", "italic");
           pdf.setFontSize(10);
           pdf.text(
-            "Datum, (Stempel), Unterschirft \n Wir übergeben Ihnen obige Sendung vollständig und in äusserlich gutem Zustand. Allfällige Reklamationen \noder Schadensmeldungen sind sofort mitzuteilen und innert 24 Studen schriftlich zu bestätigen.",
+            "Datum, (Stempel), Unterschirft \n \nWir übergeben Ihnen obige Sendung vollständig und in äusserlich gutem Zustand. Allfällige Reklamationen \noder Schadensmeldungen sind sofort mitzuteilen und innert 24 Studen schriftlich zu bestätigen.",
             borderLeft,
             positGoods + 7,
           );

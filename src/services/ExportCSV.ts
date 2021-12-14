@@ -2,6 +2,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { createObjectCsvStringifier } from "csv-writer";
+import { format } from "fecha";
 import ClientDisplay from "@/model/ClientDisplay";
 import { TrpOrder } from "./TrpOrder";
 
@@ -13,12 +14,35 @@ class ExportCSV {
     return `${fieldsClients.join(",")}\n${csvWriter.stringifyRecords(clients)}`;
   }
 
-  public createCsvOrder(fieldsOrder: string[], trpOrders: TrpOrder[], packagingUntisFromIdToDes: Map<number, string>, typePeopleFromIdToDes: Map<number, string>): string {
+  public createCsvOrder(fieldsOrder: string[], trpOrders: TrpOrder[], packagingUntisFromIdToDes: Map<number, string>): string {
     const rows = [{
     }];
 
+    let maxPosNr = 0;
+
     fieldsOrder.push("cbm");
     fieldsOrder.push("totalweight");
+    fieldsOrder.push("deliveryTime");
+    fieldsOrder.push("pickUpTime");
+    fieldsOrder.push("anlagen_name");
+    fieldsOrder.push("principal_name");
+    fieldsOrder.push("principal_street");
+    fieldsOrder.push("principal_zipcode");
+    fieldsOrder.push("principal_place");
+    fieldsOrder.push("principal_email");
+    fieldsOrder.push("principal_phone");
+    fieldsOrder.push("receiver_name");
+    fieldsOrder.push("receiver_street");
+    fieldsOrder.push("receiver_zipcode");
+    fieldsOrder.push("receiver_place");
+    fieldsOrder.push("receiver_email");
+    fieldsOrder.push("receiver_phone");
+    fieldsOrder.push("shipper_name");
+    fieldsOrder.push("shipper_street");
+    fieldsOrder.push("shipper_zipcode");
+    fieldsOrder.push("shipper_place");
+    fieldsOrder.push("shipper_email");
+    fieldsOrder.push("shipper_phone");
 
     trpOrders.forEach((x: TrpOrder) => {
       const row: Record<string, unknown> = {
@@ -28,8 +52,10 @@ class ExportCSV {
       row.modifiedOn = x.modifiedOn!.toISOString().substring(0, 10);
       row.remarks = x.remarks;
       row.state = x.state?.state;
-      row.deliveryDate = x.deliveryDate!.toISOString().substring(0, 10);
-      row.pickUpDate = x.pickUpDate!.toISOString().substring(0, 10);
+      row.deliveryDate = format(x.deliveryDate!, "YYYY-MM-DD");
+      row.deliveryTime = format(x.deliveryDate!, "HH:mm");
+      row.pickUpDate = format(x.pickUpDate!, "YYYY-MM-DD");
+      row.pickUpTime = format(x.pickUpDate!, "HH:mm");
       row.cbm = x.calcCBM();
       row.totalweight = x.calcWeight();
       row.deliveryOnly = x.deliveryOnly;
@@ -38,9 +64,6 @@ class ExportCSV {
       let modifiedBy = "";
       let owner = "";
       let anlage = "";
-      let principal = "";
-      let receiver = "";
-      let shipper = "";
       let goods = "";
       let people = "";
       let construction = "";
@@ -70,23 +93,8 @@ class ExportCSV {
         owner = `${x.owner.firstName} ${x.owner.lastName}`;
       }
 
-      if (x.anlage?.id) {
-        anlage = `ID: ${x.anlage.id}|${x.anlage.anlagenname}`;
-      }
-
-      if (x.principal) {
-        principal = `ID: ${x.principal.id}|${x.principal.name
-        }|${x.principal.street}|${x.principal.zipcode} ${x.principal.place}|${x.principal.email}|${x.principal.phone}`;
-      }
-
-      if (x.receiver) {
-        receiver = `ID: ${x.receiver.id}|${x.receiver.name
-          // eslint-disable-next-line indent
-          }|${x.receiver.street}|${x.receiver.zipcode} ${x.receiver.place}|${x.receiver.email}|${x.receiver.phone}`;
-      }
-      if (x.shipper) {
-        shipper = `ID: ${x.shipper.id}|${x.shipper.name
-          }|${x.shipper.street}|${x.shipper.zipcode} ${x.shipper.place}|${x.shipper.email}|${x.shipper.phone}`;
+      if (x.anlage) {
+        anlage = x.anlage.anlagenId!;
       }
 
       row.tour = tour;
@@ -95,28 +103,51 @@ class ExportCSV {
       row.modifiedBy = modifiedBy;
       row.owner = owner;
       row.anlage = anlage;
-      row.principal = principal;
-      row.receiver = receiver;
-      row.shipper = shipper;
+      row.anlagen_name = x.anlage?.anlagenname;
+      row.principal = x.principal?.id;
+      row.principal_name = x.principal?.name;
+      row.principal_street = x.principal?.street;
+      row.principal_zipcode = x.principal?.zipcode;
+      row.principal_place = x.principal?.place;
+      row.principal_email = x.principal?.email;
+      row.principal_phone = x.principal?.phone;
+      row.receiver = x.receiver?.id;
+      row.receiver_name = x.receiver?.name;
+      row.receiver_street = x.receiver?.street;
+      row.receiver_zipcode = x.receiver?.zipcode;
+      row.receiver_place = x.receiver?.place;
+      row.receiver_email = x.receiver?.email;
+      row.receiver_phone = x.receiver?.phone;
+      row.shipper = x.shipper?.id;
+      row.shipper_name = x.shipper?.name;
+      row.shipper_street = x.shipper?.street;
+      row.shipper_zipcode = x.shipper?.zipcode;
+      row.shipper_place = x.shipper?.place;
+      row.shipper_email = x.shipper?.email;
+      row.shipper_phone = x.shipper?.phone;
 
       if (x.goods!.length > 0) {
         let posNr = 0;
+        let position = "";
 
         x.goods!.forEach((element) => {
           posNr += 1;
-          const position = `Pos: ${posNr}\n`;
-          const dangerousGgoods = `| Gefahrgut: ${element.dangerousGoods}`;
-          const goodsDescription = `| Beschreibung: ${element.goodsDescription}`;
-          const grossWeight = `| Brutto(kg): ${element.grossWeight}`;
-          const netWeight = `| Netto(kg): ${element.netWeight}`;
-          const dims = `| LxBxH cm: ${element.length}x${element.width}x${element.height}`;
-          const marking = `| Markierung: ${element.marking}`;
-          const packingUnit = `| Verp.Einheit: ${packagingUntisFromIdToDes.get(element.packingUnit!)}`;
-          const quantity = ` Anz.: ${element.quantity}`;
-          const valueChf = `| Warenwert(CHF): ${element.valueChf}`;
-
-          row[`goodsPos${posNr}`] = position + quantity + packingUnit + grossWeight + netWeight + goodsDescription + dims + valueChf + dangerousGgoods + marking;
-          fieldsOrder.push(`goodsPos${posNr}`);
+          position = `pos_${posNr}_`;
+          row[`${position}dangerousGoods`] = element.dangerousGoods;
+          row[`${position}goodsDescription`] = element.goodsDescription;
+          row[`${position}grossWeight`] = element.grossWeight;
+          row[`${position}netWeight`] = element.netWeight;
+          row[`${position}goodsDescription`] = element.goodsDescription;
+          row[`${position}length`] = element.length;
+          row[`${position}width`] = element.width;
+          row[`${position}height`] = element.height;
+          row[`${position}packingUnit`] = packagingUntisFromIdToDes.get(element.packingUnit!);
+          row[`${position}marking`] = element.marking;
+          row[`${position}quantity`] = element.quantity;
+          row[`${position}valueChf`] = element.valueChf;
+          if (maxPosNr < posNr) {
+            maxPosNr = posNr;
+          }
         });
         goods = `Anz. Pos: ${posNr}`;
       }
@@ -125,41 +156,45 @@ class ExportCSV {
       if (x.people!.length > 0) {
         let posNr = 0;
 
-        x.people!.forEach((element) => {
+        x.people!.forEach(() => {
           posNr += 1;
-          const position = `Pos: ${posNr}\n`;
-          const descriptionOfLuagge = `| Besch. Gepäck: ${element.descriptionOfLuagge}`;
-          const quantityOfPeople = `Anz. Pers: ${element.quantityOfPeople}`;
-          const quantityOfLuggage = `| Anz. Gepäck: ${element.quantityOfLuggage}`;
-          const typePeople = `| Typ. Pers.: ${typePeopleFromIdToDes.get(element.typePeople!)}`;
-          const dims = `| LxBxH cm: ${element.length}x${element.width}x${element.height}`;
-          const weight = `| Gewicht(kg): ${element.weight}`;
-
-          row[`peoplePos${posNr}`] = position + quantityOfPeople + typePeople + quantityOfLuggage + descriptionOfLuagge + weight + dims;
-          fieldsOrder.push(`peoplePos${posNr}`);
+          if (maxPosNr < posNr) {
+            maxPosNr = posNr;
+          }
         });
         people = `Anz. Pos: ${posNr}`;
       }
       row.people = people;
 
+
       if (x.construction!.length > 0) {
         let posNr = 0;
+        let position = "";
 
         x.construction!.forEach((element) => {
           posNr += 1;
-          const position = `Pos: ${posNr}\n`;
-          const description = `Besch.: ${element.description}`;
-          const quantity = `| Quantität.: ${element.quantity}`;
-          const weight = `| Gewicht(kg): ${element.weight}`;
-
-          row[`constructionPos${posNr}`] = position + description + quantity + weight;
-          fieldsOrder.push(`constructionPos${posNr}`);
+          position = `pos_${posNr}_`;
+          row[`${position}description`] = element.description;
+          row[`${position}quantity`] = element.quantity;
+          row[`${position}weight`] = element.weight;
+          if (maxPosNr < posNr) {
+            maxPosNr = posNr;
+          }
         });
         construction = `Anz. Pos: ${posNr}`;
       }
       row.construction = construction;
       rows.push(row);
     });
+
+    for (let z = 0; z < maxPosNr; z++) {
+      const position = `pos_${z + 1}_`;
+      fieldsOrder.push(`${position}dangerousGoods`, `${position}goodsDescription`,
+        `${position}grossWeight`, `${position}netWeight`, `${position}goodsDescription`, `${position}length`,
+        `${position}width`, `${position}height`, `${position}packingUnit`, `${position}marking`, `${position}quantity`,
+        `${position}valueChf`);
+      fieldsOrder.push(`${position}description`, `${position}quantity`, `${position}weight`);
+    }
 
     const csvWriter = createObjectCsvStringifier({
       header: fieldsOrder,

@@ -50,11 +50,37 @@
                   />
                 </v-col>
               </v-row>
+              <v-row class="mt-n7">
+                <v-col>
+                  <v-select
+                    v-model="typeNewCustomer"
+                    label="Ressort nur mova"
+                    :items="customerTypesNew"
+                    :rules="nameRules"
+                    dense
+                    outlined
+                    class="mt-3"
+                  />
+                </v-col>
+              </v-row>
+              <v-row class="mt-n7">
+                <v-col>
+                  <v-select
+                    v-model="typeNewCustomer"
+                    label="Bereich nur mova"
+                    :items="customerTypesNew"
+                    :rules="nameRules"
+                    dense
+                    outlined
+                    class="mt-3"
+                  />
+                </v-col>
+              </v-row>
               <v-row class="mt-n9">
                 <v-col>
                   <v-text-field
                     v-model="editedItem.name"
-                    label="Firma/Name"
+                    label="Firma oder Vorname Name / Vulgo"
                     :rules="nameRules"
                     required
                   />
@@ -194,7 +220,7 @@
         >
           <v-text-field
             v-model="name"
-            label="Firma/Name"
+            label="Firma oder Vorname Name / Vulgo"
           />
         </v-col>
       </v-row>
@@ -408,6 +434,7 @@ export default class NewShipment extends Vue {
       }
       return true;
     },
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private emailRules = [
@@ -420,6 +447,7 @@ export default class NewShipment extends Vue {
       }
       return true;
     },
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private headers = [

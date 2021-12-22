@@ -1,4 +1,4 @@
-import { ModifiedBy, TrpClient, Type } from "@/services/TrpClient";
+import { ModifiedBy, RessortDepartment, TrpClient, Type } from "@/services/TrpClient";
 
 class Client implements TrpClient {
   id?: number;
@@ -12,6 +12,7 @@ class Client implements TrpClient {
   zipcode?: number | undefined;
   email?: string | null | undefined;
   type?: Type | undefined;
+  ressortDepartment?: RessortDepartment | null | undefined;
 }
 
 export default Client;

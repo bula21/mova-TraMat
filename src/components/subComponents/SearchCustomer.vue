@@ -41,7 +41,7 @@
         >
           <v-text-field
             v-model="name"
-            label="Firma/Name"
+            label="Firma oder Vorname Name / Vulgo"
           />
         </v-col>
       </v-row>

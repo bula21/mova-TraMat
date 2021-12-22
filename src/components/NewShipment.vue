@@ -548,7 +548,7 @@
                 />
               </div>
             </div>
-            <div v-else-if="type === orderType[1]">
+            <div v-else-if="type === posPeopleDeactivated">
               <div
                 v-for="(posPeople, indxPeople) in orderPositionsPeople"
                 :key="indxPeople"
@@ -568,7 +568,7 @@
                 />
               </div>
             </div>
-            <div v-else-if="type === orderType[2]">
+            <div v-else-if="type === orderType[1]">
               <div
                 v-for="(posCons, indexCons) in orderPositionsConstruction"
                 :key="indexCons"
@@ -910,6 +910,7 @@ export default class NewShipment extends Vue {
   private timer: NodeJS.Timeout | undefined;
   private file: File | null = null;
   private orderDetails = "";
+  private posPeopleDeactivated = "posPeopleIsDeactivated"
   private dialogWarn = false;
   private dialogWarnOrder = false;
   private dialogFinishOrder = false;
@@ -1035,7 +1036,7 @@ export default class NewShipment extends Vue {
       this.typePeopleIdToDesc.set(value.id, value.description);
     });
 
-    this.orderType.push(ORDER_TYPE.Warentransport, ORDER_TYPE.Personentransport, ORDER_TYPE["Bauleistung mit Fahrzeug"]);
+    this.orderType.push(ORDER_TYPE.Warentransport, ORDER_TYPE["Bauleistung mit Fahrzeug"]);
 
     this.timer = setInterval(this.genereateDetails, 2000);
   }

@@ -50,12 +50,12 @@
                   />
                 </v-col>
               </v-row>
-              <v-row class="mt-n7">
+              <v-row v-if="typeNewCustomer==showRessortIfTypeIs" class="mt-n7">
                 <v-col>
                   <v-select
-                    v-model="typeNewCustomer"
+                    v-model="ressortNewCustomer"
                     label="Ressort nur mova"
-                    :items="customerTypesNew"
+                    :items="ressortCustomer"
                     :rules="nameRules"
                     dense
                     outlined
@@ -63,12 +63,12 @@
                   />
                 </v-col>
               </v-row>
-              <v-row class="mt-n7">
+              <v-row v-if="typeNewCustomer==showRessortIfTypeIs" class="mt-n7">
                 <v-col>
                   <v-select
-                    v-model="typeNewCustomer"
+                    v-model="departmentNewCustomer"
                     label="Bereich nur mova"
-                    :items="customerTypesNew"
+                    :items="departmentCustomer"
                     :rules="nameRules"
                     dense
                     outlined
@@ -399,7 +399,12 @@ export default class NewShipment extends Vue {
   private email = "";
   private id = "";
   private type = "";
+  private showRessortIfTypeIs = "mova";
   private typeNewCustomer = "";
+  private departmentNewCustomer = "";
+  private ressortNewCustomer = "";
+  private ressortCustomer: string[] = [];
+  private departmentCustomer: string[] = [];
   private customerTypes: TrpTypeClient[] = [];
   private customerTypesNew: string[] = [];
   private customerTypesSearch: string[] = [];
@@ -434,6 +439,7 @@ export default class NewShipment extends Vue {
       }
       return true;
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
   ];
 
@@ -447,6 +453,7 @@ export default class NewShipment extends Vue {
       }
       return true;
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
   ];
 

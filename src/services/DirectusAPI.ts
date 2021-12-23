@@ -158,7 +158,7 @@ class DirectusAPI {
     const resp = await this.directusSDK.getItems("trp_client", {
       filter,
       limit,
-      fields: ["*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "type.*.*"],
+      fields: ["*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "type.*.*,ressort_department.*.*"],
     });
     const clients: TrpClient[] = ConvertTrpClient.toTrpClient(JSON.stringify(resp.data));
     return clients;
@@ -194,7 +194,7 @@ class DirectusAPI {
     const resp = await this.directusSDK.getItems("trp_order", {
       filter,
       limit,
-      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "shipper.modified_by.id", "shipper.modified_by.first_name", "shipper.modified_by.last_name", "shipper.modified_by.email", "receiver.*", "receiver.type.*", "receiver.modified_by.id", "receiver.modified_by.first_name", "receiver.modified_by.last_name", "receiver.modified_by.email", "principal.*", "principal.type.*", "principal.modified_by.id", "principal.modified_by.first_name", "principal.modified_by.last_name", "principal.modified_by.email", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*", "document.id"],
+      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "shipper.modified_by.id", "shipper.modified_by.first_name", "shipper.modified_by.last_name", "shipper.modified_by.email", "shipper.ressort_department.*.*", "receiver.*", "receiver.ressort_department.*.*", "receiver.type.*", "receiver.modified_by.id", "receiver.modified_by.first_name", "receiver.modified_by.last_name", "receiver.modified_by.email", "principal.*", "principal.type.*", "principal.modified_by.id", "principal.modified_by.first_name", "principal.modified_by.last_name", "principal.modified_by.email", "principal.ressort_department.*.*", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*", "document.id"],
     });
     const orders: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
     const orderObj: Order[] = [];

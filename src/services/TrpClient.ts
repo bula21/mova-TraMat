@@ -31,6 +31,7 @@ export interface TrpClient {
   zipcode?: number;
   email?: null | string;
   type?: Type;
+  ressortDepartment?: RessortDepartment | null;
 }
 
 export interface ModifiedBy {
@@ -38,6 +39,21 @@ export interface ModifiedBy {
   firstName?: string;
   lastName?: string;
   email?: string;
+}
+
+export interface RessortDepartment {
+  id?: number;
+  createdOn?: Date;
+  modifiedOn?: Date;
+  department?: string;
+  trpRessortMm?: TrpRessortMm;
+}
+
+export interface TrpRessortMm {
+  id?: number;
+  createdOn?: Date;
+  modifiedOn?: Date;
+  ressort?: string;
 }
 
 export interface Type {
@@ -203,12 +219,26 @@ const typeMap: any = {
     { json: "zipcode", js: "zipcode", typ: u(undefined, 0) },
     { json: "email", js: "email", typ: u(undefined, u(null, "")) },
     { json: "type", js: "type", typ: u(undefined, r("Type")) },
+    { json: "ressort_department", js: "ressortDepartment", typ: u(undefined, u(r("RessortDepartment"), null, 0)) },
   ], false),
   ModifiedBy: o([
     { json: "id", js: "id", typ: u(undefined, 0) },
     { json: "first_name", js: "firstName", typ: u(undefined, "") },
     { json: "last_name", js: "lastName", typ: u(undefined, "") },
     { json: "email", js: "email", typ: u(undefined, "") },
+  ], false),
+  RessortDepartment: o([
+    { json: "id", js: "id", typ: u(undefined, 0) },
+    { json: "created_on", js: "createdOn", typ: u(undefined, Date) },
+    { json: "modified_on", js: "modifiedOn", typ: u(undefined, Date) },
+    { json: "department", js: "department", typ: u(undefined, "") },
+    { json: "trp_ressort_mm", js: "trpRessortMm", typ: u(undefined, r("TrpRessortMm")) },
+  ], false),
+  TrpRessortMm: o([
+    { json: "id", js: "id", typ: u(undefined, 0) },
+    { json: "created_on", js: "createdOn", typ: u(undefined, Date) },
+    { json: "modified_on", js: "modifiedOn", typ: u(undefined, Date) },
+    { json: "ressort", js: "ressort", typ: u(undefined, "") },
   ], false),
   Type: o([
     { json: "id", js: "id", typ: u(undefined, 0) },

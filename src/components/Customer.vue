@@ -50,11 +50,37 @@
                   />
                 </v-col>
               </v-row>
+              <v-row v-if="typeNewCustomer==showRessortIfTypeIs" class="mt-n7">
+                <v-col>
+                  <v-select
+                    v-model="ressortNewCustomer"
+                    label="Ressort nur mova"
+                    :items="ressortCustomer"
+                    :rules="nameRules"
+                    dense
+                    outlined
+                    class="mt-3"
+                  />
+                </v-col>
+              </v-row>
+              <v-row v-if="typeNewCustomer==showRessortIfTypeIs" class="mt-n7">
+                <v-col>
+                  <v-select
+                    v-model="departmentNewCustomer"
+                    label="Bereich nur mova"
+                    :items="departmentCustomer"
+                    :rules="nameRules"
+                    dense
+                    outlined
+                    class="mt-3"
+                  />
+                </v-col>
+              </v-row>
               <v-row class="mt-n9">
                 <v-col>
                   <v-text-field
                     v-model="editedItem.name"
-                    label="Firma/Name"
+                    label="Firma oder Vorname Name / Vulgo"
                     :rules="nameRules"
                     required
                   />
@@ -194,7 +220,7 @@
         >
           <v-text-field
             v-model="name"
-            label="Firma/Name"
+            label="Firma oder Vorname Name / Vulgo"
           />
         </v-col>
       </v-row>
@@ -373,7 +399,12 @@ export default class NewShipment extends Vue {
   private email = "";
   private id = "";
   private type = "";
+  private showRessortIfTypeIs = "mova";
   private typeNewCustomer = "";
+  private departmentNewCustomer = "";
+  private ressortNewCustomer = "";
+  private ressortCustomer: string[] = [];
+  private departmentCustomer: string[] = [];
   private customerTypes: TrpTypeClient[] = [];
   private customerTypesNew: string[] = [];
   private customerTypesSearch: string[] = [];
@@ -408,6 +439,8 @@ export default class NewShipment extends Vue {
       }
       return true;
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private emailRules = [
@@ -420,6 +453,8 @@ export default class NewShipment extends Vue {
       }
       return true;
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => !!v || "Wert ist erforderlich",
   ];
 
   private headers = [

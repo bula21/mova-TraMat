@@ -5,6 +5,7 @@ import { Convert, Packaging, TransportState, TrpTypeClient, TrpTypePeople } from
 import { ConvertTrpClient, TrpClient } from "./TrpClient";
 import { Anlage, Construction, ConvertTrpOrder, Good, Person, TrpOrder } from "./TrpOrder";
 import Order from "@/model/Order";
+import { ConvertDepartmentsRessorts, Departments, Ressorts } from "./DepartmentsAndRessorts";
 
 // https://web.archive.org/web/20201028134719/https://docs.directus.io/guides/js-sdk.html
 // https://web.archive.org/web/20200811211652/https://docs.directus.io/api/authentication.html#tokens
@@ -158,7 +159,7 @@ class DirectusAPI {
     const resp = await this.directusSDK.getItems("trp_client", {
       filter,
       limit,
-      fields: ["*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "type.*.*,ressort_department.*.*"],
+      fields: ["*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "type.*.*", "ressort_department.*.*"],
     });
     const clients: TrpClient[] = ConvertTrpClient.toTrpClient(JSON.stringify(resp.data));
     return clients;
@@ -174,6 +175,7 @@ class DirectusAPI {
       zipcode: client.zipcode,
       phone: client.phone,
       email: client.email,
+      ressort_department: client.ressortDepartment?.id,
     });
   }
 
@@ -186,7 +188,28 @@ class DirectusAPI {
       zipcode: client.zipcode,
       phone: client.phone,
       email: client.email,
+      ressort_department: client.ressortDepartment?.id,
     });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async getDepartments(filter: any, limit: number): Promise<Departments[]> {
+    const resp = await this.directusSDK.getItems("trp_department", {
+      filter,
+      limit,
+      fields: ["*"],
+    });
+    const dep: Departments[] = ConvertDepartmentsRessorts.toDepartments(JSON.stringify(resp.data));
+    return dep;
+  }
+
+  public async getRessorts(limit: number): Promise<Ressorts[]> {
+    const resp = await this.directusSDK.getItems("trp_ressort", {
+      limit,
+      fields: ["*"],
+    });
+    const dep: Ressorts[] = ConvertDepartmentsRessorts.toRessorts(JSON.stringify(resp.data));
+    return dep;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -50,7 +50,10 @@
                   />
                 </v-col>
               </v-row>
-              <v-row v-if="typeNewCustomer==showRessortIfTypeIs" class="mt-n7">
+              <v-row
+                v-if="typeNewCustomer==showRessortIfTypeIs"
+                class="mt-n7"
+              >
                 <v-col>
                   <v-select
                     v-model="ressortNewCustomer"
@@ -60,10 +63,14 @@
                     dense
                     outlined
                     class="mt-3"
+                    @change="fetchDepartmentCustomer()"
                   />
                 </v-col>
               </v-row>
-              <v-row v-if="typeNewCustomer==showRessortIfTypeIs" class="mt-n7">
+              <v-row
+                v-if="typeNewCustomer==showRessortIfTypeIs"
+                class="mt-n7"
+              >
                 <v-col>
                   <v-select
                     v-model="departmentNewCustomer"
@@ -375,6 +382,8 @@ import DirectusAPI from "@/services/DirectusAPI";
 import Client from "../model/Client";
 import ClientType from "../model/ClientType";
 import ClientDisplay from "../model/ClientDisplay";
+import ClassRessortDepartment from "../model/ClassRessortDepartment";
+import ClassTrpRessortMm from "../model/ClassTrpRessortMm";
 import ExportCSV from "@/services/ExportCSV";
 import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
 import { TrpTypeClient } from "@/services/Quicktype";
@@ -405,6 +414,8 @@ export default class NewShipment extends Vue {
   private ressortNewCustomer = "";
   private ressortCustomer: string[] = [];
   private departmentCustomer: string[] = [];
+  private departmentCustomerFromDepartmentToId = new Map();
+  private ressortCustomerFromRessortToId = new Map();
   private customerTypes: TrpTypeClient[] = [];
   private customerTypesNew: string[] = [];
   private customerTypesSearch: string[] = [];
@@ -488,6 +499,12 @@ export default class NewShipment extends Vue {
       text: "Email", value: "email",
     },
     {
+      text: "Ressort", value: "ressort",
+    },
+    {
+      text: "Bereich", value: "department",
+    },
+    {
       text: "modified_on", value: "modified_on",
     },
     {
@@ -509,6 +526,15 @@ export default class NewShipment extends Vue {
       this.customerTypesSearch.push(clientType.acronym);
     });
     this.customerTypesSearch.push("ohne Typ suchen");
+
+    const resp = DirectusAPI.getRessorts(-1);
+    resp.then((ressorts) => ressorts.forEach((res) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.ressortCustomer.push(res.ressort!);
+      this.ressortCustomerFromRessortToId.set(res.ressort, res.id);
+    })).catch(() => {
+      this.ressortCustomer.push("could not fetch data");
+    });
   }
 
   destroyed(): void {
@@ -549,6 +575,8 @@ export default class NewShipment extends Vue {
         created_on: format(new Date(value.createdOn!), "YYYY-MM-DD HH:mm"),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         modified_by: `${value.modifiedBy!.firstName} ${value.modifiedBy!.lastName}`,
+        ressort: value.ressortDepartment?.trpRessortMm?.ressort,
+        department: value.ressortDepartment?.department,
       });
     });
   }
@@ -570,6 +598,10 @@ export default class NewShipment extends Vue {
       this.editedItem.type.id = this.customerTypes.find((typeClient) => (
         typeClient.acronym === this.typeNewCustomer
       ))?.id;
+      this.editedItem.ressortDepartment = new ClassRessortDepartment();
+      this.editedItem.ressortDepartment.id = this.departmentCustomerFromDepartmentToId.get(this.departmentNewCustomer);
+      this.editedItem.ressortDepartment.trpRessortMm = new ClassTrpRessortMm();
+      this.editedItem.ressortDepartment.trpRessortMm.id = this.ressortCustomerFromRessortToId.get(this.ressortNewCustomer);
 
       if (this.editing) {
         const idxOfChange = this.clients.findIndex((value: ClientDisplay) => value.id === this.editedItem.id);
@@ -577,6 +609,8 @@ export default class NewShipment extends Vue {
         this.editedItem.createdOn = new Date(this.clients[idxOfChange].created_on!);
         this.editedItem.modifiedOn = new Date();
         this.editedItem.type.acronym = this.typeNewCustomer;
+        this.editedItem.ressortDepartment.department = this.departmentNewCustomer;
+        this.editedItem.ressortDepartment.trpRessortMm.ressort = this.ressortNewCustomer;
         this.clients[idxOfChange] = {
           id: this.editedItem.id,
           type: this.editedItem.type.acronym,
@@ -589,6 +623,8 @@ export default class NewShipment extends Vue {
           modified_on: format(new Date(this.editedItem.modifiedOn), "YYYY-MM-DD HH:mm"),
           created_on: format(new Date(this.editedItem.createdOn), "YYYY-MM-DD HH:mm"),
           modified_by: this.$store.state.firstAndLastName,
+          ressort: this.editedItem.ressortDepartment.trpRessortMm.ressort,
+          department: this.editedItem.ressortDepartment.department,
         };
         this.clients.push({
         });
@@ -600,6 +636,8 @@ export default class NewShipment extends Vue {
         this.editedItem.type = new ClientType();
         this.editedItem = new Client();
         this.typeNewCustomer = "";
+        this.departmentNewCustomer = "";
+        this.ressortNewCustomer = "";
         (this.$refs.form as Vue & { resetValidation: () => void; }).resetValidation();
         this.dialog = false;
         this.editing = false;
@@ -612,12 +650,14 @@ export default class NewShipment extends Vue {
     this.$nextTick(() => {
       this.editedItem = new Client();
       this.typeNewCustomer = "";
+      this.departmentNewCustomer = "";
+      this.ressortNewCustomer = "";
       this.editing = false;
       (this.$refs.form as Vue & { resetValidation: () => void; }).resetValidation();
     });
   }
 
-  private editItem(item: ClientDisplay): void {
+  private async editItem(item: ClientDisplay): Promise<void> {
     if (item.id) {
       this.editedItem.id = item.id;
       this.editedItem.type = new ClientType();
@@ -628,6 +668,10 @@ export default class NewShipment extends Vue {
       this.editedItem.phone = item.phone;
       this.editedItem.zipcode = item.zipcode;
       this.editedItem.email = item.email;
+      this.editedItem.ressortDepartment = new ClassRessortDepartment();
+      this.editedItem.ressortDepartment.department = item.department;
+      this.editedItem.ressortDepartment.trpRessortMm = new ClassTrpRessortMm();
+      this.editedItem.ressortDepartment.trpRessortMm.ressort = item.ressort;
 
       this.dialog = true;
       this.editing = true;
@@ -647,6 +691,13 @@ export default class NewShipment extends Vue {
       if (this.editedItem.type.acronym) {
         this.typeNewCustomer = this.editedItem.type.acronym;
       }
+      if (this.editedItem.ressortDepartment.trpRessortMm.ressort) {
+        this.ressortNewCustomer = this.editedItem.ressortDepartment.trpRessortMm.ressort;
+      }
+      if (this.editedItem.ressortDepartment.department) {
+        this.departmentNewCustomer = this.editedItem.ressortDepartment.department;
+      }
+      this.fetchDepartmentCustomer();
     }
   }
 
@@ -738,6 +789,26 @@ export default class NewShipment extends Vue {
       this.clients,
     );
     ExportCSV.sendCsvDownload("clients.csv", csv);
+  }
+
+  private async fetchDepartmentCustomer(): Promise<void> {
+    const resp1 = await DirectusAPI.getDepartments(
+      {
+        trp_ressort_mm: {
+          eq: this.ressortCustomerFromRessortToId.get(this.ressortNewCustomer),
+        },
+      }, -1,
+    );
+    const depart: string[] = [];
+    const mapDep = new Map();
+
+    resp1.forEach((x) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      depart.push(x.department!);
+      mapDep.set(x.department, x.id);
+    });
+    this.departmentCustomerFromDepartmentToId = mapDep;
+    this.departmentCustomer = depart;
   }
 }
 </script>

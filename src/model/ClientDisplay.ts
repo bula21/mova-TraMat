@@ -1,7 +1,5 @@
 /* eslint-disable camelcase */
 
-import { RessortDepartment } from "@/services/TrpClient";
-
 class ClientDisplay {
   id?: number;
   created_on?: string | undefined;
@@ -14,7 +12,8 @@ class ClientDisplay {
   zipcode?: number | undefined;
   email?: string | null | undefined;
   type?: string | undefined;
-  ressortDepartment?: RessortDepartment | null | undefined;
+  ressort?: string | undefined;
+  department?: string | undefined;
 }
 
 export default ClientDisplay;

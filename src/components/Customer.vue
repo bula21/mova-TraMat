@@ -350,6 +350,13 @@
         >
           mdi-pencil
         </v-icon>
+        <v-icon
+          small
+          class="text-center"
+          @click="deleteItem(item)"
+        >
+          mdi-delete
+        </v-icon>
       </template>
     </v-data-table>
     <div class="text-right pt-2">
@@ -372,6 +379,12 @@
       :dialog-warn-permissions="warnPermissions"
       @closePermissions="closePermissions()"
     />
+    <!-- Dialog Warn Delete-->
+    <DialogDeleteWarn
+      :dialog-warn-delete="dialogWarnDelete"
+      @closeDeleteWarn="closeWarnDelete()"
+      @deletConfirmed="deleteClient()"
+    />
   </v-container>
 </template>
 
@@ -386,6 +399,7 @@ import ClassRessortDepartment from "../model/ClassRessortDepartment";
 import ClassTrpRessortMm from "../model/ClassTrpRessortMm";
 import ExportCSV from "@/services/ExportCSV";
 import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
+import DialogDeleteWarn from "@/components/subComponents/DialogWarnDelete.vue";
 import { TrpTypeClient } from "@/services/Quicktype";
 import { DIRECTUS_ROLES } from "@/components/Const";
 import { TrpClient } from "@/services/TrpClient";
@@ -393,11 +407,13 @@ import { TrpClient } from "@/services/TrpClient";
 @Component({
   components: {
     DialogPermissions,
+    DialogDeleteWarn,
   },
 })
 export default class NewShipment extends Vue {
   private dialog = false;
   private warnPermissions = false;
+  private dialogWarnDelete = false;
   private editing = false;
   private valid = true;
   private name = "";
@@ -421,6 +437,7 @@ export default class NewShipment extends Vue {
   private customerTypesSearch: string[] = [];
   private editedItem = new Client();
   private clients: ClientDisplay[] = [];
+  private clientToDelete = new ClientDisplay();
   private limit = 100;
   private limitTypes = [-1, 5, 50, 100, 200];
   private nameRules = [
@@ -657,6 +674,24 @@ export default class NewShipment extends Vue {
     });
   }
 
+  private async deleteItem(item: ClientDisplay): Promise<void> {
+    if (
+      this.$store.state.authorisation === DIRECTUS_ROLES.Public
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
+    ) {
+      this.warnPermissions = true;
+    } else {
+      this.dialogWarnDelete = true;
+      this.clientToDelete = item;
+    }
+  }
+
   private async editItem(item: ClientDisplay): Promise<void> {
     if (item.id) {
       this.editedItem.id = item.id;
@@ -698,6 +733,18 @@ export default class NewShipment extends Vue {
         this.departmentNewCustomer = this.editedItem.ressortDepartment.department;
       }
       this.fetchDepartmentCustomer();
+    }
+  }
+
+  private async deleteClient(): Promise<void> {
+    if (this.clientToDelete.id) {
+      const idxOfChange = this.clients.findIndex((value: ClientDisplay) => value.id === this.clientToDelete.id);
+      await DirectusAPI.deleteTrpClient(this.clientToDelete.id);
+      if (idxOfChange !== -1) {
+        this.clients.splice(idxOfChange, 1);
+      }
+      this.clientToDelete = new ClientDisplay();
+      this.dialogWarnDelete = false;
     }
   }
 
@@ -771,6 +818,10 @@ export default class NewShipment extends Vue {
 
   private closePermissions(): void {
     this.warnPermissions = false;
+  }
+
+  private closeWarnDelete(): void {
+    this.dialogWarnDelete = false;
   }
 
   private exportCustomers(): void {

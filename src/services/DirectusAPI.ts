@@ -192,6 +192,10 @@ class DirectusAPI {
     });
   }
 
+  public async deleteTrpClient(clientId: number): Promise<void> {
+    await this.directusSDK.deleteItem("trp_client", clientId);
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async getDepartments(filter: any, limit: number): Promise<Departments[]> {
     const resp = await this.directusSDK.getItems("trp_department", {

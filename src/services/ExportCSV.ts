@@ -31,6 +31,8 @@ class ExportCSV {
     fieldsOrder.push("principal_place");
     fieldsOrder.push("principal_email");
     fieldsOrder.push("principal_phone");
+    fieldsOrder.push("principal_ressort");
+    fieldsOrder.push("principal_bereich");
     fieldsOrder.push("receiver_name");
     fieldsOrder.push("receiver_street");
     fieldsOrder.push("receiver_zipcode");
@@ -111,6 +113,8 @@ class ExportCSV {
       row.principal_place = x.principal?.place;
       row.principal_email = x.principal?.email;
       row.principal_phone = x.principal?.phone;
+      row.principal_ressort = x.principal?.ressortDepartment?.trpRessortMm?.ressort;
+      row.principal_bereich = x.principal?.ressortDepartment?.department;
       row.receiver = x.receiver?.id;
       row.receiver_name = x.receiver?.name;
       row.receiver_street = x.receiver?.street;

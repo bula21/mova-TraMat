@@ -245,6 +245,7 @@ class DirectusAPI {
       anlage: order.anlage?.id,
       raster_lagerplatz: order.rasterLagerplatz,
       delivery_only: order.deliveryOnly,
+      cost_trp_external: order.costTrpExternal,
     });
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -268,11 +269,16 @@ class DirectusAPI {
       raster_lagerplatz: order.rasterLagerplatz,
       delivery_only: order.deliveryOnly,
       statusdirectus: order.statusdirectus,
+      cost_trp_external: order.costTrpExternal,
     });
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const newOrderId = resp.data.id;
     return newOrderId;
+  }
+
+  public async deleteTrpOrder(trpOrderId: number): Promise<void> {
+    await this.directusSDK.deleteItem("trp_order", trpOrderId);
   }
 
   public async uploadFileTrpOrder(TrpOrderId: number, file: FormData): Promise<boolean> {

@@ -103,6 +103,13 @@
         >
           mdi-printer
         </v-icon>
+        <v-icon
+          small
+          class="text-center"
+          @click="deleteItem(item)"
+        >
+          mdi-delete
+        </v-icon>
       </template>
     </v-data-table>
     <div class="text-right pt-2">
@@ -722,6 +729,14 @@
               @change="triggerUpdateDeliveryOnly()"
             />
           </v-col>
+          <v-col v-if="onlyDelivery===true">
+            <v-text-field
+              v-model="costTrpExternal"
+              :rules="valueCHFRules"
+              label="Kosten für Transport extern (CHF)"
+              @change="triggerUpdateCostTrpExternal()"
+            />
+          </v-col>
         </v-row>
         <v-divider class="mt-4" />
         <!-- actions order-->
@@ -806,6 +821,12 @@
       :dialog-warn-permissions="warnPermissions"
       @closePermissions="closePermissions()"
     />
+    <!-- Dialog Warn Delete-->
+    <DialogDeleteWarn
+      :dialog-warn-delete="dialogWarnDelete"
+      @closeDeleteWarn="closeWarnDelete()"
+      @deletConfirmed="deleteTrpOrder()"
+    />
     <!-- Dialog Print -->
     <v-dialog
       v-model="dialogPrint"
@@ -826,6 +847,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { format } from "fecha";
+import CloneDeep from "lodash/cloneDeep";
 import SearchShipmentTextfieldInit from "@/components/subComponents/SearchShipmentTextfieldInit.vue";
 import SearchShipmentTextfieldAdd from "@/components/subComponents/SearchShipmentTextfieldAdd.vue";
 import NewShipmentGoods from "@/components/subComponents/NewShipmentGoods.vue";
@@ -841,6 +863,7 @@ import PositionConstruction from "@/model/PositionConstruction";
 import Client from "@/model/Client";
 import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
 import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
+import DialogDeleteWarn from "@/components/subComponents/DialogWarnDelete.vue";
 import { DIRECTUS_ROLES, ORDER_TYPE, TRP_TYP_CLIENT } from "./Const";
 import { Anlage, TrpOrder } from "@/services/TrpOrder";
 import OrderDisplay from "@/model/OrderDisplay";
@@ -857,6 +880,7 @@ import ClassState from "@/model/State";
     SearchCustomer,
     PrintTransportOrder,
     DialogPermissions,
+    DialogDeleteWarn,
   },
 })
 export default class SearchShipment extends Vue {
@@ -880,6 +904,7 @@ export default class SearchShipment extends Vue {
   private printOrder = new Order();
   private editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
+  private orderToDelete = new OrderDisplay();
   private errorMessage = "";
   private dialog = false;
   private dialogNotMova = false;
@@ -887,6 +912,7 @@ export default class SearchShipment extends Vue {
   private dialogSearchClient = false;
   private dialogWarnOrder = false;
   private warnPermissions = false;
+  private dialogWarnDelete = false;
   private titleDialogOrder = "";
   private textDialogOrder = "";
   // formFirst
@@ -922,6 +948,7 @@ export default class SearchShipment extends Vue {
   private rasterLagerplatz = "";
   private menuDatePickup = false;
   private menuDateDelivery = false;
+  private costTrpExternal = 0;
   private datePickup = new Date().toISOString().substring(0, 10);
   private dateDelivery = new Date().toISOString().substring(0, 10);
   private pickupTime = "00:00";
@@ -958,6 +985,16 @@ export default class SearchShipment extends Vue {
         return !!v || "Wert ist erforderlich";
       }
       this.notRequired = true;
+      return true;
+    },
+  ];
+
+  private valueCHFRules = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (v) {
+        return /^[0-9]{1,11}(?:\.[0-9]{1,2})?$/.test(v) || "Nur Zahlen mit max. 2 Kommastelle";
+      }
       return true;
     },
   ];
@@ -1494,6 +1531,40 @@ export default class SearchShipment extends Vue {
     return order;
   }
 
+  private async deleteItem(item: OrderDisplay): Promise<void> {
+    if (
+      this.$store.state.authorisation === DIRECTUS_ROLES.Public
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
+    ) {
+      this.warnPermissions = true;
+    } else {
+      this.dialogWarnDelete = true;
+      this.orderToDelete = item;
+    }
+  }
+
+  private async deleteTrpOrder(): Promise<void> {
+    if (this.orderToDelete.id) {
+      const idxOfChange = this.orders.findIndex((value: OrderDisplay) => value.id === this.orderToDelete.id);
+      await DirectusAPI.deleteTrpOrder(this.orderToDelete.id);
+      if (idxOfChange !== -1) {
+        this.orders.splice(idxOfChange, 1);
+      }
+      this.orderToDelete = new OrderDisplay();
+      const idxOfChangeRealOrdersDelete = this.orderTable.findIndex((value: Order) => value.id === this.orderToDelete.id);
+      if (idxOfChangeRealOrdersDelete !== -1) {
+        this.orderTable.splice(idxOfChangeRealOrdersDelete, 1);
+      }
+      this.dialogWarnDelete = false;
+    }
+  }
+
   private printItem(item: OrderDisplay): void {
     this.forceRerenderPrint();
     let editedItems: TrpOrder[] = [];
@@ -1504,8 +1575,8 @@ export default class SearchShipment extends Vue {
       editedItems = this.orderTable.filter((value) => value.id === item.id);
       // check if found item is not null
       if (editedItems[0]) {
-        this.editedOrder = editedItems[0];
-        this.printOrder = editedItems[0];
+        this.editedOrder = CloneDeep(editedItems[0]);
+        this.printOrder = CloneDeep(editedItems[0]);
 
         this.$nextTick(() => {
           // still needed? --> probably not
@@ -1519,6 +1590,7 @@ export default class SearchShipment extends Vue {
   private async editItem(item: OrderDisplay): Promise<void> {
     this.printOrder = new Order();
     this.editedOrder = new Order();
+
     let editedItems: TrpOrder[] = [];
 
     this.validFormGoods = [true];
@@ -1534,8 +1606,8 @@ export default class SearchShipment extends Vue {
       editedItems = this.orderTable.filter((value) => value.id === item.id);
       // check if found item is not null
       if (editedItems[0]) {
-        this.editedOrder = editedItems[0];
-        this.printOrder = editedItems[0];
+        this.editedOrder = CloneDeep(editedItems[0]);
+        this.printOrder = CloneDeep(editedItems[0]);
         try {
           this.anlagenID = Number(this.editedOrder.anlage!.anlagenId);
         } catch {
@@ -1565,6 +1637,7 @@ export default class SearchShipment extends Vue {
         this.remarksTrpOrder = this.editedOrder.remarks!;
         this.onlyDelivery = this.editedOrder.deliveryOnly!;
         this.state = this.stateTypeFromIdToState.get(this.editedOrder.state?.id);
+        this.costTrpExternal = this.editedOrder.costTrpExternal!;
 
         if (this.editedOrder.goods) {
           if (this.editedOrder.goods.length > 0) {
@@ -1625,6 +1698,10 @@ export default class SearchShipment extends Vue {
 
   private closePermissions(): void {
     this.warnPermissions = false;
+  }
+
+  private closeWarnDelete(): void {
+    this.dialogWarnDelete = false;
   }
 
   private async close(): Promise<void> {
@@ -1818,6 +1895,10 @@ export default class SearchShipment extends Vue {
         });
       }
     }
+
+    // update real trp of search table results
+    const idxOfChangeRealOrders = this.orderTable.findIndex((value: Order) => value.id === order.id);
+    this.orderTable[idxOfChangeRealOrders] = order;
 
     // update table --> maybe extract this part...
     const idxOfChange = this.orders.findIndex((value: OrderDisplay) => value.id === order.id);
@@ -2175,6 +2256,15 @@ export default class SearchShipment extends Vue {
     this.editedOrder.pickUpDate = upadeDateTime;
   }
 
+  private triggerUpdateCostTrpExternal(): void {
+    const upade = this.costTrpExternal;
+    if (upade) {
+      this.editedOrder.costTrpExternal = upade;
+    } else {
+      this.editedOrder.costTrpExternal = 0;
+    }
+  }
+
   private triggerUpdateDateDelivery(): void {
     const upade = `${this.dateDelivery} ${this.deliveryTime}`;
     const upadeDateTime = new Date(upade);
@@ -2194,6 +2284,10 @@ export default class SearchShipment extends Vue {
   private triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
     this.editedOrder.deliveryOnly = upade;
+    if (this.onlyDelivery === false) {
+      this.editedOrder.costTrpExternal = 0;
+      this.costTrpExternal = 0;
+    }
   }
 
   private async searchCustomer(searchOption: string): Promise<void> {

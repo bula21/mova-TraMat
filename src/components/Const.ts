@@ -28,3 +28,8 @@ export const TRP_TYP_CLIENT = {
   mova: 1,
   external: 2,
 };
+
+export const TRP_TYP_CLIENT_STRING = {
+  mova: "mova",
+  external: "external",
+};

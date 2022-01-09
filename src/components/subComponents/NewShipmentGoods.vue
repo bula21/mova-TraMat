@@ -200,9 +200,9 @@ export default class NewShipmentGoods extends Vue {
       this.packingUnit.push(`${value.abbreviation}=${value.description}`);
     });
 
-    (this.$refs.formGoods as Vue & { validate: () => boolean }).validate();
+    (this.$refs.formGoods as Vue & { validate: () => boolean; }).validate();
     (
-      this.$refs.formGoods as Vue & { resetValidation: () => boolean }
+      this.$refs.formGoods as Vue & { resetValidation: () => boolean; }
     ).resetValidation();
 
     this.pPackingUnitSelected = this.packagingUntisConv.get(

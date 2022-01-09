@@ -42,6 +42,7 @@ export interface TrpOrder {
   construction?: Construction[];
   goods?: Good[];
   people?: Person[];
+  costTrpExternal?: number;
   // methodes
   calcCBM(): number;
   calcLuaggage(): number;
@@ -361,6 +362,7 @@ const typeMap: any = {
     { json: "construction", js: "construction", typ: u(undefined, a(r("Construction"))) },
     { json: "goods", js: "goods", typ: u(undefined, a(r("Good"))) },
     { json: "people", js: "people", typ: u(undefined, a(r("Person"))) },
+    { json: "cost_trp_external", js: "costTrpExternal", typ: u(undefined, 0, null) },
   ], false),
   "Anlage": o([
     { json: "id", js: "id", typ: u(undefined, 0) },

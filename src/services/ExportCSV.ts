@@ -15,8 +15,8 @@ class ExportCSV {
   }
 
   public createCsvOrder(fieldsOrder: string[], trpOrders: TrpOrder[], packagingUntisFromIdToDes: Map<number, string>): string {
-    const rows = [{
-    }];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows: any = [];
 
     let maxPosNr = 0;
 
@@ -62,6 +62,7 @@ class ExportCSV {
       row.totalweight = x.calcWeight();
       row.deliveryOnly = x.deliveryOnly;
       row.statusdirectus = x.statusdirectus;
+      row.costTrpExternal = x.costTrpExternal;
 
       let modifiedBy = "";
       let owner = "";
@@ -137,18 +138,17 @@ class ExportCSV {
         x.goods!.forEach((element) => {
           posNr += 1;
           position = `pos_${posNr}_`;
-          row[`${position}dangerousGoods`] = element.dangerousGoods;
+          row[`${position}goods_dangerousGoods`] = element.dangerousGoods;
           row[`${position}goodsDescription`] = element.goodsDescription;
-          row[`${position}grossWeight`] = element.grossWeight;
-          row[`${position}netWeight`] = element.netWeight;
-          row[`${position}goodsDescription`] = element.goodsDescription;
-          row[`${position}length`] = element.length;
-          row[`${position}width`] = element.width;
-          row[`${position}height`] = element.height;
-          row[`${position}packingUnit`] = packagingUntisFromIdToDes.get(element.packingUnit!);
-          row[`${position}marking`] = element.marking;
-          row[`${position}quantity`] = element.quantity;
-          row[`${position}valueChf`] = element.valueChf;
+          row[`${position}goods_grossWeight`] = element.grossWeight;
+          row[`${position}goods_netWeight`] = element.netWeight;
+          row[`${position}goods_length`] = element.length;
+          row[`${position}goods_width`] = element.width;
+          row[`${position}goods_height`] = element.height;
+          row[`${position}goods_packingUnit`] = packagingUntisFromIdToDes.get(element.packingUnit!);
+          row[`${position}goods_marking`] = element.marking;
+          row[`${position}goods_quantity`] = element.quantity;
+          row[`${position}goods_valueChf`] = element.valueChf;
           if (maxPosNr < posNr) {
             maxPosNr = posNr;
           }
@@ -178,9 +178,9 @@ class ExportCSV {
         x.construction!.forEach((element) => {
           posNr += 1;
           position = `pos_${posNr}_`;
-          row[`${position}description`] = element.description;
-          row[`${position}quantity`] = element.quantity;
-          row[`${position}weight`] = element.weight;
+          row[`${position}const_description`] = element.description;
+          row[`${position}const_quantity`] = element.quantity;
+          row[`${position}const_weight`] = element.weight;
           if (maxPosNr < posNr) {
             maxPosNr = posNr;
           }
@@ -193,11 +193,11 @@ class ExportCSV {
 
     for (let z = 0; z < maxPosNr; z++) {
       const position = `pos_${z + 1}_`;
-      fieldsOrder.push(`${position}dangerousGoods`, `${position}goodsDescription`,
-        `${position}grossWeight`, `${position}netWeight`, `${position}goodsDescription`, `${position}length`,
-        `${position}width`, `${position}height`, `${position}packingUnit`, `${position}marking`, `${position}quantity`,
-        `${position}valueChf`);
-      fieldsOrder.push(`${position}description`, `${position}quantity`, `${position}weight`);
+      fieldsOrder.push(`${position}goods_dangerousGoods`, `${position}goodsDescription`,
+        `${position}goods_grossWeight`, `${position}goods_netWeight`, `${position}goods_length`,
+        `${position}goods_width`, `${position}goods_height`, `${position}goods_packingUnit`, `${position}goods_marking`, `${position}goods_quantity`,
+        `${position}goods_valueChf`);
+      fieldsOrder.push(`${position}const_description`, `${position}const_quantity`, `${position}const_weight`);
     }
 
     const csvWriter = createObjectCsvStringifier({

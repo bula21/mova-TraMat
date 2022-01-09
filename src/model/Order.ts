@@ -2,6 +2,7 @@
 import { Anlage, Construction, Doc, Good, ModifiedBy, Person, Principal, State, TrpOrder } from "@/services/TrpOrder";
 
 class Order implements TrpOrder {
+  costTrpExternal?: number;
   id?: number;
   createdOn?: Date | undefined;
   modifiedBy?: ModifiedBy | undefined;

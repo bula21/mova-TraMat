@@ -679,6 +679,20 @@
               @change="triggerUpdateDeliveryOnly()"
             />
           </v-col>
+          <v-col
+            :lg="4"
+            :md="4"
+            :sm="4"
+            :xs="4"
+            v-if="onlyDelivery===true"
+          >
+            <v-text-field
+              v-model="costTrpExternal"
+              :rules="valueCHFRules"
+              label="Kosten für Transport extern (CHF)"
+              @change="triggerUpdateCostTrpExternal()"
+            />
+          </v-col>
         </v-row>
         <v-row>
           <v-col
@@ -759,7 +773,7 @@
                   label="Sendungsdetails"
                   filled
                   readonly
-                  rows="16"
+                  rows="17"
                 />
               </v-col>
             </div>
@@ -910,7 +924,7 @@ export default class NewShipment extends Vue {
   private timer: NodeJS.Timeout | undefined;
   private file: File | null = null;
   private orderDetails = "";
-  private posPeopleDeactivated = "posPeopleIsDeactivated"
+  private posPeopleDeactivated = "posPeopleIsDeactivated";
   private dialogWarn = false;
   private dialogWarnOrder = false;
   private dialogFinishOrder = false;
@@ -933,6 +947,7 @@ export default class NewShipment extends Vue {
   private principalAddress = "";
   private orderType: string[] = [];
   private type = "";
+  private costTrpExternal = 0;
   private menuDatePickup = false;
   private menuDateDelivery = false;
   private datePickup = new Date().toISOString().substring(0, 10);
@@ -970,6 +985,16 @@ export default class NewShipment extends Vue {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v)
       || "Wert ungültig (Format hh:mm)",
+  ];
+
+  private valueCHFRules = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (v) {
+        return /^[0-9]{1,11}(?:\.[0-9]{1,2})?$/.test(v) || "Nur Zahlen mit max. 2 Kommastelle";
+      }
+      return true;
+    },
   ];
 
   private notRequired = true;
@@ -1151,6 +1176,7 @@ export default class NewShipment extends Vue {
     details += posDetails;
     details = `${details}**************\nBemerkungen: ${remarks}\n`;
     details = `${details}Nur Anlieferung/Abholung: ${this.onlyDelivery}\n`;
+    details = `${details}Kosten für Transport extern: ${this.costTrpExternal} CHF \n`;
 
     return details;
   }
@@ -1382,6 +1408,15 @@ export default class NewShipment extends Vue {
     this.currentOrder.deliveryDate = upadeDateTime;
   }
 
+  private triggerUpdateCostTrpExternal(): void {
+    const upade = this.costTrpExternal;
+    if (upade) {
+      this.currentOrder.costTrpExternal = upade;
+    } else {
+      this.currentOrder.costTrpExternal = 0;
+    }
+  }
+
   private triggerUpdateRemarks(): void {
     const upade = this.remarksTrpOrder;
     this.currentOrder.remarks = upade;
@@ -1395,6 +1430,10 @@ export default class NewShipment extends Vue {
   private triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
     this.currentOrder.deliveryOnly = upade;
+    if (this.onlyDelivery === false) {
+      this.currentOrder.costTrpExternal = 0;
+      this.costTrpExternal = 0;
+    }
   }
 
   private async triggerUdatePickupID(kindOfUpdate: string): Promise<void> {

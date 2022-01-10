@@ -36,12 +36,15 @@ export interface TrpOrder {
   owner?: ModifiedBy;
   rasterLagerplatz?: null | string;
   anlage?: Anlage | null;
+  rasterLagerplatzPickUp?: null | string;
+  anlagePickUp?: Anlage | null;
   deliveryOnly?: boolean;
   document?: null | Doc;
   statusdirectus?: string;
   construction?: Construction[];
   goods?: Good[];
   people?: Person[];
+  costTrpExternal?: number;
   // methodes
   calcCBM(): number;
   calcLuaggage(): number;
@@ -98,6 +101,8 @@ export interface Good {
   order?: number;
   owner?: number;
   statusdirectus?: string;
+  stapelbar?: boolean;
+  kommissionieren?: boolean;
 }
 
 export interface ModifiedBy {
@@ -355,12 +360,15 @@ const typeMap: any = {
     { json: "owner", js: "owner", typ: u(undefined, r("ModifiedBy")) },
     { json: "raster_lagerplatz", js: "rasterLagerplatz", typ: u(undefined, u(null, "")) },
     { json: "anlage", js: "anlage", typ: u(undefined, u(r("Anlage"), null, 0)) },
+    { json: "raster_lagerplatz_pick_up", js: "rasterLagerplatzPickUp", typ: u(undefined, u(null, "")) },
+    { json: "anlage_pick_up", js: "anlagePickUp", typ: u(undefined, u(r("Anlage"), null, 0)) },
     { json: "delivery_only", js: "deliveryOnly", typ: u(undefined, true) },
     { json: "document", js: "document", typ: u(undefined, null, r("Doc")) },
     { json: "statusdirectus", js: "statusdirectus", typ: u(undefined, "") },
     { json: "construction", js: "construction", typ: u(undefined, a(r("Construction"))) },
     { json: "goods", js: "goods", typ: u(undefined, a(r("Good"))) },
     { json: "people", js: "people", typ: u(undefined, a(r("Person"))) },
+    { json: "cost_trp_external", js: "costTrpExternal", typ: u(undefined, 0, null) },
   ], false),
   "Anlage": o([
     { json: "id", js: "id", typ: u(undefined, 0) },
@@ -405,6 +413,8 @@ const typeMap: any = {
     { json: "order", js: "order", typ: u(undefined, 0) },
     { json: "owner", js: "owner", typ: u(undefined, 0) },
     { json: "statusdirectus", js: "statusdirectus", typ: u(undefined, "") },
+    { json: "stapelbar", js: "stapelbar", typ: u(undefined, true) },
+    { json: "kommissionieren", js: "kommissionieren", typ: u(undefined, true) },
   ], false),
   "ModifiedBy": o([
     { json: "id", js: "id", typ: u(undefined, 0) },

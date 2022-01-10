@@ -38,9 +38,8 @@
       <v-col cols="3">
         <v-text-field
           v-model="nettoWeight"
-          :rules="weightRules"
-          label="Netto Gewicht (kg)*"
-          required
+          :rules="weightRulesNetto"
+          label="Netto Gewicht (kg)"
         />
       </v-col>
       <v-col
@@ -117,7 +116,30 @@
           v-model="valueCHF"
           :rules="valueCHFRules"
           label="Warenwert in CHF*"
+          hint="Falls nicht bekannt 0 CHF eintragen"
           required
+        />
+      </v-col>
+      <v-col
+        cols="2"
+        class="mt-n7"
+      >
+        <v-checkbox
+          v-model="stapelbar"
+          label="Stapelbar"
+          color="red"
+          hide-details
+        />
+      </v-col>
+      <v-col
+        cols="2"
+        class="mt-n7"
+      >
+        <v-checkbox
+          v-model="kommission"
+          label="Kommission nötig"
+          color="red"
+          hide-details
         />
       </v-col>
     </v-row>
@@ -140,7 +162,7 @@ export default class NewShipmentGoods extends Vue {
   private packingUnit: string[] = [];
   private pQuantity: number | undefined = 0;
   private pBruttoWeight: number | undefined = 0;
-  private pNettoWeight: number | undefined = 0;
+  private pNettoWeight: number | undefined | null = null;
   private pGoodsDescripttion: string | undefined = " ";
   private pLength: number | undefined = 0;
   private pWidth: number | undefined = 0;
@@ -149,6 +171,8 @@ export default class NewShipmentGoods extends Vue {
   private pValueCHF: number | undefined = 0;
   private pDangerousGoods: boolean | undefined = false;
   private pPackingUnitSelected: string | undefined = "EP";
+  private pKommission: boolean | undefined = false;
+  private pStapelbar: boolean | undefined = true;
 
   // formGoods
   private pValidFormGoods = true;
@@ -172,6 +196,16 @@ export default class NewShipmentGoods extends Vue {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v)
       || "Nur Zahlen mit max. 3 Kommastellen",
+  ];
+
+  private weightRulesNetto = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (v) {
+        return /^[0-9]{1,11}(?:\.[0-9]{1,3})?$/.test(v) || "Nur Zahlen mit max. 3 Kommastellen";
+      }
+      return true;
+    },
   ];
 
   private dimRules = [
@@ -200,9 +234,9 @@ export default class NewShipmentGoods extends Vue {
       this.packingUnit.push(`${value.abbreviation}=${value.description}`);
     });
 
-    (this.$refs.formGoods as Vue & { validate: () => boolean }).validate();
+    (this.$refs.formGoods as Vue & { validate: () => boolean; }).validate();
     (
-      this.$refs.formGoods as Vue & { resetValidation: () => boolean }
+      this.$refs.formGoods as Vue & { resetValidation: () => boolean; }
     ).resetValidation();
 
     this.pPackingUnitSelected = this.packagingUntisConv.get(
@@ -218,6 +252,8 @@ export default class NewShipmentGoods extends Vue {
     this.pMarking = this.currenpos.marking;
     this.pValueCHF = this.currenpos.valueChf;
     this.pDangerousGoods = this.currenpos.dangerousGoods;
+    this.pKommission = this.currenpos.kommissionieren;
+    this.pStapelbar = this.currenpos.stapelbar;
   }
 
   public get quantity(): number | undefined {
@@ -238,13 +274,17 @@ export default class NewShipmentGoods extends Vue {
     this.$emit("update:bruttoWeight", this.pBruttoWeight);
   }
 
-  public get nettoWeight(): number | undefined {
+  public get nettoWeight(): number | undefined | null {
     return this.pNettoWeight;
   }
 
-  public set nettoWeight(v: number | undefined) {
+  public set nettoWeight(v: number | undefined | null) {
     this.pNettoWeight = v;
-    this.$emit("update:nettoWeight", this.pNettoWeight);
+    if (this.pNettoWeight) {
+      this.$emit("update:nettoWeight", this.pNettoWeight);
+    } else {
+      this.$emit("update:nettoWeight", null);
+    }
   }
 
   public get goodsDescripttion(): string | undefined {
@@ -308,6 +348,24 @@ export default class NewShipmentGoods extends Vue {
   public set dangerousGoods(v: boolean | undefined) {
     this.pDangerousGoods = v;
     this.$emit("update:dangerousGoods", this.pDangerousGoods);
+  }
+
+  public get stapelbar(): boolean | undefined {
+    return this.pStapelbar;
+  }
+
+  public set stapelbar(v: boolean | undefined) {
+    this.pStapelbar = v;
+    this.$emit("update:stapelbar", this.pStapelbar);
+  }
+
+  public get kommission(): boolean | undefined {
+    return this.pKommission;
+  }
+
+  public set kommission(v: boolean | undefined) {
+    this.pKommission = v;
+    this.$emit("update:kommission", this.pKommission);
   }
 
   public get packingUnitSelected(): string | undefined {

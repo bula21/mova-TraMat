@@ -53,24 +53,24 @@
         >
           <v-row>
             <v-col
-              :lg="4"
-              :md="4"
-              :sm="6"
-              :xs="6"
+              :lg="5"
+              :md="5"
+              :sm="7"
+              :xs="7"
             >
               <v-card
                 flat
-                max-width="500px"
+                max-width="750px"
               >
                 <h3 class="mt-3">
                   Ladeadresse*
                 </h3>
                 <v-row class="mt-0">
                   <v-col
-                    :lg="6"
-                    :md="6"
-                    :sm="6"
-                    :xs="6"
+                    :lg="3"
+                    :md="3"
+                    :sm="3"
+                    :xs="3"
                   >
                     <v-text-field
                       v-model="pickupID"
@@ -100,7 +100,12 @@
                   </v-col>
                 </v-row>
                 <v-row class="mt-n7">
-                  <v-col>
+                  <v-col
+                    :lg="6"
+                    :md="6"
+                    :sm="6"
+                    :xs="6"
+                  >
                     <v-textarea
                       v-model="pickupAddress"
                       label="Ladeadresse"
@@ -109,6 +114,46 @@
                       readonly
                       :rules="idRulesText"
                     />
+                  </v-col>
+                  <v-col
+                    :lg="3"
+                    :md="3"
+                    :xs="3"
+                    :sm="3"
+                  >
+                    <v-text-field
+                      v-model="anlagenIdPickUp"
+                      label="Anlagen ID"
+                      outlined
+                      hint="Falls vorhanden"
+                      persistent-hint
+                      @change="triggerUdatePickupID('anlagenPickUp')"
+                    />
+                    <v-text-field
+                      v-model="rasterLagerplatzPickUp"
+                      label="Raster Lagerplatz"
+                      hint="Falls vorhanden Bsp. 54H"
+                      :rules="notRequiredPickUP ? rasterLagerplatzRulesPickUp : []"
+                      :required="!notRequiredPickUP"
+                      persistent-hint
+                      outlined
+                      @change="triggerUpdateRasterPickUp()"
+                    />
+                  </v-col>
+                  <v-col
+                    :lg="2"
+                    :md="2"
+                    :xs="2"
+                    :sm="2"
+                  >
+                    <v-subheader class="ml-n3">
+                      {{ anlagenDescriptionPickUp }}
+                    </v-subheader>
+                    <v-spacer class="mt-13" />
+                    <a
+                      href="https://bula21.sharepoint.com/:f:/g/EqVc5B0NQUVJpOB4kHgj6UYBhcennFmyHEstYhyTEkYbcA?e=HE4Yc2"
+                      target="_blank"
+                    >Raster Lagerplatz</a>
                   </v-col>
                 </v-row>
               </v-card>
@@ -128,10 +173,10 @@
                 </h3>
                 <v-row class="mt-0">
                   <v-col
-                    :lg="6"
-                    :md="6"
-                    :sm="6"
-                    :xs="6"
+                    :lg="4"
+                    :md="4"
+                    :sm="4"
+                    :xs="4"
                   >
                     <v-text-field
                       v-model="principalID"
@@ -161,7 +206,12 @@
                   </v-col>
                 </v-row>
                 <v-row class="mt-n7">
-                  <v-col>
+                  <v-col
+                    :lg="10"
+                    :md="10"
+                    :sm="10"
+                    :xs="10"
+                  >
                     <v-textarea
                       v-model="principalAddress"
                       label="Auftraggeber"
@@ -199,9 +249,9 @@
                 </h3>
                 <v-row class="mt-0">
                   <v-col
-                    :lg="4"
-                    :md="4"
-                    :sm="4"
+                    :lg="2"
+                    :md="2"
+                    :sm="2"
                   >
                     <v-text-field
                       v-model="deliveryID"
@@ -544,6 +594,8 @@
                   :value-c-h-f.sync="currentOrder.goods[indxGoods].valueChf"
                   :dangerous-goods.sync="currentOrder.goods[indxGoods].dangerousGoods"
                   :packing-unit-selected.sync="currentOrder.goods[indxGoods].packingUnit"
+                  :stapelbar.sync="currentOrder.goods[indxGoods].stapelbar"
+                  :kommission.sync="currentOrder.goods[indxGoods].kommissionieren"
                   :valid-form-goods.sync="validFormGoods[indxGoods]"
                 />
               </div>
@@ -679,6 +731,20 @@
               @change="triggerUpdateDeliveryOnly()"
             />
           </v-col>
+          <v-col
+            :lg="4"
+            :md="4"
+            :sm="4"
+            :xs="4"
+            v-if="onlyDelivery===true"
+          >
+            <v-text-field
+              v-model="costTrpExternal"
+              :rules="valueCHFRules"
+              label="Kosten für Transport extern (CHF)"
+              @change="triggerUpdateCostTrpExternal()"
+            />
+          </v-col>
         </v-row>
         <v-row>
           <v-col
@@ -721,13 +787,14 @@
             </v-col>
           </v-col>
         </v-row>
-        <v-row class="mt-n7">
-          <v-col
-            :lg="4"
-            :md="4"
-            :sm="6"
-          >
-            <v-col>
+        <v-row class="mt-n8">
+          <v-col>
+            <v-col
+              :lg="4"
+              :md="4"
+              :sm="6"
+              class="pr-7"
+            >
               ID: {{ deliveryID }}
               <v-textarea
                 v-model="deliveryAddress"
@@ -735,9 +802,34 @@
                 filled
                 readonly
               />
+            </v-col>
+          </v-col>
+        </v-row>
+        <v-row class="mt-n7">
+          <v-col
+            :lg="4"
+            :md="4"
+            :sm="5"
+          >
+            <v-col>
+              <v-textarea
+                v-model="overViewAnlagePickUp"
+                label="Anlage ID / Raster Lagerplatz Laden"
+                filled
+                readonly
+                rows="2"
+              />
+            </v-col>
+          </v-col>
+          <v-col
+            :lg="4"
+            :md="4"
+            :sm="5"
+          >
+            <v-col>
               <v-textarea
                 v-model="overViewAnlage"
-                label="Anlage ID / Raster Lagerplatz"
+                label="Anlage ID / Raster Lagerplatz Liefern"
                 filled
                 readonly
                 rows="2"
@@ -759,7 +851,7 @@
                   label="Sendungsdetails"
                   filled
                   readonly
-                  rows="16"
+                  rows="20"
                 />
               </v-col>
             </div>
@@ -910,7 +1002,7 @@ export default class NewShipment extends Vue {
   private timer: NodeJS.Timeout | undefined;
   private file: File | null = null;
   private orderDetails = "";
-  private posPeopleDeactivated = "posPeopleIsDeactivated"
+  private posPeopleDeactivated = "posPeopleIsDeactivated";
   private dialogWarn = false;
   private dialogWarnOrder = false;
   private dialogFinishOrder = false;
@@ -928,11 +1020,15 @@ export default class NewShipment extends Vue {
   private deliveryAddress = "";
   private principalID = 0;
   private anlagenID = 0;
+  private anlagenIdPickUp = 0;
   private anlagenDescription = "--";
+  private anlagenDescriptionPickUp = "--";
   private rasterLagerplatz: string | null = "";
+  private rasterLagerplatzPickUp: string | null = "";
   private principalAddress = "";
   private orderType: string[] = [];
   private type = "";
+  private costTrpExternal = 0;
   private menuDatePickup = false;
   private menuDateDelivery = false;
   private datePickup = new Date().toISOString().substring(0, 10);
@@ -972,11 +1068,34 @@ export default class NewShipment extends Vue {
       || "Wert ungültig (Format hh:mm)",
   ];
 
+  private valueCHFRules = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (v) {
+        return /^[0-9]{1,11}(?:\.[0-9]{1,2})?$/.test(v) || "Nur Zahlen mit max. 2 Kommastelle";
+      }
+      return true;
+    },
+  ];
+
   private notRequired = true;
   private rasterLagerplatzRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => {
       if (this.currentOrder.receiver?.type === TRP_TYP_CLIENT.mova) {
+        this.notRequired = false;
+        return !!v || "Wert ist erforderlich";
+      }
+      this.notRequired = true;
+      return true;
+    },
+  ];
+
+  private notRequiredPickUP = true;
+  private rasterLagerplatzRulesPickUp = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (this.currentOrder.shipper?.type === TRP_TYP_CLIENT.mova) {
         this.notRequired = false;
         return !!v || "Wert ist erforderlich";
       }
@@ -993,17 +1112,17 @@ export default class NewShipment extends Vue {
   private marginButtons() {
     switch (this.$vuetify.breakpoint.name) {
       case "xs":
-        return "mt-n10";
+        return "mt-n5";
       case "sm":
-        return "mt-n10";
+        return "mt-2";
       case "md":
-        return "mt-n10";
+        return "mt-2";
       case "lg":
         return "mt-2";
       case "xl":
         return "mt-2";
       default:
-        return "mt-n10";
+        return "mt-2";
     }
   }
 
@@ -1018,6 +1137,8 @@ export default class NewShipment extends Vue {
     this.currentOrder.deliveryDate = upadeDateTimeDeli;
     this.currentOrder.goods = [new PositionGoods()];
     this.currentOrder.goods[0].dangerousGoods = false;
+    this.currentOrder.goods[0].stapelbar = true;
+    this.currentOrder.goods[0].kommissionieren = false;
     this.currentOrder.people = [new PositionPeople()];
     this.currentOrder.construction = [new PositionConstruction()];
 
@@ -1036,7 +1157,7 @@ export default class NewShipment extends Vue {
       this.typePeopleIdToDesc.set(value.id, value.description);
     });
 
-    this.orderType.push(ORDER_TYPE.Warentransport, ORDER_TYPE["Bauleistung mit Fahrzeug"]);
+    this.orderType.push(ORDER_TYPE.Warentransport, ORDER_TYPE["Spezialleistung mit Fahrzeug"]);
 
     this.timer = setInterval(this.genereateDetails, 2000);
   }
@@ -1090,7 +1211,7 @@ export default class NewShipment extends Vue {
         );
         break;
 
-      case ORDER_TYPE["Bauleistung mit Fahrzeug"]:
+      case ORDER_TYPE["Spezialleistung mit Fahrzeug"]:
         orderDetails = this.printOrderDetails(
           this.currentOrder.deliveryDate,
           this.currentOrder.pickUpDate,
@@ -1133,7 +1254,7 @@ export default class NewShipment extends Vue {
 
     if (ORDER_TYPE.Warentransport === this.type && !!goods) {
       goods.forEach((element, idx) => {
-        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantity}\nVerpackungseinheit: ${this.packagingUntisIdToDesc.get(element.packingUnit!)}\nBrutto Gewicht: ${element.grossWeight}\nNetto Gewicht: ${element.netWeight}\nWarenbeschreibung: ${element.goodsDescription}\nWarenwert: ${element.valueChf}\nGefahrgut: ${element.dangerousGoods}\nMarkierung: ${element.marking}\nDims: ${element.length}x${element.width}x${element.height}\n`;
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantity}\nVerpackungseinheit: ${this.packagingUntisIdToDesc.get(element.packingUnit!)}\nBrutto Gewicht: ${element.grossWeight}\nNetto Gewicht: ${element.netWeight}\nWarenbeschreibung: ${element.goodsDescription}\nWarenwert: ${element.valueChf}\nGefahrgut: ${element.dangerousGoods}\nStapelbar: ${element.stapelbar}\nKommission nötig: ${element.kommissionieren}\nMarkierung: ${element.marking}\nDims: ${element.length}x${element.width}x${element.height}\n`;
       });
     }
     if (ORDER_TYPE.Personentransport === this.type && !!people) {
@@ -1142,15 +1263,16 @@ export default class NewShipment extends Vue {
       });
     }
 
-    if (ORDER_TYPE["Bauleistung mit Fahrzeug"] === this.type && !!construction) {
+    if (ORDER_TYPE["Spezialleistung mit Fahrzeug"] === this.type && !!construction) {
       construction.forEach((element, idx) => {
-        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantity}\nBeschreibung Bauleistung mit Fhrz.: ${element.description}\nGewicht: ${element.weight}\n`;
+        posDetails = `${posDetails}*******Sendungs Position ${idx}*******\nAnzahl: ${element.quantity}\nBeschreibung Spez. Leist. mit Fhrz.: ${element.description}\nGewicht: ${element.weight}\n`;
       });
     }
 
     details += posDetails;
     details = `${details}**************\nBemerkungen: ${remarks}\n`;
     details = `${details}Nur Anlieferung/Abholung: ${this.onlyDelivery}\n`;
+    details = `${details}Kosten für Transport extern: ${this.costTrpExternal} CHF \n`;
 
     return details;
   }
@@ -1212,7 +1334,7 @@ export default class NewShipment extends Vue {
 
       newVal = true;
 
-      if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
+      if (this.type === ORDER_TYPE["Spezialleistung mit Fahrzeug"]) {
         this.validFormConst.forEach((value) => {
           newVal = newVal && value;
         });
@@ -1269,13 +1391,25 @@ export default class NewShipment extends Vue {
     }
 
     // construction
-    if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
+    if (this.type === ORDER_TYPE["Spezialleistung mit Fahrzeug"]) {
       if (order.construction) {
         newOrderId = await DirectusAPI.createTrpOrder(order);
 
         const constru: Promise<Construction>[] = [];
 
         for (let i = 0; order.construction!.length > i; i++) {
+          if (order.construction![i].quantity) {
+            console.log(order.construction![i].quantity);
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            order.construction![i].quantity = 0;
+          }
+          if (order.construction![i].weight) {
+            console.log(order.construction![i].weight);
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            order.construction![i].weight = 0;
+          }
           constru.push(DirectusAPI.createConstPos(order.construction![i], newOrderId));
         }
         await Promise.all(constru);
@@ -1382,6 +1516,15 @@ export default class NewShipment extends Vue {
     this.currentOrder.deliveryDate = upadeDateTime;
   }
 
+  private triggerUpdateCostTrpExternal(): void {
+    const upade = this.costTrpExternal;
+    if (upade) {
+      this.currentOrder.costTrpExternal = upade;
+    } else {
+      this.currentOrder.costTrpExternal = 0;
+    }
+  }
+
   private triggerUpdateRemarks(): void {
     const upade = this.remarksTrpOrder;
     this.currentOrder.remarks = upade;
@@ -1392,14 +1535,24 @@ export default class NewShipment extends Vue {
     this.currentOrder.rasterLagerplatz = upade;
   }
 
+  private triggerUpdateRasterPickUp(): void {
+    const upade = this.rasterLagerplatzPickUp;
+    this.currentOrder.rasterLagerplatzPickUp = upade;
+  }
+
   private triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
     this.currentOrder.deliveryOnly = upade;
+    if (this.onlyDelivery === false) {
+      this.currentOrder.costTrpExternal = 0;
+      this.costTrpExternal = 0;
+    }
   }
 
   private async triggerUdatePickupID(kindOfUpdate: string): Promise<void> {
     let resp: Client[] = [];
     let resp2: AnlageClass[] = [];
+    let resp3: AnlageClass[] = [];
 
     (this.$refs.formFirst as Vue & { resetValidation: () => void; }).resetValidation();
 
@@ -1498,10 +1651,41 @@ export default class NewShipment extends Vue {
         }
         break;
 
+      case "anlagenPickUp":
+        try {
+          resp3 = await DirectusAPI.getAnlage({
+            anlagen_id: {
+              eq: this.anlagenIdPickUp,
+            },
+          }, 5);
+        } catch {
+          this.anlagenDescriptionPickUp = "Analgen ID nicht vorhanden";
+          this.currentOrder.anlagePickUp = new AnlageClass();
+          this.currentOrder.anlagePickUp.id = 0;
+        }
+        if (resp3.length > 0) {
+          try {
+            this.rasterLagerplatzPickUp = resp3[0].standortcode!;
+            this.currentOrder.rasterLagerplatzPickUp = resp3[0].standortcode!;
+          } finally {
+            this.anlagenDescriptionPickUp = `${resp3[0].anlagenname}, ${resp3[0].standort}`;
+            this.currentOrder.anlagePickUp = new AnlageClass();
+            this.currentOrder.anlagePickUp = resp3[0];
+          }
+        } else {
+          this.anlagenDescriptionPickUp = "Analgen ID nicht vorhanden";
+          this.currentOrder.anlagePickUp = new AnlageClass();
+          this.currentOrder.anlagePickUp.id = 0;
+        }
+        break;
+
       default:
         this.anlagenDescription = "Analgen ID nicht vorhanden";
+        this.anlagenDescriptionPickUp = "Analgen ID nicht vorhanden";
         this.currentOrder.anlage = new AnlageClass();
         this.currentOrder.anlage.id = 0;
+        this.currentOrder.anlagePickUp = new AnlageClass();
+        this.currentOrder.anlagePickUp.id = 0;
         this.pickupAddress = "Kunden ID nicht vorhanden";
         this.principalAddress = "Kunden ID nicht vorhanden";
         this.deliveryAddress = "Kunden ID nicht vorhanden";
@@ -1514,6 +1698,8 @@ export default class NewShipment extends Vue {
       // eslint-disable-next-line no-unused-expressions
       this.currentOrder.goods?.push(new PositionGoods());
       this.currentOrder.goods![this.currentOrder.goods!.length - 1].dangerousGoods = false;
+      this.currentOrder.goods![this.currentOrder.goods!.length - 1].stapelbar = true;
+      this.currentOrder.goods![this.currentOrder.goods!.length - 1].kommissionieren = false;
       this.validFormGoods.push(true);
     }
     if (this.type === ORDER_TYPE.Personentransport) {
@@ -1522,7 +1708,7 @@ export default class NewShipment extends Vue {
       this.currentOrder.people?.push(new PositionPeople());
       this.validFormPeople.push(true);
     }
-    if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
+    if (this.type === ORDER_TYPE["Spezialleistung mit Fahrzeug"]) {
       this.orderPositionsConstruction.push(NewShipmentConstruction);
       // eslint-disable-next-line no-unused-expressions
       this.currentOrder.construction?.push(new PositionConstruction());
@@ -1543,7 +1729,7 @@ export default class NewShipment extends Vue {
       this.currentOrder.people?.splice(-1, 1);
       this.validFormPeople.splice(-1, 1);
     }
-    if (this.type === ORDER_TYPE["Bauleistung mit Fahrzeug"]) {
+    if (this.type === ORDER_TYPE["Spezialleistung mit Fahrzeug"]) {
       this.orderPositionsConstruction.splice(-1, 1);
       // eslint-disable-next-line no-unused-expressions
       this.currentOrder.construction?.splice(-1, 1);
@@ -1557,6 +1743,14 @@ export default class NewShipment extends Vue {
 
   set overViewAnlage(v: string) {
     this.overViewAnlage = v;
+  }
+
+  get overViewAnlagePickUp(): string {
+    return `Anlagen ID: ${this.anlagenIdPickUp}\nRaster Lagerplatz: ${this.rasterLagerplatzPickUp}`;
+  }
+
+  set overViewAnlagePickUp(v: string) {
+    this.overViewAnlagePickUp = v;
   }
 }
 </script>

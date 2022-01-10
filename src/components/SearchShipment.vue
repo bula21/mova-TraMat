@@ -103,6 +103,13 @@
         >
           mdi-printer
         </v-icon>
+        <v-icon
+          small
+          class="text-center"
+          @click="deleteItem(item)"
+        >
+          mdi-delete
+        </v-icon>
       </template>
     </v-data-table>
     <div class="text-right pt-2">
@@ -159,14 +166,13 @@
           <v-divider />
           <v-row>
             <v-col
-              :lg="4"
-              :md="4"
-              :sm="6"
-              :xs="6"
+              :lg="8"
+              :md="8"
+              :sm="11"
             >
               <v-card
                 flat
-                max-width="500px"
+                max-width="600px"
               >
                 <h3 class="mt-3">
                   Ladeadresse*
@@ -219,15 +225,65 @@
                 </v-row>
               </v-card>
             </v-col>
+          </v-row>
+          <v-row class="mt-n4">
             <v-col
-              :lg="4"
-              :md="4"
-              :sm="5"
-              :xs="5"
+              :lg="3"
+              :md="3"
+              :xs="3"
+              :sm="3"
+            >
+              <v-text-field
+                v-model="anlagenIdPickUp"
+                label="Anlagen ID"
+                outlined
+                hint="Falls vorhanden"
+                persistent-hint
+                @change="triggerUdatePickupID('anlagenPickUp')"
+              />
+              <v-text-field
+                v-model="rasterLagerplatzPickUp"
+                label="Raster Lagerplatz"
+                hint="Falls vorhanden Bsp. 54H"
+                :rules="notRequiredPickUP ? rasterLagerplatzRulesPickUp : []"
+                :required="!notRequiredPickUP"
+                persistent-hint
+                outlined
+                @change="triggerUpdateRasterPickUp()"
+              />
+            </v-col>
+            <v-col
+              :lg="3"
+              :md="3"
+              :xs="3"
+              :sm="3"
+            >
+              <v-subheader class="ml-n3">
+                {{ anlagenDescriptionPickUp }}
+              </v-subheader>
+              <v-spacer class="mt-13" />
+              <a
+                href="https://bula21.sharepoint.com/:f:/g/EqVc5B0NQUVJpOB4kHgj6UYBhcennFmyHEstYhyTEkYbcA?e=HE4Yc2"
+                target="_blank"
+              >Raster Lagerplatz</a>
+            </v-col>
+          </v-row>
+          <v-col
+            :lg="8"
+            :md="8"
+            :sm="11"
+          >
+            <v-divider />
+          </v-col>
+          <v-row>
+            <v-col
+              :lg="8"
+              :md="8"
+              :sm="11"
             >
               <v-card
                 flat
-                max-width="500px"
+                max-width="600px"
               >
                 <h3 class="mt-3">
                   Auftraggeber*
@@ -614,6 +670,8 @@
                   :value-c-h-f.sync="editedOrder.goods[indxGoods].valueChf"
                   :dangerous-goods.sync="editedOrder.goods[indxGoods].dangerousGoods"
                   :packing-unit-selected.sync="editedOrder.goods[indxGoods].packingUnit"
+                  :stapelbar.sync="editedOrder.goods[indxGoods].stapelbar"
+                  :kommission.sync="editedOrder.goods[indxGoods].kommissionieren"
                   :valid-form-goods.sync="validFormGoods[indxGoods]"
                 />
               </div>
@@ -722,6 +780,14 @@
               @change="triggerUpdateDeliveryOnly()"
             />
           </v-col>
+          <v-col v-if="onlyDelivery===true">
+            <v-text-field
+              v-model="costTrpExternal"
+              :rules="valueCHFRules"
+              label="Kosten für Transport extern (CHF)"
+              @change="triggerUpdateCostTrpExternal()"
+            />
+          </v-col>
         </v-row>
         <v-divider class="mt-4" />
         <!-- actions order-->
@@ -806,6 +872,12 @@
       :dialog-warn-permissions="warnPermissions"
       @closePermissions="closePermissions()"
     />
+    <!-- Dialog Warn Delete-->
+    <DialogDeleteWarn
+      :dialog-warn-delete="dialogWarnDelete"
+      @closeDeleteWarn="closeWarnDelete()"
+      @deletConfirmed="deleteTrpOrder()"
+    />
     <!-- Dialog Print -->
     <v-dialog
       v-model="dialogPrint"
@@ -826,6 +898,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { format } from "fecha";
+import CloneDeep from "lodash/cloneDeep";
 import SearchShipmentTextfieldInit from "@/components/subComponents/SearchShipmentTextfieldInit.vue";
 import SearchShipmentTextfieldAdd from "@/components/subComponents/SearchShipmentTextfieldAdd.vue";
 import NewShipmentGoods from "@/components/subComponents/NewShipmentGoods.vue";
@@ -841,6 +914,7 @@ import PositionConstruction from "@/model/PositionConstruction";
 import Client from "@/model/Client";
 import SearchCustomer from "@/components/subComponents/SearchCustomer.vue";
 import DialogPermissions from "@/components/subComponents/DialogPermissions.vue";
+import DialogDeleteWarn from "@/components/subComponents/DialogWarnDelete.vue";
 import { DIRECTUS_ROLES, ORDER_TYPE, TRP_TYP_CLIENT } from "./Const";
 import { Anlage, TrpOrder } from "@/services/TrpOrder";
 import OrderDisplay from "@/model/OrderDisplay";
@@ -857,6 +931,7 @@ import ClassState from "@/model/State";
     SearchCustomer,
     PrintTransportOrder,
     DialogPermissions,
+    DialogDeleteWarn,
   },
 })
 export default class SearchShipment extends Vue {
@@ -880,6 +955,7 @@ export default class SearchShipment extends Vue {
   private printOrder = new Order();
   private editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
+  private orderToDelete = new OrderDisplay();
   private errorMessage = "";
   private dialog = false;
   private dialogNotMova = false;
@@ -887,6 +963,7 @@ export default class SearchShipment extends Vue {
   private dialogSearchClient = false;
   private dialogWarnOrder = false;
   private warnPermissions = false;
+  private dialogWarnDelete = false;
   private titleDialogOrder = "";
   private textDialogOrder = "";
   // formFirst
@@ -918,10 +995,14 @@ export default class SearchShipment extends Vue {
   private principalAddress = "";
   private deliveryPhone = "";
   private anlagenID = 0;
+  private anlagenIdPickUp = 0;
   private anlagenDescription = "--";
+  private anlagenDescriptionPickUp = "--";
   private rasterLagerplatz = "";
+  private rasterLagerplatzPickUp = "";
   private menuDatePickup = false;
   private menuDateDelivery = false;
+  private costTrpExternal = 0;
   private datePickup = new Date().toISOString().substring(0, 10);
   private dateDelivery = new Date().toISOString().substring(0, 10);
   private pickupTime = "00:00";
@@ -949,7 +1030,6 @@ export default class SearchShipment extends Vue {
   ];
 
   private notRequired = true;
-
   private rasterLagerplatzRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => {
@@ -958,6 +1038,29 @@ export default class SearchShipment extends Vue {
         return !!v || "Wert ist erforderlich";
       }
       this.notRequired = true;
+      return true;
+    },
+  ];
+
+  private notRequiredPickUP = true;
+  private rasterLagerplatzRulesPickUp = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (this.editedOrder.shipper?.type === TRP_TYP_CLIENT.mova) {
+        this.notRequired = false;
+        return !!v || "Wert ist erforderlich";
+      }
+      this.notRequired = true;
+      return true;
+    },
+  ];
+
+  private valueCHFRules = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (v: any) => {
+      if (v) {
+        return /^[0-9]{1,11}(?:\.[0-9]{1,2})?$/.test(v) || "Nur Zahlen mit max. 2 Kommastelle";
+      }
       return true;
     },
   ];
@@ -993,7 +1096,7 @@ export default class SearchShipment extends Vue {
     this.orderType.push(
       ORDER_TYPE.Warentransport,
       ORDER_TYPE.Personentransport,
-      ORDER_TYPE["Bauleistung mit Fahrzeug"],
+      ORDER_TYPE["Spezialleistung mit Fahrzeug"],
     );
   }
 
@@ -1482,6 +1585,92 @@ export default class SearchShipment extends Vue {
             };
           }
         }
+
+        if (filteredDataKey[i] === "Bereich") {
+          // eslint-disable-next-line no-await-in-loop
+          const fetchBereich = await DirectusAPI.getDepartments(
+            {
+              department: {
+                in: filteredDataValue[i].trim(),
+              },
+            },
+            5,
+          );
+          const arrayBereich: number[] = [];
+
+          for (let j = 0; fetchBereich.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayBereich.push(fetchBereich[j].id!);
+          }
+
+          // eslint-disable-next-line no-await-in-loop
+          const fetchPrincipalsBereich = await DirectusAPI.getTrpClients(
+            {
+              ressort_department: {
+                in: arrayBereich,
+              },
+            },
+            5,
+          );
+
+          const arrayBereichPrinci: number[] = [];
+
+          for (let j = 0; fetchPrincipalsBereich.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayBereichPrinci.push(fetchPrincipalsBereich[j].id!);
+          }
+
+          if (arrayBereichPrinci.length > 0) {
+            principals = principals.concat(arrayBereichPrinci);
+            filter.principal = {
+              in: principals,
+            };
+          }
+        }
+
+        if (filteredDataKey[i] === "Ressort") {
+          // eslint-disable-next-line no-await-in-loop
+          const fetchRessort = await DirectusAPI.getRessorts(-1);
+          const idRessort = fetchRessort.find((value) => value.ressort === filteredDataValue[i].trim());
+          // eslint-disable-next-line no-await-in-loop
+          const fetchBereichForRessort = await DirectusAPI.getDepartments(
+            {
+              trp_ressort_mm: {
+                in: [idRessort?.id],
+              },
+            },
+            5,
+          );
+          const arrayRessortDep: number[] = [];
+          for (let j = 0; fetchBereichForRessort.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayRessortDep.push(fetchBereichForRessort[j].id!);
+          }
+
+          // eslint-disable-next-line no-await-in-loop
+          const fetchPrincipalsRessort = await DirectusAPI.getTrpClients(
+            {
+              ressort_department: {
+                in: arrayRessortDep,
+              },
+            },
+            5,
+          );
+
+          const arrayRessortPrinci: number[] = [];
+
+          for (let j = 0; fetchPrincipalsRessort.length > j; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            arrayRessortPrinci.push(fetchPrincipalsRessort[j].id!);
+          }
+
+          if (arrayRessortPrinci.length > 0) {
+            principals = principals.concat(arrayRessortPrinci);
+            filter.principal = {
+              in: principals,
+            };
+          }
+        }
       }
 
       // Check if filter is empty
@@ -1494,6 +1683,40 @@ export default class SearchShipment extends Vue {
     return order;
   }
 
+  private async deleteItem(item: OrderDisplay): Promise<void> {
+    if (
+      this.$store.state.authorisation === DIRECTUS_ROLES.Public
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
+      || this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"]
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
+      || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
+    ) {
+      this.warnPermissions = true;
+    } else {
+      this.dialogWarnDelete = true;
+      this.orderToDelete = item;
+    }
+  }
+
+  private async deleteTrpOrder(): Promise<void> {
+    if (this.orderToDelete.id) {
+      const idxOfChange = this.orders.findIndex((value: OrderDisplay) => value.id === this.orderToDelete.id);
+      await DirectusAPI.deleteTrpOrder(this.orderToDelete.id);
+      if (idxOfChange !== -1) {
+        this.orders.splice(idxOfChange, 1);
+      }
+      this.orderToDelete = new OrderDisplay();
+      const idxOfChangeRealOrdersDelete = this.orderTable.findIndex((value: Order) => value.id === this.orderToDelete.id);
+      if (idxOfChangeRealOrdersDelete !== -1) {
+        this.orderTable.splice(idxOfChangeRealOrdersDelete, 1);
+      }
+      this.dialogWarnDelete = false;
+    }
+  }
+
   private printItem(item: OrderDisplay): void {
     this.forceRerenderPrint();
     let editedItems: TrpOrder[] = [];
@@ -1504,8 +1727,8 @@ export default class SearchShipment extends Vue {
       editedItems = this.orderTable.filter((value) => value.id === item.id);
       // check if found item is not null
       if (editedItems[0]) {
-        this.editedOrder = editedItems[0];
-        this.printOrder = editedItems[0];
+        this.editedOrder = CloneDeep(editedItems[0]);
+        this.printOrder = CloneDeep(editedItems[0]);
 
         this.$nextTick(() => {
           // still needed? --> probably not
@@ -1519,6 +1742,7 @@ export default class SearchShipment extends Vue {
   private async editItem(item: OrderDisplay): Promise<void> {
     this.printOrder = new Order();
     this.editedOrder = new Order();
+
     let editedItems: TrpOrder[] = [];
 
     this.validFormGoods = [true];
@@ -1534,8 +1758,8 @@ export default class SearchShipment extends Vue {
       editedItems = this.orderTable.filter((value) => value.id === item.id);
       // check if found item is not null
       if (editedItems[0]) {
-        this.editedOrder = editedItems[0];
-        this.printOrder = editedItems[0];
+        this.editedOrder = CloneDeep(editedItems[0]);
+        this.printOrder = CloneDeep(editedItems[0]);
         try {
           this.anlagenID = Number(this.editedOrder.anlage!.anlagenId);
         } catch {
@@ -1544,9 +1768,20 @@ export default class SearchShipment extends Vue {
           this.editedOrder.anlage!.id = undefined;
         }
         try {
+          this.anlagenIdPickUp = Number(this.editedOrder.anlagePickUp!.anlagenId);
+        } catch {
+          this.anlagenIdPickUp = 0;
+          this.editedOrder.anlagePickUp = new AnlageClass();
+        }
+        try {
           this.rasterLagerplatz = this.editedOrder.rasterLagerplatz!;
         } catch {
           this.rasterLagerplatz = "";
+        }
+        try {
+          this.rasterLagerplatzPickUp = this.editedOrder.rasterLagerplatzPickUp!;
+        } catch {
+          this.rasterLagerplatzPickUp = "";
         }
 
         this.pickupID = this.editedOrder.shipper!.id!;
@@ -1565,6 +1800,7 @@ export default class SearchShipment extends Vue {
         this.remarksTrpOrder = this.editedOrder.remarks!;
         this.onlyDelivery = this.editedOrder.deliveryOnly!;
         this.state = this.stateTypeFromIdToState.get(this.editedOrder.state?.id);
+        this.costTrpExternal = this.editedOrder.costTrpExternal!;
 
         if (this.editedOrder.goods) {
           if (this.editedOrder.goods.length > 0) {
@@ -1625,6 +1861,10 @@ export default class SearchShipment extends Vue {
 
   private closePermissions(): void {
     this.warnPermissions = false;
+  }
+
+  private closeWarnDelete(): void {
+    this.dialogWarnDelete = false;
   }
 
   private async close(): Promise<void> {
@@ -1819,6 +2059,10 @@ export default class SearchShipment extends Vue {
       }
     }
 
+    // update real trp of search table results
+    const idxOfChangeRealOrders = this.orderTable.findIndex((value: Order) => value.id === order.id);
+    this.orderTable[idxOfChangeRealOrders] = order;
+
     // update table --> maybe extract this part...
     const idxOfChange = this.orders.findIndex((value: OrderDisplay) => value.id === order.id);
 
@@ -1883,9 +2127,9 @@ export default class SearchShipment extends Vue {
       this.orderPositionsGoods.push(NewShipmentGoods);
       // eslint-disable-next-line no-unused-expressions
       this.editedOrder.goods?.push(new PositionGoods());
-      this.editedOrder.goods![
-        this.editedOrder.goods!.length - 1
-      ].dangerousGoods = false;
+      this.editedOrder.goods![this.editedOrder.goods!.length - 1].dangerousGoods = false;
+      this.editedOrder.goods![this.editedOrder.goods!.length - 1].stapelbar = true;
+      this.editedOrder.goods![this.editedOrder.goods!.length - 1].kommissionieren = false;
       this.validFormGoods.push(true);
     }
     if (this.type === this.orderType[1]) {
@@ -1991,6 +2235,7 @@ export default class SearchShipment extends Vue {
   private async triggerUdatePickupID(kindOfUpdate: string): Promise<void> {
     let resp: Client[] = [];
     let resp2: Anlage[] = [];
+    let resp3: AnlageClass[] = [];
 
     (this.$refs.formFirst as Vue & { resetValidation: () => boolean; }).resetValidation();
 
@@ -2097,6 +2342,34 @@ export default class SearchShipment extends Vue {
           this.editedOrder.anlage.id = 0;
         }
         break;
+
+      case "anlagenPickUp":
+        try {
+          resp3 = await DirectusAPI.getAnlage({
+            anlagen_id: {
+              eq: this.anlagenIdPickUp,
+            },
+          }, 5);
+        } catch {
+          this.anlagenDescriptionPickUp = "Analgen ID nicht vorhanden";
+          this.editedOrder.anlagePickUp = new AnlageClass();
+          this.editedOrder.anlagePickUp.id = 0;
+        }
+        if (resp3.length > 0) {
+          try {
+            this.rasterLagerplatzPickUp = resp3[0].standortcode!;
+            this.editedOrder.rasterLagerplatzPickUp = resp3[0].standortcode!;
+          } finally {
+            this.anlagenDescriptionPickUp = `${resp3[0].anlagenname}, ${resp3[0].standort}`;
+            this.editedOrder.anlagePickUp = new AnlageClass();
+            this.editedOrder.anlagePickUp = resp3[0];
+          }
+        } else {
+          this.anlagenDescriptionPickUp = "Analgen ID nicht vorhanden";
+          this.editedOrder.anlagePickUp = new AnlageClass();
+          this.editedOrder.anlagePickUp.id = 0;
+        }
+        break;
     }
   }
 
@@ -2175,6 +2448,15 @@ export default class SearchShipment extends Vue {
     this.editedOrder.pickUpDate = upadeDateTime;
   }
 
+  private triggerUpdateCostTrpExternal(): void {
+    const upade = this.costTrpExternal;
+    if (upade) {
+      this.editedOrder.costTrpExternal = upade;
+    } else {
+      this.editedOrder.costTrpExternal = 0;
+    }
+  }
+
   private triggerUpdateDateDelivery(): void {
     const upade = `${this.dateDelivery} ${this.deliveryTime}`;
     const upadeDateTime = new Date(upade);
@@ -2191,9 +2473,18 @@ export default class SearchShipment extends Vue {
     this.editedOrder.rasterLagerplatz = upade;
   }
 
+  private triggerUpdateRasterPickUp(): void {
+    const upade = this.rasterLagerplatzPickUp;
+    this.editedOrder.rasterLagerplatzPickUp = upade;
+  }
+
   private triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
     this.editedOrder.deliveryOnly = upade;
+    if (this.onlyDelivery === false) {
+      this.editedOrder.costTrpExternal = 0;
+      this.costTrpExternal = 0;
+    }
   }
 
   private async searchCustomer(searchOption: string): Promise<void> {

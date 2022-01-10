@@ -221,7 +221,7 @@ class DirectusAPI {
     const resp = await this.directusSDK.getItems("trp_order", {
       filter,
       limit,
-      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "shipper.modified_by.id", "shipper.modified_by.first_name", "shipper.modified_by.last_name", "shipper.modified_by.email", "shipper.ressort_department.*.*", "receiver.*", "receiver.ressort_department.*.*", "receiver.type.*", "receiver.modified_by.id", "receiver.modified_by.first_name", "receiver.modified_by.last_name", "receiver.modified_by.email", "principal.*", "principal.type.*", "principal.modified_by.id", "principal.modified_by.first_name", "principal.modified_by.last_name", "principal.modified_by.email", "principal.ressort_department.*.*", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*", "document.id"],
+      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "shipper.modified_by.id", "shipper.modified_by.first_name", "shipper.modified_by.last_name", "shipper.modified_by.email", "shipper.ressort_department.*.*", "receiver.*", "receiver.ressort_department.*.*", "receiver.type.*", "receiver.modified_by.id", "receiver.modified_by.first_name", "receiver.modified_by.last_name", "receiver.modified_by.email", "principal.*", "principal.type.*", "principal.modified_by.id", "principal.modified_by.first_name", "principal.modified_by.last_name", "principal.modified_by.email", "principal.ressort_department.*.*", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*", "anlage_pick_up.*", "document.id"],
     });
     const orders: TrpOrder[] = ConvertTrpOrder.toTrpOrder(JSON.stringify(resp.data));
     const orderObj: Order[] = [];
@@ -243,8 +243,11 @@ class DirectusAPI {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       pick_up_date: fecha.format(order.pickUpDate!, "YYYY-MM-DD HH:mm:ss"),
       anlage: order.anlage?.id,
+      anlage_pick_up: order.anlagePickUp?.id,
       raster_lagerplatz: order.rasterLagerplatz,
+      raster_lagerplatz_pick_up: order.rasterLagerplatzPickUp,
       delivery_only: order.deliveryOnly,
+      cost_trp_external: order.costTrpExternal,
     });
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -265,14 +268,21 @@ class DirectusAPI {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       pick_up_date: fecha.format(order.pickUpDate!, "YYYY-MM-DD HH:mm:ss"),
       anlage: order.anlage?.id,
+      anlage_pick_up: order.anlagePickUp?.id,
       raster_lagerplatz: order.rasterLagerplatz,
+      raster_lagerplatz_pick_up: order.rasterLagerplatzPickUp,
       delivery_only: order.deliveryOnly,
       statusdirectus: order.statusdirectus,
+      cost_trp_external: order.costTrpExternal,
     });
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const newOrderId = resp.data.id;
     return newOrderId;
+  }
+
+  public async deleteTrpOrder(trpOrderId: number): Promise<void> {
+    await this.directusSDK.deleteItem("trp_order", trpOrderId);
   }
 
   public async uploadFileTrpOrder(TrpOrderId: number, file: FormData): Promise<boolean> {
@@ -341,6 +351,8 @@ class DirectusAPI {
       value_chf: goods.valueChf,
       dangerous_goods: goods.dangerousGoods,
       order: orderId,
+      stapelbar: goods.stapelbar,
+      kommissionieren: goods.kommissionieren,
     });
     const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify([resp.data]));
     return newPos[0];
@@ -361,6 +373,8 @@ class DirectusAPI {
       dangerous_goods: goods.dangerousGoods,
       order: orderId,
       statusdirectus: goods.statusdirectus,
+      stapelbar: goods.stapelbar,
+      kommissionieren: goods.kommissionieren,
     });
     const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify([resp.data]));
     return newPos[0];
@@ -381,6 +395,8 @@ class DirectusAPI {
       dangerous_goods: goods.dangerousGoods,
       order: orderId,
       statusdirectus: goods.statusdirectus,
+      stapelbar: goods.stapelbar,
+      kommissionieren: goods.kommissionieren,
     });
     const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify([resp.data]));
     return newPos[0];

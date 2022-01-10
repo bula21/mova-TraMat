@@ -168,9 +168,11 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import CloneDeep from "lodash/cloneDeep";
 import DirectusAPI from "@/services/DirectusAPI";
 import Client from "@/model/Client";
-import { TRP_TYP_CLIENT } from "../Const";
+import { TRP_TYP_CLIENT_STRING } from "../Const";
+import ClientType from "@/model/ClientType";
 
 @Component
 export default class SearchCustomer extends Vue {
@@ -287,11 +289,13 @@ export default class SearchCustomer extends Vue {
 
   private async selectItem(item: Client): Promise<void> {
     if (item.id) {
-      this.choosenItem = item;
+      this.choosenItem = CloneDeep(item);
 
-      if (this.choosenItem.type === TRP_TYP_CLIENT.mova) {
+      if (this.choosenItem.type === TRP_TYP_CLIENT_STRING.mova) {
+        this.choosenItem.type = new ClientType();
         this.choosenItem.type.id = 1;
-      } else if (this.choosenItem.type === TRP_TYP_CLIENT.external) {
+      } else if (this.choosenItem.type === TRP_TYP_CLIENT_STRING.external) {
+        this.choosenItem.type = new ClientType();
         this.choosenItem.type.id = 2;
       }
       await this.$nextTick(async () => {

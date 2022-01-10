@@ -73,6 +73,8 @@ class ExportCSV {
       let tour = "";
       let rasterLagerplatz = "";
       let document = false;
+      let rasterLagerplatzPickUp = "";
+      let anlagePickUp = "";
 
       if (x.tour) {
         // eslint-disable-next-line prefer-destructuring
@@ -88,6 +90,11 @@ class ExportCSV {
         rasterLagerplatz = x.rasterLagerplatz;
       }
 
+      if (x.rasterLagerplatzPickUp) {
+        // eslint-disable-next-line prefer-destructuring
+        rasterLagerplatzPickUp = x.rasterLagerplatzPickUp;
+      }
+
       if (x.modifiedBy) {
         modifiedBy = `${x.modifiedBy.firstName} ${x.modifiedBy.lastName}`;
       }
@@ -100,12 +107,18 @@ class ExportCSV {
         anlage = x.anlage.anlagenId!;
       }
 
+      if (x.anlagePickUp) {
+        anlagePickUp = x.anlagePickUp.anlagenId!;
+      }
+
       row.tour = tour;
       row.document = document;
       row.rasterLagerplatz = rasterLagerplatz;
+      row.rasterLagerplatzPickUp = rasterLagerplatzPickUp;
       row.modifiedBy = modifiedBy;
       row.owner = owner;
       row.anlage = anlage;
+      row.anlagePickUp = anlagePickUp;
       row.anlagen_name = x.anlage?.anlagenname;
       row.principal = x.principal?.id;
       row.principal_name = x.principal?.name;
@@ -149,6 +162,8 @@ class ExportCSV {
           row[`${position}goods_marking`] = element.marking;
           row[`${position}goods_quantity`] = element.quantity;
           row[`${position}goods_valueChf`] = element.valueChf;
+          row[`${position}goods_kommissionieren`] = element.kommissionieren;
+          row[`${position}goods_stapelbar`] = element.stapelbar;
           if (maxPosNr < posNr) {
             maxPosNr = posNr;
           }
@@ -196,7 +211,7 @@ class ExportCSV {
       fieldsOrder.push(`${position}goods_dangerousGoods`, `${position}goodsDescription`,
         `${position}goods_grossWeight`, `${position}goods_netWeight`, `${position}goods_length`,
         `${position}goods_width`, `${position}goods_height`, `${position}goods_packingUnit`, `${position}goods_marking`, `${position}goods_quantity`,
-        `${position}goods_valueChf`);
+        `${position}goods_valueChf`, `${position}goods_kommissionieren`, `${position}goods_stapelbar`);
       fieldsOrder.push(`${position}const_description`, `${position}const_quantity`, `${position}const_weight`);
     }
 

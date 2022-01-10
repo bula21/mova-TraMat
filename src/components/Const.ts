@@ -1,7 +1,7 @@
 export const SEARCH_CATEGORIES = ["Order ID", "Status", "Liefertermin", "Ladetermin",
   "Auftraggeber Firma/Name", "Auftraggeber ID", "Auftraggeber Email",
   "Lieferadresse Name", "Ladeadresse Name", "Lieferadresse Ort", "Ladeadresse Ort",
-  "Ladeadresse PLZ", "Lieferadresse PLZ"];
+  "Ladeadresse PLZ", "Lieferadresse PLZ", "Ressort", "Bereich"];
 
 export const DIRECTUS_ROLES = {
   // no warn
@@ -21,7 +21,7 @@ export const DIRECTUS_ROLES = {
 export const ORDER_TYPE = {
   Warentransport: "Warentransport",
   Personentransport: "Personentransport",
-  "Bauleistung mit Fahrzeug": "Bauleistung mit Fahrzeug",
+  "Spezialleistung mit Fahrzeug": "Spezialleistung mit Fahrzeug",
 };
 
 export const TRP_TYP_CLIENT = {

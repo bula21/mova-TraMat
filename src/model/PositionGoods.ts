@@ -1,6 +1,8 @@
 import { Good } from "@/services/TrpOrder";
 
 class PositionGoods implements Good {
+  stapelbar?: boolean;
+  kommissionieren?: boolean;
   id?: number;
   marking?: string | null | undefined;
   quantity?: number | undefined;

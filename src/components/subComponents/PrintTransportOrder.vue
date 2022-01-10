@@ -217,15 +217,26 @@ export default class PrintTransportOrder extends Vue {
     pdf.setFont("Helvetica", "italic");
 
     try {
-      pdf.text(`Anlagen ID:      \t${this.order.anlage?.anlagenId} ${this.order.anlage?.anlagenname} `, 10.5, 6);
+      pdf.text(`Anlagen ID Liefern: ${this.order.anlage?.anlagenId} ${this.order.anlage?.anlagenname} `, 10.5, 6);
     } catch {
       console.log("no Anlage ID by print PDF");
     }
 
     try {
-      pdf.text(`Raster Lagerplatz:   ${this.order.rasterLagerplatz}`, 10.5, 6.5);
+      pdf.text(`Raster Lagerplatz Liefern: ${this.order.rasterLagerplatz}`, 10.5, 6.5);
     } catch {
       console.log("no Raster Lagerplatz by print PDF");
+    }
+    pdf.setFont("Helvetica", "italic");
+    try {
+      pdf.text(`Anlagen ID Laden: ${this.order.anlagePickUp?.anlagenId} ${this.order.anlagePickUp?.anlagenname} `, 10.5, 7.2);
+    } catch {
+      console.log("no Anlage ID PickUp by print PDF");
+    }
+    try {
+      pdf.text(`Raster Lagerplatz Laden: ${this.order.rasterLagerplatzPickUp}`, 10.5, 7.7);
+    } catch {
+      console.log("no Raster Lagerplatz PickUp by print PDF");
     }
 
     pdf.setFont("Helvetica", "normal");
@@ -247,7 +258,7 @@ export default class PrintTransportOrder extends Vue {
       1.2,
       9,
     );
-
+    
     pdf.setFont("Helvetica", "bold");
     pdf.text(`Lieferadresse: \t${this.order.receiver?.id}`, 10.5, 8.5);
     pdf.setFont("Helvetica", "normal");
@@ -276,7 +287,7 @@ export default class PrintTransportOrder extends Vue {
       pdf.text("Sendungsart: \t    Warentransport", borderLeft, 12.2);
     }
     if (this.order.construction!.length > 0) {
-      pdf.text("Sendungsart: \t    Bauleistung mit Fahrzeug", borderLeft, 12.2);
+      pdf.text("Sendungsart: \t    Spezialleistung mit Fahrzeug", borderLeft, 12.2);
     }
     pdf.text(
       `Abholbereit ab: \t ${
@@ -521,11 +532,11 @@ export default class PrintTransportOrder extends Vue {
         }
 
         pdf.setFont("Helvetica", "italic");
-        pdf.setFontSize(10);
+        pdf.setFontSize(8);
         pdf.text(
           `Gefahrgut: ${
             this.order.goods![i].dangerousGoods
-          }, (LxBxH) cm: ${
+          }, Stapelbar: ${this.order.goods![i].stapelbar}, (LxBxH) cm: ${
             this.order.goods![i].length
           }x${
             this.order.goods![i].width
@@ -534,7 +545,7 @@ export default class PrintTransportOrder extends Vue {
           }, Warenwert (CHF): ${
             this.order.goods![i].valueChf
           }, Netto Geweicht (kg): ${
-            this.order.goods![i].netWeight}`,
+            this.order.goods![i].netWeight}, Kommission: ${this.order.goods![i].kommissionieren}`,
           borderLeft,
           currPos,
         );

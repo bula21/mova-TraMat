@@ -64,6 +64,34 @@
         </v-progress-circular>
       </v-col>
     </v-row>
+    <v-row class="pt-10 ">
+      <v-divider />
+    </v-row>
+    <v-row class="pt-10 ml-3">
+      <v-col>
+        <h4>
+          Nützliche IDs für Auftragserfassung
+        </h4>
+      </v-col>
+    </v-row>
+    <v-row class="ml-3">
+      <v-card
+        flat
+        width="320px"
+        class="ml-3"
+      >
+        <v-textarea
+          v-model="helpId"
+          auto-grow
+          outlinded
+          filled
+          readonly
+          rows="4"
+        />
+      </v-card>
+      <v-col cols="6">
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -76,6 +104,8 @@ export default class Home extends Vue {
   private newOrders = 0;
   private currentOrder = 0;
   private inProcessOrders = 0;
+  private helpId = "ID Lagerplatz Ulrichen: \t\t\t\t\t\t31\nID Transportzentrale: \t\t\t\t\t\t\t30\nID Flughafen Münster: \t\t\t\t\t\t186\nID Programmspot Oberwald: \t\t\t187";
+
 
   async mounted(): Promise<void> {
     const orders = await Home.fetchHomeOrders();
@@ -99,5 +129,4 @@ export default class Home extends Vue {
     return [ordersNew.length, orderCurrent.length, orderInProcess.length];
   }
 }
-
 </script>

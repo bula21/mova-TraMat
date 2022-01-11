@@ -1621,7 +1621,15 @@ export default class SearchShipment extends Vue {
           }
 
           if (arrayBereichPrinci.length > 0) {
-            principals = principals.concat(arrayBereichPrinci);
+            if (principals.length > 0) {
+              if (principals.filter((value) => arrayBereichPrinci.includes(value)) !== []) {
+                principals = principals.filter((value) => arrayBereichPrinci.includes(value));
+              } else {
+                return order;
+              }
+            } else {
+              principals = principals.concat(arrayBereichPrinci);
+            }
             filter.principal = {
               in: principals,
             };
@@ -1632,6 +1640,7 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchRessort = await DirectusAPI.getRessorts(-1);
           const idRessort = fetchRessort.find((value) => value.ressort === filteredDataValue[i].trim());
+
           // eslint-disable-next-line no-await-in-loop
           const fetchBereichForRessort = await DirectusAPI.getDepartments(
             {
@@ -1665,7 +1674,15 @@ export default class SearchShipment extends Vue {
           }
 
           if (arrayRessortPrinci.length > 0) {
-            principals = principals.concat(arrayRessortPrinci);
+            if (principals.length > 0) {
+              if (principals.filter((value) => arrayRessortPrinci.includes(value)) !== []) {
+                principals = principals.filter((value) => arrayRessortPrinci.includes(value));
+              } else {
+                return order;
+              }
+            } else {
+              principals = principals.concat(arrayRessortPrinci);
+            }
             filter.principal = {
               in: principals,
             };

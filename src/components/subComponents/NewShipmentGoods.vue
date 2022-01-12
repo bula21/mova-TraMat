@@ -62,8 +62,7 @@
         <v-text-field
           v-model="length"
           :rules="dimRules"
-          required
-          label="Länge (cm)*"
+          label="Länge (cm)"
         />
       </v-col>
       <v-col
@@ -73,8 +72,7 @@
         <v-text-field
           v-model="width"
           :rules="dimRules"
-          required
-          label="Breite (cm)*"
+          label="Breite (cm)"
         />
       </v-col>
       <v-col
@@ -84,8 +82,7 @@
         <v-text-field
           v-model="height"
           :rules="dimRules"
-          required
-          label="Höhe (cm)*"
+          label="Höhe (cm)"
         />
       </v-col>
       <v-col
@@ -116,7 +113,7 @@
           v-model="valueCHF"
           :rules="valueCHFRules"
           label="Warenwert in CHF*"
-          hint="Falls nicht bekannt 0 CHF eintragen"
+          hint="Falls nicht bekannt 1 CHF eintragen"
           required
         />
       </v-col>
@@ -135,12 +132,26 @@
         cols="2"
         class="mt-n7"
       >
-        <v-checkbox
-          v-model="kommission"
-          label="Kommission nötig"
-          color="red"
-          hide-details
-        />
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <div
+              v-bind="attrs"
+              v-on="on"
+            >
+              <v-checkbox
+                v-model="kommission"
+                label="Kommission nötig"
+                color="red"
+                hide-details
+                v-bind="attrs"
+                v-on="on"
+              />
+            </div>
+          </template>
+          <span>
+            Kommission nötig - Lieferung muss umgepackt werden. Weiterverteilung der Lieferung gemäss Angaben Auftraggeber.
+          </span>
+        </v-tooltip>
       </v-col>
     </v-row>
   </v-form>
@@ -210,10 +221,12 @@ export default class NewShipmentGoods extends Vue {
 
   private dimRules = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => v !== null || v !== undefined || "Wert ist erforderlich",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (v: any) => /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v)
-      || "Nur Zahlen mit max. 1 Kommastelle",
+    (v: any) => {
+      if (v) {
+        return /^[0-9]{1,11}(?:\.[0-9]{1})?$/.test(v) || "Nur Zahlen mit max. 1 Kommastelle";
+      }
+      return true;
+    },
   ];
 
   private valueCHFRules = [

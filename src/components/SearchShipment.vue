@@ -1274,8 +1274,13 @@ export default class SearchShipment extends Vue {
 
     for (let y = 0; this.searchCategoryChildAdd.length > y; y++) {
       if (this.searchCategoryChildAdd[y] && this.searchChildAdd[y]) {
-        filteredDataKey.push(this.searchCategoryChildAdd[y]);
-        filteredDataValue.push(this.searchChildAdd[y]);
+        if (this.searchCategoryChildAdd[y] === "Auftraggeber ID") {
+          filteredDataKey.unshift(this.searchCategoryChildAdd[y]);
+          filteredDataValue.unshift(this.searchChildAdd[y]);
+        } else {
+          filteredDataKey.push(this.searchCategoryChildAdd[y]);
+          filteredDataValue.push(this.searchChildAdd[y]);
+        }
       }
     }
 
@@ -1413,10 +1418,21 @@ export default class SearchShipment extends Vue {
           }
         }
         if (filteredDataKey[i] === "Auftraggeber ID") {
-          principals.push(filteredDataValue[i].trim());
-          filter.principal = {
-            in: principals,
-          };
+          let valueToPush: number;
+          try {
+            valueToPush = Number(filteredDataValue[i].trim());
+          } catch {
+            return order;
+          }
+
+          if (valueToPush) {
+            principals.push(valueToPush);
+            filter.principal = {
+              in: principals,
+            };
+          } else {
+            return order;
+          }
         }
         if (filteredDataKey[i] === "Auftraggeber Email") {
           // eslint-disable-next-line no-await-in-loop
@@ -1622,7 +1638,7 @@ export default class SearchShipment extends Vue {
 
           if (arrayBereichPrinci.length > 0) {
             if (principals.length > 0) {
-              if (principals.filter((value) => arrayBereichPrinci.includes(value)) !== []) {
+              if ((principals.filter((value) => arrayBereichPrinci.includes(value)))?.length) {
                 principals = principals.filter((value) => arrayBereichPrinci.includes(value));
               } else {
                 return order;
@@ -1675,7 +1691,7 @@ export default class SearchShipment extends Vue {
 
           if (arrayRessortPrinci.length > 0) {
             if (principals.length > 0) {
-              if (principals.filter((value) => arrayRessortPrinci.includes(value)) !== []) {
+              if ((principals.filter((value) => arrayRessortPrinci.includes(value)))?.length) {
                 principals = principals.filter((value) => arrayRessortPrinci.includes(value));
               } else {
                 return order;
@@ -1689,7 +1705,6 @@ export default class SearchShipment extends Vue {
           }
         }
       }
-
       // Check if filter is empty
       if (Object.keys(filter).length === 0 && filter.constructor === Object) {
         return order;

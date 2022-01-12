@@ -1656,7 +1656,6 @@ export default class SearchShipment extends Vue {
           // eslint-disable-next-line no-await-in-loop
           const fetchRessort = await DirectusAPI.getRessorts(-1);
           const idRessort = fetchRessort.find((value) => value.ressort === filteredDataValue[i].trim());
-
           // eslint-disable-next-line no-await-in-loop
           const fetchBereichForRessort = await DirectusAPI.getDepartments(
             {

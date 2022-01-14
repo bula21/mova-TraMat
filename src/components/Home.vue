@@ -136,23 +136,10 @@
     </v-row>
     <v-row>
       <v-col>
-
-        <!--
-        <iframe
-          src="https://onedrive.live.com/embed?cid=7A641A799D8BB3BD&amp;resid=7A641A799D8BB3BD%211802&amp;authkey=AJlQnylapnyziIo&amp;em=2"
-          width="1600px"
-          height="1000px"
-          frameborder="0"
-        >Dies ist ein eingebettetes <a
-            target="_blank"
-            href="https://office.com"
-          >Microsoft Office</a>-Dokument, unterstützt von <a
-            target="_blank"
-            href="https://office.com/webapps"
-          >Office</a>.</iframe>
-                  <embed src="https://raw.githubusercontent.com/bula21/mova-TraMat/test/src/assets/FlussdiagrammTransportkonzept.pdf" width="800px" height="2100px" />
-        <div id="objectPDFDiagramm" />
-          -->
+        <div
+          align="center"
+          id="pdf-diagramm"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -162,6 +149,10 @@
 import { Component, Vue } from "vue-property-decorator";
 import PDFObject from "pdfobject";
 import DirectusAPI from "@/services/DirectusAPI";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import * as Diagramm from "@/assets/diagramm.json";
+import Order from "@/model/Order";
 
 @Component({
 })
@@ -172,31 +163,55 @@ export default class Home extends Vue {
   private helpId = "ID Lagerplatz Ulrichen: \t\t\t\t\t\t31\nID Transportzentrale: \t\t\t\t\t\t\t30\nID Flughafen Münster: \t\t\t\t\t\t186\nID Programmspot Oberwald: \t\t\t187";
 
 
-  async mounted(): Promise<void> {
-    const orders = await Home.fetchHomeOrders();
-    this.newOrders = orders[0];
-    this.currentOrder = orders[1];
-    this.inProcessOrders = orders[2];
+  mounted(): void {
+    const prom = Home.fetchHomeOrders();
+    prom.then((valuei) => {
+      valuei.forEach((valuei1, idxi) => {
+        valuei1.then((valuei2) => {
+          if (idxi === 0) {
+            this.newOrders = valuei2.length;
+          }
+          if (idxi === 1) {
+            this.currentOrder = valuei2.length;
+          }
+          if (idxi === 2) {
+            this.inProcessOrders = valuei2.length;
+          }
+        });
+      });
+    });
     Home.loadDiagramm();
   }
 
   private static async loadDiagramm(): Promise<void> {
-    // PDFObject.embed("https://raw.githubusercontent.com/bula21/mova-TraMat/test/src/assets/FlussdiagrammTransportkonzept.pdf", "#objectPDFDiagramm");
+    PDFObject.embed(Diagramm.pdf.data, "#pdf-diagramm");
   }
 
-  private static async fetchHomeOrders(): Promise<number[]> {
-    const ordersNew = await DirectusAPI.getTrpOrder({
+  private static async fetchHomeOrders(): Promise<Promise<Order[]>[]> {
+    const homeOrderPormises: Promise<Order[]>[] = [];
+    const ordersNew = DirectusAPI.getTrpOrder({
       state: "1",
     }, -1);
+    homeOrderPormises.push(ordersNew);
 
-    const orderCurrent = await DirectusAPI.getTrpOrder({
+    const orderCurrent = DirectusAPI.getTrpOrder({
       state: "3",
     }, -1);
+    homeOrderPormises.push(orderCurrent);
 
-    const orderInProcess = await DirectusAPI.getTrpOrder({
+    const orderInProcess = DirectusAPI.getTrpOrder({
       state: "2",
     }, -1);
-    return [ordersNew.length, orderCurrent.length, orderInProcess.length];
+    homeOrderPormises.push(orderInProcess);
+
+    return homeOrderPormises;
   }
 }
 </script>
+<style scoped>
+.pdfobject-container {
+  width: 100%;
+  height: 880px;
+  border: 0.5rem solid rgba(0, 0, 0, 0.1);
+}
+</style>

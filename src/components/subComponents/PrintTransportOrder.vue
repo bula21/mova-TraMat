@@ -715,9 +715,9 @@ export default class PrintTransportOrder extends Vue {
 }
 </script>
 
-<style>
+<style scoped>
 .pdfobject-container {
-  height: 30rem;
+  height: 33rem;
   border: 0.5rem solid rgba(0, 0, 0, 0.1);
 }
 </style>

@@ -81,11 +81,13 @@
     <!-- table results-->
     <v-data-table
       dense
+      v-model="selected1"
       :headers="headers"
       :items="orders"
-      item-key="idO"
+      item-key="id"
       class="elevation-1"
       sort-by="id"
+      show-select
       multi-sort
     >
       <template #[`item.actions`]="{ item }">
@@ -112,21 +114,45 @@
         </v-icon>
       </template>
     </v-data-table>
-    <div class="text-right pt-2">
-      <v-btn
-        color="blue"
-        dark
-        @click="exportOrders()"
-      >
-        CSV-Export
-        <v-icon
-          right
+    <v-row>
+      <v-col class="text-left pt-5">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="blue"
+              dark
+              @click="changeStatus()"
+              v-bind="attrs"
+              v-on="on"
+            >
+              Status ändern
+              <v-icon
+                right
+                dark
+              >
+                mdi-list-status
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>Mehrere Status für Aufträge ändern</span>
+        </v-tooltip>
+      </v-col>
+      <v-col class="text-right pt-5">
+        <v-btn
+          color="blue"
           dark
+          @click="exportOrders()"
         >
-          mdi-table-arrow-right
-        </v-icon>
-      </v-btn>
-    </div>
+          CSV-Export
+          <v-icon
+            right
+            dark
+          >
+            mdi-table-arrow-right
+          </v-icon>
+        </v-btn>
+      </v-col>
+    </v-row>
     <!-- edit order dialog huge..-->
     <v-dialog
       v-model="dialog"
@@ -892,6 +918,54 @@
         />
       </v-card>
     </v-dialog>
+    <!-- Dialog Change Status -->
+    <v-dialog
+      v-model="dialogChangeStatus"
+      persistent
+      max-width="550px"
+    >
+      <v-card>
+        <v-card-title class="headline">
+          Status ändern
+        </v-card-title>
+        <v-card-text>
+          Wähle den neuen Status für die mit der Checkbox ausgewählten Sendungen
+        </v-card-text>
+        <v-card-text>
+          <v-row>
+            <v-col>
+              <v-select
+                v-model="stateChange"
+                label="Sendungsstatus*"
+                :items="stateTypeArray"
+                :rules="orderTypeRules"
+                dense
+                outlined
+                class="mt-3"
+                required
+              />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="orange darken-1"
+            text
+            @click="closeChangeStatus()"
+          >
+            Abbrechen!
+          </v-btn>
+          <v-spacer />
+          <v-btn
+            color="blue darken-1"
+            text
+            @click="submitChangeStatus()"
+          >
+            Ok, Status ändern!
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -955,6 +1029,7 @@ export default class SearchShipment extends Vue {
   private printOrder = new Order();
   private editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
+  private selected1: OrderDisplay[] = [];
   private orderToDelete = new OrderDisplay();
   private errorMessage = "";
   private dialog = false;
@@ -964,6 +1039,7 @@ export default class SearchShipment extends Vue {
   private dialogWarnOrder = false;
   private warnPermissions = false;
   private dialogWarnDelete = false;
+  private dialogChangeStatus = false;
   private titleDialogOrder = "";
   private textDialogOrder = "";
   // formFirst
@@ -985,6 +1061,7 @@ export default class SearchShipment extends Vue {
   private stateTypeArray: string[] = [];
   private onlyDelivery = false;
   private state = "";
+  private stateChange = "";
   private type = "";
   private searchClient = new Client();
   private pickupID = 0;
@@ -2403,6 +2480,67 @@ export default class SearchShipment extends Vue {
         break;
     }
   }
+
+  private async changeStatus(): Promise<void> {
+    if (!(this.selected1.length > 0)) {
+      return;
+    }
+    if (!(this.orderTable.length > 0)) {
+      return;
+    }
+    this.dialogChangeStatus = true;
+  }
+
+  private closeChangeStatus(): void {
+    this.dialogChangeStatus = false;
+  }
+
+  private async submitChangeStatus(): Promise<void> {
+    const newStateId = this.stateTypeFromStateToId.get(this.stateChange);
+    const trpIdToUpdate: number[] = [];
+
+    this.selected1.forEach((value) => {
+      trpIdToUpdate.push(value.id!);
+    });
+
+    const toChangeOrderStatus = this.orderTable.filter((value) => trpIdToUpdate.includes(value.id!));
+
+    toChangeOrderStatus.forEach((orderToChange) => {
+      orderToChange.statusdirectus = this.stateChange;
+      orderToChange.state!.id = newStateId;
+      orderToChange.state!.state = this.stateChange;
+      DirectusAPI.updateStateTrpOrder(orderToChange);
+      if (orderToChange.goods) {
+        orderToChange.goods!.forEach((posOfOrder) => {
+          posOfOrder.statusdirectus = this.stateChange;
+          DirectusAPI.updateStateGoodsPos(posOfOrder, posOfOrder.id!);
+        });
+      }
+      if (orderToChange.people) {
+        orderToChange.people!.forEach((posOfOrder) => {
+          posOfOrder.statusdirectus = this.stateChange;
+          DirectusAPI.updateStatePeoplePos(posOfOrder, posOfOrder.id!);
+        });
+      }
+      if (orderToChange.construction) {
+        orderToChange.construction!.forEach((posOfOrder) => {
+          posOfOrder.statusdirectus = this.stateChange;
+          DirectusAPI.updateStateConstruePos(posOfOrder, posOfOrder.id!);
+        });
+      }
+    });
+
+    toChangeOrderStatus.forEach((orderToChangeInTable) => {
+      // update table --> maybe extract this part...
+      const idxOfChange = this.orders.findIndex((orderTableDisplay: OrderDisplay) => orderTableDisplay.id === orderToChangeInTable.id);
+      this.orders[idxOfChange].state = orderToChangeInTable.state?.state;
+    });
+    this.orders.push({
+    });
+    this.orders.pop();
+    this.dialogChangeStatus = false;
+  }
+
 
   private async exportOrders(): Promise<void> {
     if (!(this.orderTable.length > 0)) {

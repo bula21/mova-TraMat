@@ -337,7 +337,7 @@
       dense
       :headers="headers"
       :items="clients"
-      item-key="idT"
+      item-key="id"
       class="elevation-1"
       sort-by="id"
       multi-sort

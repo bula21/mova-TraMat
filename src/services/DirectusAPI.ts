@@ -281,6 +281,18 @@ class DirectusAPI {
     return newOrderId;
   }
 
+  public async updateStateTrpOrder(order: TrpOrder): Promise<number> {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const resp = await this.directusSDK.updateItem("trp_order", order.id!, {
+      state: order.state?.id,
+      statusdirectus: order.statusdirectus,
+    });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const newOrderId = resp.data.id;
+    return newOrderId;
+  }
+
   public async deleteTrpOrder(trpOrderId: number): Promise<void> {
     await this.directusSDK.deleteItem("trp_order", trpOrderId);
   }
@@ -402,6 +414,14 @@ class DirectusAPI {
     return newPos[0];
   }
 
+  public async updateStateGoodsPos(goods: Good, posId: number): Promise<Good> {
+    const resp = await this.directusSDK.updateItem("trp_order_goods", posId, {
+      statusdirectus: goods.statusdirectus,
+    });
+    const newPos: Good[] = ConvertTrpOrder.toGood(JSON.stringify([resp.data]));
+    return newPos[0];
+  }
+
   public deletePeoplePos(id: number): void {
     this.directusSDK.deleteItem("trp_order_people", id);
   }
@@ -456,6 +476,14 @@ class DirectusAPI {
     return newPos[0];
   }
 
+  public async updateStatePeoplePos(people: Person, posId: number): Promise<Person> {
+    const resp = await this.directusSDK.updateItem("trp_order_people", posId, {
+      statusdirectus: people.statusdirectus,
+    });
+    const newPos: Person[] = ConvertTrpOrder.toPeople(JSON.stringify([resp.data]));
+    return newPos[0];
+  }
+
   public deleteConstPos(id: number): void {
     this.directusSDK.deleteItem("trp_order_construction", id);
   }
@@ -489,6 +517,14 @@ class DirectusAPI {
       weight: constru.weight,
       description: constru.description,
       order: orderId,
+      statusdirectus: constru.statusdirectus,
+    });
+    const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify([resp.data]));
+    return newPos[0];
+  }
+
+  public async updateStateConstruePos(constru: Construction, posId: number): Promise<Construction> {
+    const resp = await this.directusSDK.updateItem("trp_order_construction", posId, {
       statusdirectus: constru.statusdirectus,
     });
     const newPos: Construction[] = ConvertTrpOrder.toConstruction(JSON.stringify([resp.data]));

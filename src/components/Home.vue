@@ -163,7 +163,7 @@ export default class Home extends Vue {
   private helpId = "ID Lagerplatz Ulrichen: \t\t\t\t\t\t31\nID Transportzentrale: \t\t\t\t\t\t\t30\nID Flughafen Münster: \t\t\t\t\t\t186\nID Programmspot Oberwald: \t\t\t187";
 
 
-  mounted(): void {
+  async mounted(): Promise<void> {
     const prom = Home.fetchHomeOrders();
     prom.then((valuei) => {
       valuei.forEach((valuei1, idxi) => {

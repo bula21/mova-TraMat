@@ -711,18 +711,19 @@ export default class NewShipment extends Vue {
       this.dialog = true;
       this.editing = true;
 
-      if (
-        this.$store.state.authorisation === DIRECTUS_ROLES.Public
-        || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
-        || this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"]
-        || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
-        || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
-        || this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"]
-        || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
-        || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
-      ) {
-        this.warnPermissions = true;
-      }
+      // UNCOMMENT IF PERMISSIONS ARE CHANGED BACK
+      // if (
+      //   this.$store.state.authorisation === DIRECTUS_ROLES.Public
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"]
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"]
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
+      // ) {
+      //   this.warnPermissions = true;
+      // }
       if (this.editedItem.type.acronym) {
         this.typeNewCustomer = this.editedItem.type.acronym;
       }
@@ -750,19 +751,20 @@ export default class NewShipment extends Vue {
 
   private async persistClient(client: Client): Promise<void> {
     if (this.editing) {
-      if (
-        this.$store.state.authorisation === DIRECTUS_ROLES.Public
-        || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
-        || this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"]
-        || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
-        || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
-        || this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"]
-        || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
-        || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
-      ) {
-        this.warnPermissions = true;
-        return;
-      }
+      // UNCOMMENT IF PERMISSIONS ARE CHANGED BACK
+      // if (
+      //   this.$store.state.authorisation === DIRECTUS_ROLES.Public
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES["Dienstleiter/in"]
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES["Besteller/in"]
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES.Ressortleitung
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES["Bereichsleitung Infra"]
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES.Programmmaterial
+      //   || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerplatz
+      // ) {
+      //   this.warnPermissions = true;
+      //   return;
+      // }
       await DirectusAPI.updateTrpClient(client);
     } else {
       await DirectusAPI.createTrpClient(client);

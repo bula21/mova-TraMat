@@ -13,7 +13,7 @@
         <v-card-text>
           Du hast keine Berechtigung, diese Aktion durchzuführen.
           <br>
-          Bitte melde allfällige Änderung zu Kunden (Änderung von Kunden für mova crew nicht erlaubt) / Transporte (Änderungen in einem Transport nur im Status "new" möglich) via:
+          Änderung bei Kunden temporär erlaubt / <del>Bitte melde allfällige Änderung zu Kunden (Änderung von Kunden für mova crew nicht erlaubt)</del> / Transporte (Änderungen in einem Transport nur im Status "new" möglich) via:
           <a
             href="https://bulacafe21.slack.com/archives/C01Q6N2HL2X"
             target="_blank"

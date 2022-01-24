@@ -53,21 +53,18 @@
       {{ errorMessage }}
     </v-alert>
     <v-row>
-      <v-col cols="6">
-        <h3 class="mb-5 mt-0">
+      <v-col
+        class="text-left"
+        cols="6"
+      >
+        <h3 class="mt-0">
           Ergebnisse
         </h3>
       </v-col>
-      <v-col
-        cols="3"
-        class="text-right"
-      >
+      <v-col class="text-right">
         {{ "Begrenzen: " }}
       </v-col>
-      <v-col
-        cols="3"
-        class="text-right"
-      >
+      <v-col class="text-right">
         <v-select
           v-model="limit"
           label="Limit"
@@ -77,6 +74,30 @@
           hint="!*-1 means without limit*!"
         />
       </v-col>
+      <v-col class="text-right">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="blue"
+              dark
+              @click="exportOrders()"
+              x-small
+              rounded
+              v-bind="attrs"
+              v-on="on"
+            >
+              CSV-Export
+              <v-icon
+                right
+                dark
+              >
+                mdi-table-arrow-right
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>Alle Suchergebnisse exportieren</span>
+        </v-tooltip>
+      </v-col>
     </v-row>
     <!-- table results-->
     <v-data-table
@@ -85,7 +106,7 @@
       :headers="headers"
       :items="orders"
       item-key="id"
-      class="elevation-1"
+      class="elevation-1 mt-5"
       sort-by="id"
       show-select
       multi-sort
@@ -134,21 +155,21 @@
               </v-icon>
             </v-btn>
           </template>
-          <span>Mehrere Status für Aufträge ändern</span>
+          <span>Mehrere Status für ausgewählte Aufträge ändern</span>
         </v-tooltip>
       </v-col>
       <v-col class="text-right pt-5">
         <v-btn
           color="blue"
           dark
-          @click="exportOrders()"
+          @click="printItems()"
         >
-          CSV-Export
+          Auswahl drucken
           <v-icon
             right
             dark
           >
-            mdi-table-arrow-right
+            mdi-printer
           </v-icon>
         </v-btn>
       </v-col>
@@ -918,6 +939,20 @@
         />
       </v-card>
     </v-dialog>
+    <!-- Dialog Print Multiple-->
+    <v-dialog
+      v-model="dialogPrintMultiple"
+      persistent
+      max-width="1000px"
+    >
+      <v-card>
+        <PrintMultipleTransportOrder
+          :key="componentKeyMultiple"
+          :orders="printMultipleOrder"
+          @closePrintMultiple="closeMultiplePrint()"
+        />
+      </v-card>
+    </v-dialog>
     <!-- Dialog Change Status -->
     <v-dialog
       v-model="dialogChangeStatus"
@@ -979,6 +1014,7 @@ import NewShipmentGoods from "@/components/subComponents/NewShipmentGoods.vue";
 import NewShipmentPeople from "@/components/subComponents/NewShipmentPeople.vue";
 import NewShipmentConstruction from "@/components/subComponents/NewShipmentConstruction.vue";
 import PrintTransportOrder from "@/components/subComponents/PrintTransportOrder.vue";
+import PrintMultipleTransportOrder from "@/components/subComponents/PrintMultipleTransportOrder.vue";
 import Order from "@/model/Order";
 import DirectusAPI from "@/services/DirectusAPI";
 import ExportCSV from "@/services/ExportCSV";
@@ -1004,6 +1040,7 @@ import ClassState from "@/model/State";
     NewShipmentConstruction,
     SearchCustomer,
     PrintTransportOrder,
+    PrintMultipleTransportOrder,
     DialogPermissions,
     DialogDeleteWarn,
   },
@@ -1018,6 +1055,7 @@ export default class SearchShipment extends Vue {
   private searchChildAdd = [];
   private searchCategoryChildAdd = [];
   private componentKey = 0;
+  private componentKeyMultiple = 0;
   private limit = 100;
   private limitTypes = [-1, 5, 50, 100, 200];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1027,6 +1065,7 @@ export default class SearchShipment extends Vue {
   private file: File | null = null;
   private fileOld: File | null = null;
   private printOrder = new Order();
+  private printMultipleOrder: Order[] = [];
   private editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
   private selected1: OrderDisplay[] = [];
@@ -1035,6 +1074,7 @@ export default class SearchShipment extends Vue {
   private dialog = false;
   private dialogNotMova = false;
   private dialogPrint = false;
+  private dialogPrintMultiple = false;
   private dialogSearchClient = false;
   private dialogWarnOrder = false;
   private warnPermissions = false;
@@ -1144,6 +1184,10 @@ export default class SearchShipment extends Vue {
 
   private forceRerenderPrint(): void {
     this.componentKey += 1;
+  }
+
+  private forceRerenderPrintMultiple(): void {
+    this.componentKeyMultiple += 1;
   }
 
   async mounted(): Promise<void> {
@@ -1847,6 +1891,33 @@ export default class SearchShipment extends Vue {
     }
   }
 
+  private printItems(): void {
+    if (!(this.selected1.length > 0)) {
+      return;
+    }
+    if (!(this.orderTable.length > 0)) {
+      return;
+    }
+
+    this.forceRerenderPrintMultiple();
+    this.printMultipleOrder = [];
+
+    const trpIdToUpdate: number[] = [];
+
+    this.selected1.forEach((value) => {
+      trpIdToUpdate.push(value.id!);
+    });
+
+    const toPrintOrders = this.orderTable.filter((value) => trpIdToUpdate.includes(value.id!));
+
+    if (!(toPrintOrders.length > 0)) {
+      return;
+    }
+
+    this.printMultipleOrder = CloneDeep(toPrintOrders);
+    this.dialogPrintMultiple = true;
+  }
+
   private async editItem(item: OrderDisplay): Promise<void> {
     this.printOrder = new Order();
     this.editedOrder = new Order();
@@ -1965,6 +2036,12 @@ export default class SearchShipment extends Vue {
   private closePrint(): void {
     this.printOrder = new Order();
     this.dialogPrint = false;
+  }
+
+  private closeMultiplePrint(): void {
+    this.selected1 = [];
+    this.printMultipleOrder = [];
+    this.dialogPrintMultiple = false;
   }
 
   private closePermissions(): void {

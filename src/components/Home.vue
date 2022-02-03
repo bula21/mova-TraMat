@@ -160,7 +160,7 @@ export default class Home extends Vue {
   private newOrders = 0;
   private currentOrder = 0;
   private inProcessOrders = 0;
-  private helpId = "ID Lagerplatz Ulrichen: \t\t\t\t\t\t31\nID Transportzentrale: \t\t\t\t\t\t\t30\nID Flughafen Münster: \t\t\t\t\t\t186\nID Programmspot Oberwald: \t\t\t187";
+  private helpId = "ID Lagerplatz Ulrichen: \t\t\t\t\t\t31\nID Transportzentrale: \t\t\t\t\t\t\t30\nID Flughafen Münster: \t\t\t\t\t\t186\nID Programmspot Oberwald: \t\t\t187\nID Lagerleitungszentrum: \t\t\t\t\t254";
 
 
   async mounted(): Promise<void> {

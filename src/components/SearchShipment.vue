@@ -1824,6 +1824,23 @@ export default class SearchShipment extends Vue {
             };
           }
         }
+        if (filteredDataKey[i] === "Senungsart") {
+          if (filteredDataValue[i].trim() === "Spezialleistung mit Fahrzeug") {
+            filter["construction.id"] = {
+              nnull: "",
+            };
+          }
+          if (filteredDataValue[i].trim() === "Warentransport") {
+            filter["goods.id"] = {
+              nnull: "",
+            };
+          }
+          if (filteredDataValue[i].trim() === "Personentransport") {
+            filter["people.id"] = {
+              nnull: "",
+            };
+          }
+        }
       }
       // Check if filter is empty
       if (Object.keys(filter).length === 0 && filter.constructor === Object) {

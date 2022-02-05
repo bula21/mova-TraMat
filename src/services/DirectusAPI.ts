@@ -231,6 +231,23 @@ class DirectusAPI {
     return orderObj;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async getUnblockTrpOrder(filter: any, limit: number): Promise<Order[]> {
+    const resp = this.directusSDK.getItems("trp_order", {
+      filter,
+      limit,
+      fields: ["*.*.*", "modified_by.id", "modified_by.first_name", "modified_by.last_name", "modified_by.email", "state.*", "shipper.*", "shipper.type.*", "shipper.modified_by.id", "shipper.modified_by.first_name", "shipper.modified_by.last_name", "shipper.modified_by.email", "shipper.ressort_department.*.*", "receiver.*", "receiver.ressort_department.*.*", "receiver.type.*", "receiver.modified_by.id", "receiver.modified_by.first_name", "receiver.modified_by.last_name", "receiver.modified_by.email", "principal.*", "principal.type.*", "principal.modified_by.id", "principal.modified_by.first_name", "principal.modified_by.last_name", "principal.modified_by.email", "principal.ressort_department.*.*", "owner.id", "owner.first_name", "owner.last_name", "owner.email", "goods.*", "people.*", "construction.*", "anlage.*", "anlage_pick_up.*", "document.id"],
+    });
+
+    return resp.then((respOrders) => {
+      const orderObj: Order[] = [];
+      respOrders.data.forEach((odr) => {
+        orderObj.push(Object.assign(new Order(), odr));
+      });
+      return orderObj;
+    }).catch(() => []);
+  }
+
   public async createTrpOrder(order: TrpOrder): Promise<number> {
     const resp = await this.directusSDK.createItem("trp_order", {
       remarks: order.remarks,

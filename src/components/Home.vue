@@ -189,17 +189,17 @@ export default class Home extends Vue {
 
   private static async fetchHomeOrders(): Promise<Promise<Order[]>[]> {
     const homeOrderPormises: Promise<Order[]>[] = [];
-    const ordersNew = DirectusAPI.getTrpOrder({
+    const ordersNew = DirectusAPI.getUnblockTrpOrder({
       state: "1",
     }, -1);
     homeOrderPormises.push(ordersNew);
 
-    const orderCurrent = DirectusAPI.getTrpOrder({
+    const orderCurrent = DirectusAPI.getUnblockTrpOrder({
       state: "3",
     }, -1);
     homeOrderPormises.push(orderCurrent);
 
-    const orderInProcess = DirectusAPI.getTrpOrder({
+    const orderInProcess = DirectusAPI.getUnblockTrpOrder({
       state: "2",
     }, -1);
     homeOrderPormises.push(orderInProcess);

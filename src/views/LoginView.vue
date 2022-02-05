@@ -2,6 +2,13 @@
   <v-app>
     <!-- Login Module -->
     <v-main style="padding: 0px 0px 0px;">
+      <div>
+        <v-alert
+          type="warning"
+          border="left"
+        >
+          Bitte verwende für den TraMat einen kompatiblen Browser wie Firefox, Edge oder Chrome. IE ist nicht unterstützt und Safari wird nur teilweise unterstützt. </v-alert>
+      </div>
       <!-- fill-height -->
       <v-container fluid>
         <v-col>

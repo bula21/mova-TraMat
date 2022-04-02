@@ -30,11 +30,48 @@
           :size="100"
           :width="15"
           :value="100"
-          color="teal"
+          color="grey"
         >
           {{ newOrders }}
         </v-progress-circular>
       </v-col>
+      <v-col cols="4">
+        <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
+          Status: Imported
+        </h5>
+        <v-progress-circular
+          class="mt-4"
+          :rotate="360"
+          :size="100"
+          :width="15"
+          :value="100"
+          color="orange"
+        >
+          {{ importedOrder }}
+        </v-progress-circular>
+      </v-col>
+      <v-col cols="4">
+        <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
+          Status: Finished
+        </h5>
+        <v-progress-circular
+          class="mt-4"
+          :rotate="360"
+          :size="100"
+          :width="15"
+          :value="100"
+          color="purple"
+        >
+          {{ finishedOrder }}
+        </v-progress-circular>
+      </v-col>
+    </v-row>
+    <v-row
+      class="mt-8 ml-3 text-center"
+      dense
+    >
+    <v-col cols="2">
+    </v-col>
       <v-col cols="4">
         <h5 :class="{'subheading': $vuetify.breakpoint.xs}">
           Status: Checked
@@ -45,7 +82,7 @@
           :size="100"
           :width="15"
           :value="100"
-          color="primary"
+          color="teal"
         >
           {{ currentOrder }}
         </v-progress-circular>
@@ -60,7 +97,7 @@
           :size="100"
           :width="15"
           :value="100"
-          color="pink"
+          color="primary"
         >
           {{ inProcessOrders }}
         </v-progress-circular>
@@ -160,6 +197,8 @@ export default class Home extends Vue {
   private newOrders = 0;
   private currentOrder = 0;
   private inProcessOrders = 0;
+  private finishedOrder = 0;
+  private importedOrder = 0;
   private helpId = "ID Lagerplatz Ulrichen: \t\t\t\t\t\t31\nID Transportzentrale: \t\t\t\t\t\t\t30\nID Flughafen Münster: \t\t\t\t\t\t186\nID Programmspot Oberwald: \t\t\t187\nID Lagerleitungszentrum: \t\t\t\t\t254";
 
 
@@ -176,6 +215,12 @@ export default class Home extends Vue {
           }
           if (idxi === 2) {
             this.inProcessOrders = valuei2.length;
+          }
+          if (idxi === 3) {
+            this.importedOrder = valuei2.length;
+          }
+          if (idxi === 4) {
+            this.finishedOrder = valuei2.length;
           }
         });
       });
@@ -203,6 +248,16 @@ export default class Home extends Vue {
       state: "2",
     }, -1);
     homeOrderPormises.push(orderInProcess);
+
+    const orderImported = DirectusAPI.getUnblockTrpOrder({
+      state: "4",
+    }, -1);
+    homeOrderPormises.push(orderImported);
+
+    const orderFinished = DirectusAPI.getUnblockTrpOrder({
+      state: "5",
+    }, -1);
+    homeOrderPormises.push(orderFinished);
 
     return homeOrderPormises;
   }

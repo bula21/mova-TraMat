@@ -210,7 +210,7 @@ const typeMap: any = {
   TrpClient: o([
     { json: "id", js: "id", typ: u(undefined, 0) },
     { json: "created_on", js: "createdOn", typ: u(undefined, Date) },
-    { json: "modified_by", js: "modifiedBy", typ: u(undefined, r("ModifiedBy")) },
+    { json: "modified_by", js: "modifiedBy", typ: u(undefined, null, "", r("ModifiedBy")) },
     { json: "modified_on", js: "modifiedOn", typ: u(undefined, Date) },
     { json: "name", js: "name", typ: u(undefined, "") },
     { json: "street", js: "street", typ: u(undefined, "") },

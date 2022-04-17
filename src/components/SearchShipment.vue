@@ -174,6 +174,30 @@
         </v-btn>
       </v-col>
     </v-row>
+    <!-- <v-row>
+     <v-col class="text-right pt-0">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="blue"
+              dark
+              @click="printLabels()"
+              v-bind="attrs"
+              v-on="on"
+            >
+            Label drucken
+                <v-icon
+                  right
+                  dark
+                >
+                  mdi-label-multiple
+                </v-icon>
+              </v-btn>
+            </template>
+          <span>Label(s) für ausgewählte(n) Aufträg(e) drucken</span>
+        </v-tooltip>
+      </v-col>
+    </v-row> -->
     <!-- edit order dialog huge..-->
     <v-dialog
       v-model="dialog"

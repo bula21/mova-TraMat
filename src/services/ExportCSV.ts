@@ -50,8 +50,6 @@ class ExportCSV {
       const row: Record<string, unknown> = {
       };
       row.id = x.id;
-      row.createdOn = x.createdOn!.toISOString().substring(0, 10);
-      row.modifiedOn = x.modifiedOn!.toISOString().substring(0, 10);
       row.remarks = x.remarks;
       row.state = x.state?.state;
       row.deliveryDate = format(x.deliveryDate!, "YYYY-MM-DD");
@@ -97,6 +95,14 @@ class ExportCSV {
 
       if (x.modifiedBy) {
         modifiedBy = `${x.modifiedBy.firstName} ${x.modifiedBy.lastName}`;
+      }
+
+      if (x.createdOn) {
+        row.createdOn = format(new Date(x.createdOn!), "YYYY-MM-DD HH:mm:ss");
+      }
+
+      if (x.modifiedOn) {
+        row.modifiedOn = format(new Date(x.modifiedOn!), "YYYY-MM-DD HH:mm:ss");
       }
 
       if (x.owner) {

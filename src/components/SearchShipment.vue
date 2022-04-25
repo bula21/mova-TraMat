@@ -174,8 +174,8 @@
         </v-btn>
       </v-col>
     </v-row>
-    <!-- <v-row>
-     <v-col class="text-right pt-0">
+    <v-row>
+      <v-col class="text-right pt-0">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -185,19 +185,19 @@
               v-bind="attrs"
               v-on="on"
             >
-            Label drucken
-                <v-icon
-                  right
-                  dark
-                >
-                  mdi-label-multiple
-                </v-icon>
-              </v-btn>
-            </template>
+              Label drucken
+              <v-icon
+                right
+                dark
+              >
+                mdi-label-multiple
+              </v-icon>
+            </v-btn>
+          </template>
           <span>Label(s) für ausgewählte(n) Aufträg(e) drucken</span>
         </v-tooltip>
       </v-col>
-    </v-row> -->
+    </v-row>
     <!-- edit order dialog huge..-->
     <v-dialog
       v-model="dialog"
@@ -977,6 +977,20 @@
         />
       </v-card>
     </v-dialog>
+    <!-- Dialog Print Multiple Labels-->
+    <v-dialog
+      v-model="dialogPrintLabels"
+      persistent
+      max-width="1000px"
+    >
+      <v-card>
+        <PrintLables
+          :key="componentKeyMultipleLabels"
+          :orders="printMultipleOrderLabels"
+          @closePrintMultipleLabels="closeMultipleLabels()"
+        />
+      </v-card>
+    </v-dialog>
     <!-- Dialog Change Status -->
     <v-dialog
       v-model="dialogChangeStatus"
@@ -1039,6 +1053,7 @@ import NewShipmentPeople from "@/components/subComponents/NewShipmentPeople.vue"
 import NewShipmentConstruction from "@/components/subComponents/NewShipmentConstruction.vue";
 import PrintTransportOrder from "@/components/subComponents/PrintTransportOrder.vue";
 import PrintMultipleTransportOrder from "@/components/subComponents/PrintMultipleTransportOrder.vue";
+import PrintLables from "@/components/subComponents/PrintLabels.vue";
 import Order from "@/model/Order";
 import DirectusAPI from "@/services/DirectusAPI";
 import ExportCSV from "@/services/ExportCSV";
@@ -1065,6 +1080,7 @@ import ClassState from "@/model/State";
     SearchCustomer,
     PrintTransportOrder,
     PrintMultipleTransportOrder,
+    PrintLables,
     DialogPermissions,
     DialogDeleteWarn,
   },
@@ -1080,6 +1096,7 @@ export default class SearchShipment extends Vue {
   private searchCategoryChildAdd = [];
   private componentKey = 0;
   private componentKeyMultiple = 0;
+  private componentKeyMultipleLabels = 0;
   private limit = 100;
   private limitTypes = [-1, 5, 50, 100, 200];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1090,6 +1107,7 @@ export default class SearchShipment extends Vue {
   private fileOld: File | null = null;
   private printOrder = new Order();
   private printMultipleOrder: Order[] = [];
+  private printMultipleOrderLabels: Order[] = [];
   private editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
   private selected1: OrderDisplay[] = [];
@@ -1099,6 +1117,7 @@ export default class SearchShipment extends Vue {
   private dialogNotMova = false;
   private dialogPrint = false;
   private dialogPrintMultiple = false;
+  private dialogPrintLabels = false;
   private dialogSearchClient = false;
   private dialogWarnOrder = false;
   private warnPermissions = false;
@@ -1214,6 +1233,10 @@ export default class SearchShipment extends Vue {
     this.componentKeyMultiple += 1;
   }
 
+  private forceRenderPrintMultipleLabel(): void {
+    this.componentKeyMultipleLabels += 1;
+  }
+
   async mounted(): Promise<void> {
     window.addEventListener("keyup", this.handleEnter);
 
@@ -1243,6 +1266,13 @@ export default class SearchShipment extends Vue {
       ORDER_TYPE.Personentransport,
       ORDER_TYPE["Spezialleistung mit Fahrzeug"],
     );
+
+    // test...
+    // const testOrder = await DirectusAPI.getTrpOrder({
+    //   id: 32,
+    // }, 5);
+    // this.printMultipleOrderLabels = testOrder;
+    // this.dialogPrintLabels = true;
   }
 
   destroyed(): void {
@@ -1959,6 +1989,33 @@ export default class SearchShipment extends Vue {
     this.dialogPrintMultiple = true;
   }
 
+  private printLabels(): void {
+    if (!(this.selected1.length > 0)) {
+      return;
+    }
+    if (!(this.orderTable.length > 0)) {
+      return;
+    }
+
+    this.forceRenderPrintMultipleLabel();
+    this.printMultipleOrderLabels = [];
+
+    const trpIdToUpdateLabel: number[] = [];
+
+    this.selected1.forEach((value) => {
+      trpIdToUpdateLabel.push(value.id!);
+    });
+
+    const toPrintOrdersLabels = this.orderTable.filter((value) => trpIdToUpdateLabel.includes(value.id!));
+
+    if (!(toPrintOrdersLabels.length > 0)) {
+      return;
+    }
+
+    this.printMultipleOrderLabels = CloneDeep(toPrintOrdersLabels);
+    this.dialogPrintLabels = true;
+  }
+
   private async editItem(item: OrderDisplay): Promise<void> {
     this.printOrder = new Order();
     this.editedOrder = new Order();
@@ -2083,6 +2140,12 @@ export default class SearchShipment extends Vue {
     this.selected1 = [];
     this.printMultipleOrder = [];
     this.dialogPrintMultiple = false;
+  }
+
+  private closeMultipleLabels(): void {
+    this.selected1 = [];
+    this.printMultipleOrderLabels = [];
+    this.dialogPrintLabels = false;
   }
 
   private closePermissions(): void {

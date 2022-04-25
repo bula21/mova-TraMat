@@ -222,10 +222,10 @@ const typeMap: any = {
     { json: "ressort_department", js: "ressortDepartment", typ: u(undefined, u(r("RessortDepartment"), null, 0)) },
   ], false),
   ModifiedBy: o([
-    { json: "id", js: "id", typ: u(undefined, 0) },
-    { json: "first_name", js: "firstName", typ: u(undefined, "") },
-    { json: "last_name", js: "lastName", typ: u(undefined, "") },
-    { json: "email", js: "email", typ: u(undefined, "") },
+    { json: "id", js: "id", typ: u(undefined, 0, null) },
+    { json: "first_name", js: "firstName", typ: u(undefined, "", null) },
+    { json: "last_name", js: "lastName", typ: u(undefined, "", null) },
+    { json: "email", js: "email", typ: u(undefined, "", null) },
   ], false),
   RessortDepartment: o([
     { json: "id", js: "id", typ: u(undefined, 0) },

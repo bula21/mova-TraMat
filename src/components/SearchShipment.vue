@@ -1266,13 +1266,6 @@ export default class SearchShipment extends Vue {
       ORDER_TYPE.Personentransport,
       ORDER_TYPE["Spezialleistung mit Fahrzeug"],
     );
-
-    // test...
-    // const testOrder = await DirectusAPI.getTrpOrder({
-    //   id: 32,
-    // }, 5);
-    // this.printMultipleOrderLabels = testOrder;
-    // this.dialogPrintLabels = true;
   }
 
   destroyed(): void {

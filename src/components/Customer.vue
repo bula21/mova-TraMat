@@ -576,6 +576,11 @@ export default class NewShipment extends Vue {
     clientsTable = await this.search();
 
     await clientsTable.forEach((value) => {
+      let modifiedByParse = "undefined";
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      if (value.modifiedBy) {
+        modifiedByParse = `${value.modifiedBy?.firstName} ${value.modifiedBy?.lastName}`;
+      }
       this.clients.push({
         id: value.id,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -591,7 +596,7 @@ export default class NewShipment extends Vue {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         created_on: format(new Date(value.createdOn!), "YYYY-MM-DD HH:mm"),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        modified_by: `${value.modifiedBy!.firstName} ${value.modifiedBy!.lastName}`,
+        modified_by: modifiedByParse,
         ressort: value.ressortDepartment?.trpRessortMm?.ressort,
         department: value.ressortDepartment?.department,
       });

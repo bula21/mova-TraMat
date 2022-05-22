@@ -181,7 +181,7 @@ export default class LoginView extends Vue {
       this.errorMessage = "Please enter username and password";
     } else {
       try {
-        await DirectusAPI.login(this.username, this.password);
+        await DirectusAPI.login(this.username.trim(), this.password);
         await this.$router.push({
           name: "main",
         });

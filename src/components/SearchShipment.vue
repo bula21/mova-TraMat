@@ -323,12 +323,7 @@
                 @change="triggerUpdateRasterPickUp()"
               />
             </v-col>
-            <v-col
-              :lg="3"
-              :md="3"
-              :xs="3"
-              :sm="3"
-            >
+            <v-col>
               <v-subheader class="ml-n3">
                 {{ anlagenDescriptionPickUp }}
               </v-subheader>
@@ -504,12 +499,7 @@
                 @change="triggerUpdateRaster()"
               />
             </v-col>
-            <v-col
-              :lg="3"
-              :md="3"
-              :xs="3"
-              :sm="3"
-            >
+            <v-col>
               <v-subheader class="ml-n3">
                 {{ anlagenDescription }}
               </v-subheader>

@@ -1,62 +1,32 @@
 <template>
   <!-- search transport-->
   <v-container>
-    <v-row
-      class="my-2"
-      dense
-    >
+    <v-row class="my-2" dense>
       <h2>
-        <v-icon
-          class="mb-1"
-          color="black"
-        >
+        <v-icon class="mb-1" color="black">
           mdi-feature-search
         </v-icon>
         Transport suchen
       </h2>
     </v-row>
-    <SearchShipmentTextfieldInit
-      :search.sync="searchChild"
-      :search-category.sync="searchCategoryChild"
-      @AddButtonClicked="add()"
-      @MinusButtonClicked="remove()"
-    />
-    <div
-      v-for="(textField, indx) in textFields"
-      :key="indx"
-    >
-      <component
-        :is="textField"
-        :search.sync="searchChildAdd[indx]"
-        :search-category.sync="searchCategoryChildAdd[indx]"
-      />
+    <SearchShipmentTextfieldInit :search.sync="searchChild" :search-category.sync="searchCategoryChild"
+      @AddButtonClicked="add()" @MinusButtonClicked="remove()" />
+    <div v-for="(textField, indx) in textFields" :key="indx">
+      <component :is="textField" :search.sync="searchChildAdd[indx]"
+        :search-category.sync="searchCategoryChildAdd[indx]" />
     </div>
     <v-row class="pb-5 mt-n5">
-      <v-col
-        cols="12"
-        class="text-center"
-      >
-        <v-btn
-          color="blue"
-          dark
-          class="px-10"
-          @click="search()"
-        >
+      <v-col cols="12" class="text-center">
+        <v-btn color="blue" dark class="px-10" @click="search()">
           Suchen
         </v-btn>
       </v-col>
     </v-row>
-    <v-alert
-      v-if="errorMessage.length > 0"
-      type="error"
-    >
+    <v-alert v-if="errorMessage.length > 0" type="error">
       {{ errorMessage }}
     </v-alert>
     <v-row>
-      <v-col
-        class="text-left"
-        cols="6"
-      >
+      <v-col class="text-left" cols="6">
         <h3 class="mt-0">
           Ergebnisse
         </h3>
@@ -65,32 +35,15 @@
         {{ "Begrenzen: " }}
       </v-col>
       <v-col class="text-right">
-        <v-select
-          v-model="limit"
-          label="Limit"
-          :items="limitTypes"
-          dense
-          class="mt-0"
-          hint="!*-1 means without limit*!"
-        />
+        <v-select v-model="limit" label="Limit" :items="limitTypes" dense class="mt-0"
+          hint="!*-1 means without limit*!" />
       </v-col>
       <v-col class="text-right">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              color="blue"
-              dark
-              @click="exportOrders()"
-              x-small
-              rounded
-              v-bind="attrs"
-              v-on="on"
-            >
+            <v-btn color="blue" dark @click="exportOrders()" x-small rounded v-bind="attrs" v-on="on">
               CSV-Export
-              <v-icon
-                right
-                dark
-              >
+              <v-icon right dark>
                 mdi-table-arrow-right
               </v-icon>
             </v-btn>
@@ -100,37 +53,16 @@
       </v-col>
     </v-row>
     <!-- table results-->
-    <v-data-table
-      dense
-      v-model="selected1"
-      :headers="headers"
-      :items="orders"
-      item-key="id"
-      class="elevation-1 mt-5"
-      sort-by="id"
-      show-select
-      multi-sort
-    >
+    <v-data-table dense v-model="selected1" :headers="headers" :items="orders" item-key="id" class="elevation-1 mt-5"
+      sort-by="id" show-select multi-sort>
       <template #[`item.actions`]="{ item }">
-        <v-icon
-          small
-          class="text-center"
-          @click="editItem(item)"
-        >
+        <v-icon small class="text-center" @click="editItem(item)">
           mdi-pencil
         </v-icon>
-        <v-icon
-          small
-          class="text-center"
-          @click="printItem(item)"
-        >
+        <v-icon small class="text-center" @click="printItem(item)">
           mdi-printer
         </v-icon>
-        <v-icon
-          small
-          class="text-center"
-          @click="deleteItem(item)"
-        >
+        <v-icon small class="text-center" @click="deleteItem(item)">
           mdi-delete
         </v-icon>
       </template>
@@ -139,18 +71,9 @@
       <v-col class="text-left pt-5">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              color="blue"
-              dark
-              @click="changeStatus()"
-              v-bind="attrs"
-              v-on="on"
-            >
+            <v-btn color="blue" dark @click="changeStatus()" v-bind="attrs" v-on="on">
               Status ändern
-              <v-icon
-                right
-                dark
-              >
+              <v-icon right dark>
                 mdi-list-status
               </v-icon>
             </v-btn>
@@ -159,16 +82,9 @@
         </v-tooltip>
       </v-col>
       <v-col class="text-right pt-5">
-        <v-btn
-          color="blue"
-          dark
-          @click="printItems()"
-        >
+        <v-btn color="blue" dark @click="printItems()">
           Auswahl drucken
-          <v-icon
-            right
-            dark
-          >
+          <v-icon right dark>
             mdi-printer
           </v-icon>
         </v-btn>
@@ -178,18 +94,9 @@
       <v-col class="text-right pt-0">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              color="blue"
-              dark
-              @click="printLabels()"
-              v-bind="attrs"
-              v-on="on"
-            >
+            <v-btn color="blue" dark @click="printLabels()" v-bind="attrs" v-on="on">
               Label drucken
-              <v-icon
-                right
-                dark
-              >
+              <v-icon right dark>
                 mdi-label-multiple
               </v-icon>
             </v-btn>
@@ -199,84 +106,36 @@
       </v-col>
     </v-row>
     <!-- edit order dialog huge..-->
-    <v-dialog
-      v-model="dialog"
-      persistent
-      max-width="1100px"
-    >
+    <v-dialog v-model="dialog" persistent max-width="1100px">
       <v-card class="px-6 py-4">
         <v-card-title class="pt-2 pl-0">
           <span class="headline">Transport bearbeiten</span>
         </v-card-title>
         <v-divider />
         <!-- order address -->
-        <v-form
-          ref="formFirst"
-          v-model="validFormFirst"
-          eager-validation
-        >
+        <v-form ref="formFirst" v-model="validFormFirst" eager-validation>
           <v-row class="mt-0">
-            <v-col
-              :lg="4"
-              :md="4"
-              :sm="6"
-            >
-              <v-select
-                v-model="state"
-                label="Sendungsstatus*"
-                :items="stateTypeArray"
-                :rules="orderTypeRules"
-                dense
-                outlined
-                class="mt-3"
-                required
-                @change="triggerUpdateState()"
-              />
+            <v-col :lg="4" :md="4" :sm="6">
+              <v-select v-model="state" label="Sendungsstatus*" :items="stateTypeArray" :rules="orderTypeRules" dense
+                outlined class="mt-3" required @change="triggerUpdateState()" />
             </v-col>
           </v-row>
           <v-divider />
           <v-row>
-            <v-col
-              :lg="8"
-              :md="8"
-              :sm="11"
-            >
-              <v-card
-                flat
-                max-width="600px"
-              >
+            <v-col :lg="8" :md="8" :sm="11">
+              <v-card flat max-width="600px">
                 <h3 class="mt-3">
                   Ladeadresse*
                 </h3>
                 <v-row class="mt-0">
-                  <v-col
-                    :lg="6"
-                    :md="6"
-                    :sm="6"
-                    :xs="6"
-                  >
-                    <v-text-field
-                      v-model="pickupID"
-                      :rules="idRules"
-                      label="Kunden ID"
-                      outlined
-                      required
-                      @change="triggerUdatePickupID('pickup')"
-                    />
+                  <v-col :lg="6" :md="6" :sm="6" :xs="6">
+                    <v-text-field v-model="pickupID" :rules="idRules" label="Kunden ID" outlined required
+                      @change="triggerUdatePickupID('pickup')" />
                   </v-col>
                   <v-col class="text-left">
-                    <v-btn
-                      :class="marginButtons()"
-                      rounded
-                      dark
-                      color="blue"
-                      @click="searchCustomer('pickup')"
-                    >
+                    <v-btn :class="marginButtons()" rounded dark color="blue" @click="searchCustomer('pickup')">
                       Suchmenü
-                      <v-icon
-                        right
-                        dark
-                      >
+                      <v-icon right dark>
                         mdi-account-search
                       </v-icon>
                     </v-btn>
@@ -284,105 +143,48 @@
                 </v-row>
                 <v-row class="mt-n7">
                   <v-col>
-                    <v-textarea
-                      v-model="pickupAddress"
-                      label="Ladeadresse"
-                      filled
-                      auto-grow
-                      readonly
-                      :rules="idRulesText"
-                    />
+                    <v-textarea v-model="pickupAddress" label="Ladeadresse" filled auto-grow readonly
+                      :rules="idRulesText" />
                   </v-col>
                 </v-row>
               </v-card>
             </v-col>
           </v-row>
           <v-row class="mt-n4">
-            <v-col
-              :lg="3"
-              :md="3"
-              :xs="3"
-              :sm="3"
-            >
-              <v-text-field
-                v-model="anlagenIdPickUp"
-                label="Anlagen ID"
-                outlined
-                hint="Falls vorhanden"
-                persistent-hint
-                @change="triggerUdatePickupID('anlagenPickUp')"
-              />
-              <v-text-field
-                v-model="rasterLagerplatzPickUp"
-                label="Raster Lagerplatz"
-                hint="Falls vorhanden Bsp. 54H"
-                :rules="notRequiredPickUP ? rasterLagerplatzRulesPickUp : []"
-                :required="!notRequiredPickUP"
-                persistent-hint
-                outlined
-                @change="triggerUpdateRasterPickUp()"
-              />
+            <v-col :lg="3" :md="3" :xs="3" :sm="3">
+              <v-text-field v-model="anlagenIdPickUp" label="Anlagen ID" outlined hint="Falls vorhanden" persistent-hint
+                @change="triggerUdatePickupID('anlagenPickUp')" />
+              <v-text-field v-model="rasterLagerplatzPickUp" label="Raster Lagerplatz" hint="Falls vorhanden Bsp. 54H"
+                :rules="notRequiredPickUP ? rasterLagerplatzRulesPickUp : []" :required="!notRequiredPickUP"
+                persistent-hint outlined @change="triggerUpdateRasterPickUp()" />
             </v-col>
             <v-col>
               <v-subheader class="ml-n3">
                 {{ anlagenDescriptionPickUp }}
               </v-subheader>
               <v-spacer class="mt-13" />
-              <a
-                href="https://bula21.sharepoint.com/:f:/g/EqVc5B0NQUVJpOB4kHgj6UYBhcennFmyHEstYhyTEkYbcA?e=HE4Yc2"
-                target="_blank"
-              >Raster Lagerplatz</a>
+              <a href="https://bula21.sharepoint.com/:f:/g/EqVc5B0NQUVJpOB4kHgj6UYBhcennFmyHEstYhyTEkYbcA?e=HE4Yc2"
+                target="_blank">Raster Lagerplatz</a>
             </v-col>
           </v-row>
-          <v-col
-            :lg="8"
-            :md="8"
-            :sm="11"
-          >
+          <v-col :lg="8" :md="8" :sm="11">
             <v-divider />
           </v-col>
           <v-row>
-            <v-col
-              :lg="8"
-              :md="8"
-              :sm="11"
-            >
-              <v-card
-                flat
-                max-width="600px"
-              >
+            <v-col :lg="8" :md="8" :sm="11">
+              <v-card flat max-width="600px">
                 <h3 class="mt-3">
                   Auftraggeber*
                 </h3>
                 <v-row class="mt-0">
-                  <v-col
-                    :lg="6"
-                    :md="6"
-                    :sm="6"
-                    :xs="6"
-                  >
-                    <v-text-field
-                      v-model="principalID"
-                      :rules="idRules"
-                      label="Kunden ID"
-                      outlined
-                      required
-                      @change="triggerUdatePickupID('principal')"
-                    />
+                  <v-col :lg="6" :md="6" :sm="6" :xs="6">
+                    <v-text-field v-model="principalID" :rules="idRules" label="Kunden ID" outlined required
+                      @change="triggerUdatePickupID('principal')" />
                   </v-col>
                   <v-col class="text-left">
-                    <v-btn
-                      :class="marginButtons()"
-                      rounded
-                      dark
-                      color="blue"
-                      @click="searchCustomer('principal')"
-                    >
+                    <v-btn :class="marginButtons()" rounded dark color="blue" @click="searchCustomer('principal')">
                       Suchmenü
-                      <v-icon
-                        right
-                        dark
-                      >
+                      <v-icon right dark>
                         mdi-account-search
                       </v-icon>
                     </v-btn>
@@ -390,69 +192,33 @@
                 </v-row>
                 <v-row class="mt-n7">
                   <v-col>
-                    <v-textarea
-                      v-model="principalAddress"
-                      label="Auftraggeber"
-                      filled
-                      auto-grow
-                      readonly
-                      :rules="idRulesText"
-                    />
+                    <v-textarea v-model="principalAddress" label="Auftraggeber" filled auto-grow readonly
+                      :rules="idRulesText" />
                   </v-col>
                 </v-row>
               </v-card>
             </v-col>
           </v-row>
           <v-row>
-            <v-col
-              :lg="8"
-              :md="8"
-              :sm="11"
-            >
+            <v-col :lg="8" :md="8" :sm="11">
               <v-divider />
             </v-col>
           </v-row>
           <v-row>
-            <v-col
-              :lg="8"
-              :md="8"
-              :sm="11"
-            >
-              <v-card
-                flat
-                max-width="600px"
-              >
+            <v-col :lg="8" :md="8" :sm="11">
+              <v-card flat max-width="600px">
                 <h3 class="mt-5">
                   Lieferadresse*
                 </h3>
                 <v-row class="mt-0">
-                  <v-col
-                    :lg="6"
-                    :md="6"
-                    :sm="6"
-                  >
-                    <v-text-field
-                      v-model="deliveryID"
-                      :rules="idRules"
-                      label="Kunden ID"
-                      outlined
-                      required
-                      @change="triggerUdatePickupID('delivery')"
-                    />
+                  <v-col :lg="6" :md="6" :sm="6">
+                    <v-text-field v-model="deliveryID" :rules="idRules" label="Kunden ID" outlined required
+                      @change="triggerUdatePickupID('delivery')" />
                   </v-col>
                   <v-col class="text-left">
-                    <v-btn
-                      class="mt-2"
-                      rounded
-                      dark
-                      color="blue"
-                      @click="searchCustomer('delivery')"
-                    >
+                    <v-btn class="mt-2" rounded dark color="blue" @click="searchCustomer('delivery')">
                       Suchmenü
-                      <v-icon
-                        right
-                        dark
-                      >
+                      <v-icon right dark>
                         mdi-account-search
                       </v-icon>
                     </v-btn>
@@ -460,245 +226,102 @@
                 </v-row>
                 <v-row class="mt-n7">
                   <v-col>
-                    <v-textarea
-                      v-model="deliveryAddress"
-                      label="Lieferadresse"
-                      filled
-                      auto-grow
-                      readonly
-                      :rules="idRulesText"
-                    />
+                    <v-textarea v-model="deliveryAddress" label="Lieferadresse" filled auto-grow readonly
+                      :rules="idRulesText" />
                   </v-col>
                 </v-row>
               </v-card>
             </v-col>
           </v-row>
           <v-row class="mt-n4">
-            <v-col
-              :lg="3"
-              :md="3"
-              :xs="3"
-              :sm="3"
-            >
-              <v-text-field
-                v-model="anlagenID"
-                label="Anlagen ID"
-                outlined
-                hint="Falls vorhanden"
-                persistent-hint
-                @change="triggerUdatePickupID('anlagen')"
-              />
-              <v-text-field
-                v-model="rasterLagerplatz"
-                label="Raster Lagerplatz"
-                hint="Falls vorhanden Bsp. 54H"
-                :rules="notRequired ? rasterLagerplatzRules : []"
-                :required="!notRequired"
-                persistent-hint
-                outlined
-                @change="triggerUpdateRaster()"
-              />
+            <v-col :lg="3" :md="3" :xs="3" :sm="3">
+              <v-text-field v-model="anlagenID" label="Anlagen ID" outlined hint="Falls vorhanden" persistent-hint
+                @change="triggerUdatePickupID('anlagen')" />
+              <v-text-field v-model="rasterLagerplatz" label="Raster Lagerplatz" hint="Falls vorhanden Bsp. 54H"
+                :rules="notRequired ? rasterLagerplatzRules : []" :required="!notRequired" persistent-hint outlined
+                @change="triggerUpdateRaster()" />
             </v-col>
             <v-col>
               <v-subheader class="ml-n3">
                 {{ anlagenDescription }}
               </v-subheader>
               <v-spacer class="mt-13" />
-              <a
-                href="https://bula21.sharepoint.com/:f:/g/EqVc5B0NQUVJpOB4kHgj6UYBhcennFmyHEstYhyTEkYbcA?e=HE4Yc2"
-                target="_blank"
-              >Raster Lagerplatz</a>
+              <a href="https://bula21.sharepoint.com/:f:/g/EqVc5B0NQUVJpOB4kHgj6UYBhcennFmyHEstYhyTEkYbcA?e=HE4Yc2"
+                target="_blank">Raster Lagerplatz</a>
             </v-col>
           </v-row>
           <v-row>
-            <v-col
-              :lg="8"
-              :md="8"
-              :sm="11"
-            >
+            <v-col :lg="8" :md="8" :sm="11">
               <v-divider />
             </v-col>
           </v-row>
         </v-form>
         <!-- order dates-->
-        <v-form
-          ref="formSecond"
-          v-model="validFormSecond"
-          eager-validation
-        >
+        <v-form ref="formSecond" v-model="validFormSecond" eager-validation>
           <v-row class="mt-n3">
-            <v-col
-              :lg="2"
-              :md="2"
-              :sm="3"
-              :xs="2"
-            >
-              <v-menu
-                ref="menuDatePickup"
-                v-model="menuDatePickup"
-                :close-on-content-click="false"
-                :return-value.sync="datePickup"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
-              >
+            <v-col :lg="2" :md="2" :sm="3" :xs="2">
+              <v-menu ref="menuDatePickup" v-model="menuDatePickup" :close-on-content-click="false"
+                :return-value.sync="datePickup" transition="scale-transition" offset-y min-width="auto">
                 <template #activator="{ on, attrs }">
-                  <v-text-field
-                    v-model="datePickup"
-                    label="Abholbereit ab*"
-                    prepend-icon="mdi-calendar"
-                    v-bind="attrs"
-                    readonly
-                    v-on="on"
-                  />
+                  <v-text-field v-model="datePickup" label="Abholbereit ab*" prepend-icon="mdi-calendar" v-bind="attrs"
+                    readonly v-on="on" />
                 </template>
-                <v-date-picker
-                  v-model="datePickup"
-                  no-title
-                  scrollable
-                >
+                <v-date-picker v-model="datePickup" no-title scrollable>
                   <v-spacer />
-                  <v-btn
-                    text
-                    color="primary"
-                    @click="menuDatePickup = false"
-                  >
+                  <v-btn text color="primary" @click="menuDatePickup = false">
                     Cancel
                   </v-btn>
-                  <v-btn
-                    text
-                    color="primary"
-                    @click="$refs.menuDatePickup.save(datePickup), triggerUpdateDatePickUp()"
-                  >
+                  <!--  @ts-ingore -->
+                  <v-btn text color="primary" @click="datePicker(datePickup)">
                     OK
                   </v-btn>
                 </v-date-picker>
               </v-menu>
             </v-col>
-            <v-col
-              :lg="2"
-              :md="2"
-              :sm="3"
-              :xs="2"
-            >
-              <v-text-field
-                v-model="pickupTime"
-                :rules="timeRules"
-                label="Bereit ab Uhrzeit*"
-                prepend-icon="mdi-clock-time-four-outline"
-                hint="Falls egal 00:00 einragen"
-                @change="triggerUpdateDatePickUp()"
-              />
+            <v-col :lg="2" :md="2" :sm="3" :xs="2">
+              <v-text-field v-model="pickupTime" :rules="timeRules" label="Bereit ab Uhrzeit*"
+                prepend-icon="mdi-clock-time-four-outline" hint="Falls egal 00:00 einragen"
+                @change="triggerUpdateDatePickUp()" />
             </v-col>
           </v-row>
           <v-row class="mt-n7">
-            <v-col
-              :lg="2"
-              :md="2"
-              :sm="3"
-              :xs="2"
-            >
-              <v-menu
-                ref="menuDateDelivery"
-                v-model="menuDateDelivery"
-                :close-on-content-click="false"
-                :return-value.sync="dateDelivery"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
-              >
+            <v-col :lg="2" :md="2" :sm="3" :xs="2">
+              <v-menu ref="menuDateDelivery" v-model="menuDateDelivery" :close-on-content-click="false"
+                :return-value.sync="dateDelivery" transition="scale-transition" offset-y min-width="auto">
                 <template #activator="{ on, attrs }">
-                  <v-text-field
-                    v-model="dateDelivery"
-                    label="Zustellung bis*"
-                    prepend-icon="mdi-calendar"
-                    readonly
-                    v-bind="attrs"
-                    v-on="on"
-                  />
+                  <v-text-field v-model="dateDelivery" label="Zustellung bis*" prepend-icon="mdi-calendar" readonly
+                    v-bind="attrs" v-on="on" />
                 </template>
-                <v-date-picker
-                  v-model="dateDelivery"
-                  no-title
-                  scrollable
-                >
+                <v-date-picker v-model="dateDelivery" no-title scrollable>
                   <v-spacer />
-                  <v-btn
-                    text
-                    color="primary"
-                    @click="menuDateDelivery = false"
-                  >
+                  <v-btn text color="primary" @click="menuDateDelivery = false">
                     Cancel
                   </v-btn>
-                  <v-btn
-                    text
-                    color="primary"
-                    @click="$refs.menuDateDelivery.save(dateDelivery),triggerUpdateDateDelivery()"
-                  >
+                  <v-btn text color="primary" @click="datePickerDelivery(dateDelivery)">
                     OK
                   </v-btn>
                 </v-date-picker>
               </v-menu>
             </v-col>
-            <v-col
-              :lg="2"
-              :md="2"
-              :sm="3"
-              :xs="2"
-            >
-              <v-text-field
-                v-model="deliveryTime"
-                label="Zustellen bis Uhrzeit*"
-                :rules="timeRules"
-                prepend-icon="mdi-clock-time-four-outline"
-                hint="Falls egal 00:00 einragen"
-                @change="triggerUpdateDateDelivery()"
-              />
+            <v-col :lg="2" :md="2" :sm="3" :xs="2">
+              <v-text-field v-model="deliveryTime" label="Zustellen bis Uhrzeit*" :rules="timeRules"
+                prepend-icon="mdi-clock-time-four-outline" hint="Falls egal 00:00 einragen"
+                @change="triggerUpdateDateDelivery()" />
             </v-col>
           </v-row>
           <!-- order positions-->
           <v-row class="mt-n3">
-            <v-col
-              :lg="4"
-              :md="4"
-              :sm="6"
-            >
-              <v-select
-                v-model="type"
-                label="Sendungsart*"
-                :items="orderType"
-                :rules="orderTypeRules"
-                dense
-                outlined
-                class="mt-3"
-                required
-              />
+            <v-col :lg="4" :md="4" :sm="6">
+              <v-select v-model="type" label="Sendungsart*" :items="orderType" :rules="orderTypeRules" dense outlined
+                class="mt-3" required />
             </v-col>
-            <v-col
-              :lg="4"
-              :md="4"
-              :sm="5"
-            >
-              <v-btn
-                class="mt-2 mr-1"
-                fab
-                dark
-                color="blue"
-                small
-                @click="AddButtonClicked()"
-              >
+            <v-col :lg="4" :md="4" :sm="5">
+              <v-btn class="mt-2 mr-1" fab dark color="blue" small @click="AddButtonClicked()">
                 <v-icon dark>
                   mdi-plus
                 </v-icon>
               </v-btn>
-              <v-btn
-                class="mt-2"
-                fab
-                dark
-                color="orange"
-                small
-                @click="MinusButtonClicked()"
-              >
+              <v-btn class="mt-2" fab dark color="orange" small @click="MinusButtonClicked()">
                 <v-icon dark>
                   mdi-minus
                 </v-icon>
@@ -707,69 +330,52 @@
           </v-row>
         </v-form>
         <v-row>
-          <v-col
-            cols="12"
-            :sm="11"
-            class="ml-5"
-          >
+          <v-col cols="12" :sm="11" class="ml-5">
             <div v-if="type === orderType[0]">
-              <div
-                v-for="(posGoods, indxGoods) in orderPositionsGoods"
-                :key="indxGoods"
-              >
-                <component
-                  :is="posGoods"
-                  :currenpos="editedOrder.goods[indxGoods]"
-                  :quantity.sync="editedOrder.goods[indxGoods].quantity"
-                  :brutto-weight.sync="editedOrder.goods[indxGoods].grossWeight"
-                  :netto-weight.sync="editedOrder.goods[indxGoods].netWeight"
-                  :goods-descripttion.sync="editedOrder.goods[indxGoods].goodsDescription"
-                  :length.sync="editedOrder.goods[indxGoods].length"
-                  :width.sync="editedOrder.goods[indxGoods].width"
-                  :height.sync="editedOrder.goods[indxGoods].height"
-                  :marking.sync="editedOrder.goods[indxGoods].marking"
-                  :value-c-h-f.sync="editedOrder.goods[indxGoods].valueChf"
-                  :dangerous-goods.sync="editedOrder.goods[indxGoods].dangerousGoods"
-                  :packing-unit-selected.sync="editedOrder.goods[indxGoods].packingUnit"
-                  :stapelbar.sync="editedOrder.goods[indxGoods].stapelbar"
-                  :kommission.sync="editedOrder.goods[indxGoods].kommissionieren"
-                  :valid-form-goods.sync="validFormGoods[indxGoods]"
-                />
+              <div v-for="(posGoods, indxGoods) in orderPositionsGoods" :key="indxGoods">
+                <div v-if="editedOrder.goods">
+                  <component :is="posGoods" :currenpos="editedOrder.goods[indxGoods]"
+                    :quantity.sync="editedOrder.goods[indxGoods].quantity"
+                    :brutto-weight.sync="editedOrder.goods[indxGoods].grossWeight"
+                    :netto-weight.sync="editedOrder.goods[indxGoods].netWeight"
+                    :goods-descripttion.sync="editedOrder.goods[indxGoods].goodsDescription"
+                    :length.sync="editedOrder.goods[indxGoods].length" :width.sync="editedOrder.goods[indxGoods].width"
+                    :height.sync="editedOrder.goods[indxGoods].height"
+                    :marking.sync="editedOrder.goods[indxGoods].marking"
+                    :value-c-h-f.sync="editedOrder.goods[indxGoods].valueChf"
+                    :dangerous-goods.sync="editedOrder.goods[indxGoods].dangerousGoods"
+                    :packing-unit-selected.sync="editedOrder.goods[indxGoods].packingUnit"
+                    :stapelbar.sync="editedOrder.goods[indxGoods].stapelbar"
+                    :kommission.sync="editedOrder.goods[indxGoods].kommissionieren"
+                    :valid-form-goods.sync="validFormGoods[indxGoods]" />
+                </div>
               </div>
             </div>
             <div v-else-if="type === orderType[1]">
-              <div
-                v-for="(posPeople, indxPeople) in orderPositionsPeople"
-                :key="indxPeople"
-              >
-                <component
-                  :is="posPeople"
-                  :currenpos="editedOrder.people[indxPeople]"
-                  :quantity.sync="editedOrder.people[indxPeople].quantityOfPeople"
-                  :brutto-weight.sync="editedOrder.people[indxPeople].weight"
-                  :quantity-of-luagge.sync="editedOrder.people[indxPeople].quantityOfLuggage"
-                  :goods-descripttion.sync="editedOrder.people[indxPeople].descriptionOfLuagge"
-                  :length.sync="editedOrder.people[indxPeople].length"
-                  :width.sync="editedOrder.people[indxPeople].width"
-                  :height.sync="editedOrder.people[indxPeople].height"
-                  :selected-type-of-people.sync="editedOrder.people[indxPeople].typePeople"
-                  :valid-form-people.sync="validFormPeople[indxPeople]"
-                />
+              <div v-for="(posPeople, indxPeople) in orderPositionsPeople" :key="indxPeople">
+                <div v-if="editedOrder.people">
+                  <component :is="posPeople" :currenpos="editedOrder.people[indxPeople]"
+                    :quantity.sync="editedOrder.people[indxPeople].quantityOfPeople"
+                    :brutto-weight.sync="editedOrder.people[indxPeople].weight"
+                    :quantity-of-luagge.sync="editedOrder.people[indxPeople].quantityOfLuggage"
+                    :goods-descripttion.sync="editedOrder.people[indxPeople].descriptionOfLuagge"
+                    :length.sync="editedOrder.people[indxPeople].length"
+                    :width.sync="editedOrder.people[indxPeople].width"
+                    :height.sync="editedOrder.people[indxPeople].height"
+                    :selected-type-of-people.sync="editedOrder.people[indxPeople].typePeople"
+                    :valid-form-people.sync="validFormPeople[indxPeople]" />
+                </div>
               </div>
             </div>
             <div v-else-if="type === orderType[2]">
-              <div
-                v-for="(posCons, indexCons) in orderPositionsConstruction"
-                :key="indexCons"
-              >
-                <component
-                  :is="posCons"
-                  :currenpos="editedOrder.construction[indexCons]"
-                  :quantity.sync="editedOrder.construction[indexCons].quantity"
-                  :brutto-weight.sync="editedOrder.construction[indexCons].weight"
-                  :goods-descripttion.sync="editedOrder.construction[indexCons].description"
-                  :valid-form-const.sync="validFormConst[indexCons]"
-                />
+              <div v-for="(posCons, indexCons) in orderPositionsConstruction" :key="indexCons">
+                <div v-if="editedOrder.construction">
+                  <component :is="posCons" :currenpos="editedOrder.construction[indexCons]"
+                    :quantity.sync="editedOrder.construction[indexCons].quantity"
+                    :brutto-weight.sync="editedOrder.construction[indexCons].weight"
+                    :goods-descripttion.sync="editedOrder.construction[indexCons].description"
+                    :valid-form-const.sync="validFormConst[indexCons]" />
+                </div>
               </div>
             </div>
           </v-col>
@@ -777,55 +383,24 @@
         <v-divider class="mt-4" />
         <!-- remarks order-->
         <v-row class="mt-n2">
-          <v-col
-            :lg="8"
-            :md="8"
-            :sm="11"
-          >
+          <v-col :lg="8" :md="8" :sm="11">
             <v-col cols="12">
-              <v-textarea
-                v-model="remarksTrpOrder"
-                rows="4"
-                label="Bemerkungen (z.B. Details Gefahrgut, Fixtermine, sonstige Infos etc.)"
-                row-height="7"
+              <v-textarea v-model="remarksTrpOrder" rows="4"
+                label="Bemerkungen (z.B. Details Gefahrgut, Fixtermine, sonstige Infos etc.)" row-height="7"
                 hint="Abhol-/Liefertermin gilt als frühster/spätester Abhol-/Liefertermin. Fixtermine bitte explizit erwähnen (gelten erst als definitiv, sobald bestätigt)."
-                persistent-hint
-                @change="triggerUpdateRemarks()"
-              />
+                persistent-hint @change="triggerUpdateRemarks()" />
             </v-col>
           </v-col>
         </v-row>
         <v-row class="mt-n7">
-          <v-col
-            :lg="4"
-            :md="4"
-            :sm="6"
-          >
-            <v-file-input
-              label="Lade eine Datei zur Sendung hoch"
-              hint="max. 2 MB"
-              v-model="file"
-              :show-size="1000"
-              @change="deleteDocumentTrpOrder()"
-            ></v-file-input>
+          <v-col :lg="4" :md="4" :sm="6">
+            <v-file-input label="Lade eine Datei zur Sendung hoch" hint="max. 2 MB" v-model="file" :show-size="1000"
+              @change="deleteDocumentTrpOrder()"></v-file-input>
           </v-col>
-          <v-col
-            :lg="2"
-            :md="2"
-            :sm="4"
-            class="mt-3"
-          >
-            <v-btn
-              rounded
-              color="blue"
-              dark
-              @click="sendDownloadFile()"
-            >
+          <v-col :lg="2" :md="2" :sm="4" class="mt-3">
+            <v-btn rounded color="blue" dark @click="sendDownloadFile()">
               download datei
-              <v-icon
-                right
-                dark
-              >
+              <v-icon right dark>
                 mdi-download
               </v-icon>
             </v-btn>
@@ -833,62 +408,35 @@
         </v-row>
         <v-row class="mt-n10">
           <v-col class="ml-2 ">
-            <v-checkbox
-              v-model="onlyDelivery"
-              label="Nur Anlieferung (kein Transport durch BuLa)"
-              color="red"
-              hide-details
-              @change="triggerUpdateDeliveryOnly()"
-            />
+            <v-checkbox v-model="onlyDelivery" label="Nur Anlieferung (kein Transport durch BuLa)" color="red"
+              hide-details @change="triggerUpdateDeliveryOnly()" />
           </v-col>
-          <v-col v-if="onlyDelivery===true">
-            <v-text-field
-              v-model="costTrpExternal"
-              :rules="valueCHFRules"
-              label="Kosten für Transport extern (CHF)"
-              @change="triggerUpdateCostTrpExternal()"
-            />
+          <v-col v-if="onlyDelivery === true">
+            <v-text-field v-model="costTrpExternal" :rules="valueCHFRules" label="Kosten für Transport extern (CHF)"
+              @change="triggerUpdateCostTrpExternal()" />
           </v-col>
         </v-row>
         <v-divider class="mt-4" />
         <!-- actions order-->
         <v-card-actions class="mt-1">
           <v-spacer />
-          <v-btn
-            color="orange"
-            text
-            @click="close()"
-          >
+          <v-btn color="orange" text @click="close()">
             Abbrechen
           </v-btn>
-          <v-btn
-            color="blue darken-2"
-            text
-            @click="save()"
-          >
+          <v-btn color="blue darken-2" text @click="save()">
             Speichern
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
     <!-- Dialog Search Client -->
-    <v-dialog
-      v-model="dialogSearchClient"
-      persistent
-    >
+    <v-dialog v-model="dialogSearchClient" persistent>
       <v-card>
-        <SearchCustomer
-          @clientUpdate="updateSearchClients"
-          @closeSearch="dialogSearchClient=false"
-        />
+        <SearchCustomer @clientUpdate="updateSearchClients" @closeSearch="dialogSearchClient = false" />
       </v-card>
     </v-dialog>
     <!-- Dialog Warn not mova client -->
-    <v-dialog
-      v-model="dialogNotMova"
-      persistent
-      max-width="400"
-    >
+    <v-dialog v-model="dialogNotMova" persistent max-width="400">
       <v-card>
         <v-card-title class="headline">
           Dies ist kein mova Kunde
@@ -896,21 +444,14 @@
         <v-card-text>Bitte Kunde überprüfen! <br> Normalerweise sind nur mova Adressen unsere Kunden.</v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn
-            color="blue darken-1"
-            text
-            @click="dialogNotMova = false"
-          >
+          <v-btn color="blue darken-1" text @click="dialogNotMova = false">
             Ok, verstanden!
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
     <!-- Dialog Warn Order not complete or error-->
-    <v-dialog
-      v-model="dialogWarnOrder"
-      max-width="400"
-    >
+    <v-dialog v-model="dialogWarnOrder" max-width="400">
       <v-card>
         <v-card-title class="headline">
           {{ titleDialogOrder }}
@@ -918,75 +459,39 @@
         <v-card-text> {{ textDialogOrder }} </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn
-            color="blue darken-1"
-            text
-            @click="dialogWarnOrder = false"
-          >
+          <v-btn color="blue darken-1" text @click="dialogWarnOrder = false">
             Ok, verstanden!
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
     <!-- Dialog Warn Permissions-->
-    <DialogPermissions
-      :dialog-warn-permissions="warnPermissions"
-      @closePermissions="closePermissions()"
-    />
+    <DialogPermissions :dialog-warn-permissions="warnPermissions" @closePermissions="closePermissions()" />
     <!-- Dialog Warn Delete-->
-    <DialogDeleteWarn
-      :dialog-warn-delete="dialogWarnDelete"
-      @closeDeleteWarn="closeWarnDelete()"
-      @deletConfirmed="deleteTrpOrder()"
-    />
+    <DialogDeleteWarn :dialog-warn-delete="dialogWarnDelete" @closeDeleteWarn="closeWarnDelete()"
+      @deletConfirmed="deleteTrpOrder()" />
     <!-- Dialog Print -->
-    <v-dialog
-      v-model="dialogPrint"
-      persistent
-      max-width="1000px"
-    >
+    <v-dialog v-model="dialogPrint" persistent max-width="1000px">
       <v-card>
-        <PrintTransportOrder
-          :key="componentKey"
-          :order="printOrder"
-          @closePrint="closePrint()"
-        />
+        <PrintTransportOrder :key="componentKey" :order="printOrder" @closePrint="closePrint()" />
       </v-card>
     </v-dialog>
     <!-- Dialog Print Multiple-->
-    <v-dialog
-      v-model="dialogPrintMultiple"
-      persistent
-      max-width="1000px"
-    >
+    <v-dialog v-model="dialogPrintMultiple" persistent max-width="1000px">
       <v-card>
-        <PrintMultipleTransportOrder
-          :key="componentKeyMultiple"
-          :orders="printMultipleOrder"
-          @closePrintMultiple="closeMultiplePrint()"
-        />
+        <PrintMultipleTransportOrder :key="componentKeyMultiple" :orders="printMultipleOrder"
+          @closePrintMultiple="closeMultiplePrint()" />
       </v-card>
     </v-dialog>
     <!-- Dialog Print Multiple Labels-->
-    <v-dialog
-      v-model="dialogPrintLabels"
-      persistent
-      max-width="1000px"
-    >
+    <v-dialog v-model="dialogPrintLabels" persistent max-width="1000px">
       <v-card>
-        <PrintLables
-          :key="componentKeyMultipleLabels"
-          :orders="printMultipleOrderLabels"
-          @closePrintMultipleLabels="closeMultipleLabels()"
-        />
+        <PrintLables :key="componentKeyMultipleLabels" :orders="printMultipleOrderLabels"
+          @closePrintMultipleLabels="closeMultipleLabels()" />
       </v-card>
     </v-dialog>
     <!-- Dialog Change Status -->
-    <v-dialog
-      v-model="dialogChangeStatus"
-      persistent
-      max-width="550px"
-    >
+    <v-dialog v-model="dialogChangeStatus" persistent max-width="550px">
       <v-card>
         <v-card-title class="headline">
           Status ändern
@@ -997,33 +502,17 @@
         <v-card-text>
           <v-row>
             <v-col>
-              <v-select
-                v-model="stateChange"
-                label="Sendungsstatus*"
-                :items="stateTypeArray"
-                :rules="orderTypeRules"
-                dense
-                outlined
-                class="mt-3"
-                required
-              />
+              <v-select v-model="stateChange" label="Sendungsstatus*" :items="stateTypeArray" :rules="orderTypeRules"
+                dense outlined class="mt-3" required />
             </v-col>
           </v-row>
         </v-card-text>
         <v-card-actions>
-          <v-btn
-            color="orange darken-1"
-            text
-            @click="closeChangeStatus()"
-          >
+          <v-btn color="orange darken-1" text @click="closeChangeStatus()">
             Abbrechen!
           </v-btn>
           <v-spacer />
-          <v-btn
-            color="blue darken-1"
-            text
-            @click="submitChangeStatus()"
-          >
+          <v-btn color="blue darken-1" text @click="submitChangeStatus()">
             Ok, Status ändern!
           </v-btn>
         </v-card-actions>
@@ -1079,109 +568,109 @@ export default class SearchShipment extends Vue {
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
   /* eslint-disable no-shadow */
   /* eslint-disable no-param-reassign */
-  private textFields = [SearchShipmentTextfieldAdd];
-  private searchChild = "";
-  private searchCategoryChild = "";
-  private searchChildAdd = [];
-  private searchCategoryChildAdd = [];
-  private componentKey = 0;
-  private componentKeyMultiple = 0;
-  private componentKeyMultipleLabels = 0;
-  private limit = 100;
-  private limitTypes = [-1, 5, 50, 100, 200];
+  public textFields = [SearchShipmentTextfieldAdd];
+  public searchChild = "";
+  public searchCategoryChild = "";
+  public searchChildAdd = [];
+  public searchCategoryChildAdd = [];
+  public componentKey = 0;
+  public componentKeyMultiple = 0;
+  public componentKeyMultipleLabels = 0;
+  public limit = 100;
+  public limitTypes = [-1, 5, 50, 100, 200];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private orders: any = [{
+  public orders: any = [{
   }];
 
-  private file: File | null = null;
-  private fileOld: File | null = null;
-  private printOrder = new Order();
-  private printMultipleOrder: Order[] = [];
-  private printMultipleOrderLabels: Order[] = [];
-  private editedOrder: TrpOrder = new Order();
+  public file: File | null = null;
+  public fileOld: File | null = null;
+  public printOrder = new Order();
+  public printMultipleOrder: Order[] = [];
+  public printMultipleOrderLabels: Order[] = [];
+  public editedOrder: TrpOrder = new Order();
   private orderTable: TrpOrder[] = [];
-  private selected1: OrderDisplay[] = [];
+  public selected1: OrderDisplay[] = [];
   private orderToDelete = new OrderDisplay();
-  private errorMessage = "";
-  private dialog = false;
-  private dialogNotMova = false;
-  private dialogPrint = false;
-  private dialogPrintMultiple = false;
-  private dialogPrintLabels = false;
-  private dialogSearchClient = false;
-  private dialogWarnOrder = false;
-  private warnPermissions = false;
-  private dialogWarnDelete = false;
-  private dialogChangeStatus = false;
-  private titleDialogOrder = "";
-  private textDialogOrder = "";
+  public errorMessage = "";
+  public dialog = false;
+  public dialogNotMova = false;
+  public dialogPrint = false;
+  public dialogPrintMultiple = false;
+  public dialogPrintLabels = false;
+  public dialogSearchClient = false;
+  public dialogWarnOrder = false;
+  public warnPermissions = false;
+  public dialogWarnDelete = false;
+  public dialogChangeStatus = false;
+  public titleDialogOrder = "";
+  public textDialogOrder = "";
   // formFirst
-  private validFormFirst = true;
+  public validFormFirst = true;
   // formSecond
-  private validFormSecond = true;
-  private validFormGoods = [true];
-  private validFormPeople = [true];
-  private validFormConst = [true];
-  private orderPositionsGoods = [NewShipmentGoods];
-  private orderPositionsPeople = [NewShipmentPeople];
-  private orderPositionsConstruction = [NewShipmentConstruction];
-  private orderType: string[] = [];
+  public validFormSecond = true;
+  public validFormGoods = [true];
+  public validFormPeople = [true];
+  public validFormConst = [true];
+  public orderPositionsGoods = [NewShipmentGoods];
+  public orderPositionsPeople = [NewShipmentPeople];
+  public orderPositionsConstruction = [NewShipmentConstruction];
+  public orderType: string[] = [];
   private stateTypeFromIdToState = new Map();
   private stateTypeFromStateToId = new Map();
   private packagingUntisFromIdToDes = new Map();
   private typePeopleFromDesToId = new Map();
   private typePeopleFromIdToDes = new Map();
-  private stateTypeArray: string[] = [];
-  private onlyDelivery = false;
-  private state = "";
-  private stateChange = "";
-  private type = "";
+  public stateTypeArray: string[] = [];
+  public onlyDelivery = false;
+  public state = "";
+  public stateChange = "";
+  public type = "";
   private searchClient = new Client();
-  private pickupID = 0;
-  private pickupAddress = "";
-  private deliveryID = 0;
-  private deliveryAddress = "";
-  private principalID = 0;
-  private principalAddress = "";
-  private deliveryPhone = "";
-  private anlagenID = 0;
-  private anlagenIdPickUp = 0;
-  private anlagenDescription = "--";
-  private anlagenDescriptionPickUp = "--";
-  private rasterLagerplatz = "";
-  private rasterLagerplatzPickUp = "";
-  private menuDatePickup = false;
-  private menuDateDelivery = false;
-  private costTrpExternal = 0;
-  private datePickup = new Date().toISOString().substring(0, 10);
-  private dateDelivery = new Date().toISOString().substring(0, 10);
-  private pickupTime = "00:00";
-  private deliveryTime = "00:00";
-  private remarksTrpOrder = "";
-  private idRules = [
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public pickupID = 0;
+  public pickupAddress = "";
+  public deliveryID = 0;
+  public deliveryAddress = "";
+  public principalID = 0;
+  public principalAddress = "";
+  public deliveryPhone = "";
+  public anlagenID = 0;
+  public anlagenIdPickUp = 0;
+  public anlagenDescription = "--";
+  public anlagenDescriptionPickUp = "--";
+  public rasterLagerplatz = "";
+  public rasterLagerplatzPickUp = "";
+  public menuDatePickup = false;
+  public menuDateDelivery = false;
+  public costTrpExternal = 0;
+  public datePickup = new Date().toISOString().substring(0, 10);
+  public dateDelivery = new Date().toISOString().substring(0, 10);
+  public pickupTime = "00:00";
+  public deliveryTime = "00:00";
+  public remarksTrpOrder = "";
+  public idRules = [
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
   ];
 
-  private orderTypeRules = [
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public orderTypeRules = [
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     (v: any) => !!v || "Wert ist erforderlich",
   ];
 
-  private timeRules = [
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public timeRules = [
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     (v: any) => /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(v)
       || "Wert ungültig (Format hh:mm)",
   ];
 
-  private idRulesText = [
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public idRulesText = [
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     (v: string) => !/^Kunden ID nicht vorhanden$/.test(v) || "ID ungültig",
   ];
 
-  private notRequired = true;
-  private rasterLagerplatzRules = [
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public notRequired = true;
+  public rasterLagerplatzRules = [
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     (v: any) => {
       if (this.editedOrder.receiver?.type?.id === TRP_TYP_CLIENT.mova) {
         this.notRequired = false;
@@ -1192,9 +681,9 @@ export default class SearchShipment extends Vue {
     },
   ];
 
-  private notRequiredPickUP = true;
-  private rasterLagerplatzRulesPickUp = [
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public notRequiredPickUP = true;
+  public rasterLagerplatzRulesPickUp = [
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     (v: any) => {
       if (this.editedOrder.shipper?.type === TRP_TYP_CLIENT.mova) {
         this.notRequired = false;
@@ -1205,8 +694,8 @@ export default class SearchShipment extends Vue {
     },
   ];
 
-  private valueCHFRules = [
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public valueCHFRules = [
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     (v: any) => {
       if (v) {
         return /^[0-9]{1,11}(?:\.[0-9]{1,2})?$/.test(v) || "Nur Zahlen mit max. 2 Kommastelle";
@@ -1262,7 +751,7 @@ export default class SearchShipment extends Vue {
     window.removeEventListener("keyup", this.handleEnter);
   }
 
-  private headers = [
+  public headers = [
     {
       text: "Actions", value: "actions", sortable: false,
     },
@@ -1327,7 +816,7 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private marginButtons(): string {
+  public marginButtons(): string {
     switch (this.$vuetify.breakpoint.name) {
       case "xs":
         return "mt-n10";
@@ -1450,6 +939,7 @@ export default class SearchShipment extends Vue {
     let principals: number[] = [];
     let receivers: number[] = [];
     let shippers: number[] = [];
+    let theTruth = true;
 
     if (filteredDataKey.length > 0) {
       for (let i = 0; filteredDataKey.length > i; i++) {
@@ -1878,6 +1368,29 @@ export default class SearchShipment extends Vue {
             };
           }
         }
+        if (filteredDataKey[i] === "Anlieferung Wahr/Falsch") {
+          if (filteredDataValue[i].trim().toLowerCase() === "wahr") {
+            theTruth = true && theTruth;
+          }
+          if (filteredDataValue[i].trim().toLowerCase() === "true") {
+            theTruth = true && theTruth;
+          }
+          if (filteredDataValue[i].trim().toLowerCase() === "falsch") {
+            theTruth = false && theTruth;
+          }
+          if (filteredDataValue[i].trim().toLowerCase() === "false") {
+            theTruth = false && theTruth;
+          }
+          if (theTruth) {
+            filter.delivery_only = {
+              eq: 1,
+            };
+          } else {
+            filter.delivery_only = {
+              eq: 0,
+            };
+          }
+        }
       }
       // Check if filter is empty
       if (Object.keys(filter).length === 0 && filter.constructor === Object) {
@@ -1889,7 +1402,7 @@ export default class SearchShipment extends Vue {
     return order;
   }
 
-  private async deleteItem(item: OrderDisplay): Promise<void> {
+  public async deleteItem(item: OrderDisplay): Promise<void> {
     if (
       this.$store.state.authorisation === DIRECTUS_ROLES.Public
       || this.$store.state.authorisation === DIRECTUS_ROLES.Lagerbauten
@@ -1907,7 +1420,7 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private async deleteTrpOrder(): Promise<void> {
+  public async deleteTrpOrder(): Promise<void> {
     if (this.orderToDelete.id) {
       const idxOfChange = this.orders.findIndex((value: OrderDisplay) => value.id === this.orderToDelete.id);
       await DirectusAPI.deleteTrpOrder(this.orderToDelete.id);
@@ -1923,7 +1436,7 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private printItem(item: OrderDisplay): void {
+  public printItem(item: OrderDisplay): void {
     this.forceRerenderPrint();
     let editedItems: TrpOrder[] = [];
     this.printOrder = new Order();
@@ -1945,7 +1458,7 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private printItems(): void {
+  public printItems(): void {
     if (!(this.selected1.length > 0)) {
       return;
     }
@@ -1972,7 +1485,7 @@ export default class SearchShipment extends Vue {
     this.dialogPrintMultiple = true;
   }
 
-  private printLabels(): void {
+  public printLabels(): void {
     if (!(this.selected1.length > 0)) {
       return;
     }
@@ -1999,7 +1512,7 @@ export default class SearchShipment extends Vue {
     this.dialogPrintLabels = true;
   }
 
-  private async editItem(item: OrderDisplay): Promise<void> {
+  public async editItem(item: OrderDisplay): Promise<void> {
     this.printOrder = new Order();
     this.editedOrder = new Order();
 
@@ -2114,38 +1627,38 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private closePrint(): void {
+  public closePrint(): void {
     this.printOrder = new Order();
     this.dialogPrint = false;
   }
 
-  private closeMultiplePrint(): void {
+  public closeMultiplePrint(): void {
     this.selected1 = [];
     this.printMultipleOrder = [];
     this.dialogPrintMultiple = false;
   }
 
-  private closeMultipleLabels(): void {
+  public closeMultipleLabels(): void {
     this.selected1 = [];
     this.printMultipleOrderLabels = [];
     this.dialogPrintLabels = false;
   }
 
-  private closePermissions(): void {
+  public closePermissions(): void {
     this.warnPermissions = false;
   }
 
-  private closeWarnDelete(): void {
+  public closeWarnDelete(): void {
     this.dialogWarnDelete = false;
   }
 
-  private async close(): Promise<void> {
+  public async close(): Promise<void> {
     (this.$refs.formFirst as Vue & { reset: () => boolean; }).reset();
     (this.$refs.formSecond as Vue & { reset: () => boolean; }).reset();
     this.dialog = false;
   }
 
-  private async save(): Promise<void> {
+  public async save(): Promise<void> {
     (this.$refs.formFirst as Vue & { validate: () => boolean; }).validate();
     (this.$refs.formSecond as Vue & { validate: () => boolean; }).validate();
 
@@ -2456,13 +1969,14 @@ export default class SearchShipment extends Vue {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  private printAdress(client: Client): string {
+  public printAdress(client: Client): string {
     let adress = "";
     adress = `${client.name}\n${client.street}\n${client.zipcode}${client.place}\n${client.phone}\n${client.email}`;
     return adress;
   }
 
-  private async updateSearchClients(client: Client) {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  public async updateSearchClients(client: Client) {
     this.searchClient = client;
 
     switch (this.$store.state.searchOption) {
@@ -2504,7 +2018,7 @@ export default class SearchShipment extends Vue {
     });
   }
 
-  private async triggerUdatePickupID(kindOfUpdate: string): Promise<void> {
+  public async triggerUdatePickupID(kindOfUpdate: string): Promise<void> {
     let resp: Client[] = [];
     let resp2: Anlage[] = [];
     let resp3: AnlageClass[] = [];
@@ -2645,7 +2159,28 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private async changeStatus(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+  public datePicker(datePickup: any) {
+    if (this.$refs.menuDatePickup) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      this.$refs.menuDatePickup.save(datePickup);
+    }
+    this.triggerUpdateDatePickUp();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+  public datePickerDelivery(dateDelivery: any) {
+    if (this.$refs.menuDatePickup) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      this.$refs.menuDateDelivery.save(dateDelivery);
+    }
+    this.triggerUpdateDateDelivery();
+  }
+
+
+  public async changeStatus(): Promise<void> {
     if (!(this.selected1.length > 0)) {
       return;
     }
@@ -2655,11 +2190,11 @@ export default class SearchShipment extends Vue {
     this.dialogChangeStatus = true;
   }
 
-  private closeChangeStatus(): void {
+  public closeChangeStatus(): void {
     this.dialogChangeStatus = false;
   }
 
-  private async submitChangeStatus(): Promise<void> {
+  public async submitChangeStatus(): Promise<void> {
     const newStateId = this.stateTypeFromStateToId.get(this.stateChange);
     const trpIdToUpdate: number[] = [];
 
@@ -2706,7 +2241,7 @@ export default class SearchShipment extends Vue {
   }
 
 
-  private async exportOrders(): Promise<void> {
+  public async exportOrders(): Promise<void> {
     if (!(this.orderTable.length > 0)) {
       return;
     }
@@ -2721,7 +2256,7 @@ export default class SearchShipment extends Vue {
     ExportCSV.sendCsvDownload("orders.csv", csv);
   }
 
-  private async sendDownloadFile(): Promise<void> {
+  public async sendDownloadFile(): Promise<void> {
     if (this.file) {
       const pic = document.createElement("a");
       pic.href = URL.createObjectURL(this.file);
@@ -2744,7 +2279,7 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private async deleteDocumentTrpOrder(): Promise<void> {
+  public async deleteDocumentTrpOrder(): Promise<void> {
     if (this.file) {
       console.log("file exists");
     } else {
@@ -2768,20 +2303,20 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private triggerUpdateState(): void {
+  public triggerUpdateState(): void {
     const update = this.state;
     this.editedOrder.state = new ClassState();
     this.editedOrder.state.id = this.stateTypeFromStateToId.get(update);
     this.editedOrder.state.state = update;
   }
 
-  private triggerUpdateDatePickUp(): void {
+  public triggerUpdateDatePickUp(): void {
     const upade = `${this.datePickup} ${this.pickupTime}`;
     const upadeDateTime = new Date(upade);
     this.editedOrder.pickUpDate = upadeDateTime;
   }
 
-  private triggerUpdateCostTrpExternal(): void {
+  public triggerUpdateCostTrpExternal(): void {
     const upade = this.costTrpExternal;
     if (upade) {
       this.editedOrder.costTrpExternal = upade;
@@ -2790,28 +2325,28 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private triggerUpdateDateDelivery(): void {
+  public triggerUpdateDateDelivery(): void {
     const upade = `${this.dateDelivery} ${this.deliveryTime}`;
     const upadeDateTime = new Date(upade);
     this.editedOrder.deliveryDate = upadeDateTime;
   }
 
-  private triggerUpdateRemarks(): void {
+  public triggerUpdateRemarks(): void {
     const upade = this.remarksTrpOrder;
     this.editedOrder.remarks = upade;
   }
 
-  private triggerUpdateRaster(): void {
+  public triggerUpdateRaster(): void {
     const upade = this.rasterLagerplatz;
     this.editedOrder.rasterLagerplatz = upade;
   }
 
-  private triggerUpdateRasterPickUp(): void {
+  public triggerUpdateRasterPickUp(): void {
     const upade = this.rasterLagerplatzPickUp;
     this.editedOrder.rasterLagerplatzPickUp = upade;
   }
 
-  private triggerUpdateDeliveryOnly(): void {
+  public triggerUpdateDeliveryOnly(): void {
     const upade = this.onlyDelivery;
     this.editedOrder.deliveryOnly = upade;
     if (this.onlyDelivery === false) {
@@ -2820,7 +2355,7 @@ export default class SearchShipment extends Vue {
     }
   }
 
-  private async searchCustomer(searchOption: string): Promise<void> {
+  public async searchCustomer(searchOption: string): Promise<void> {
     (this.$refs.formFirst as Vue & { resetValidation: () => boolean; }).resetValidation();
     if (searchOption) {
       this.$nextTick(async () => {

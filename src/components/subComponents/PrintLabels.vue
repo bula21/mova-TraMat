@@ -42,6 +42,7 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable indent */
 import { Component, Vue, Prop } from "vue-property-decorator";
@@ -54,7 +55,6 @@ import Order from "@/model/Order";
 // @ts-ignore
 import * as logo from "@/assets/Mova22Logo.json";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const QRious = require("qrious");
 
 @Component({
@@ -70,7 +70,7 @@ export default class PrintLables extends Vue {
   private firstAndLastName = "";
   private Email = "";
   private fileName = "";
-  private errorMessage = "";
+  public errorMessage = "";
 
   // eslint-disable-next-line new-cap
   private orderPDF = new jsPDF();
@@ -105,7 +105,7 @@ export default class PrintLables extends Vue {
     }
   }
 
-  private async printLabels(): Promise<void> {
+  public async printLabels(): Promise<void> {
     this.fileName = `Labels_${format(new Date(), "YYYY-MM-DD HH:mm:ss")}.pdf`;
     this.orderPDF.save(this.fileName);
     this.close();
@@ -492,7 +492,7 @@ export default class PrintLables extends Vue {
     return pdf;
   }
 
-  private async close(): Promise<void> {
+  public async close(): Promise<void> {
     this.$emit("closePrintMultipleLabels");
   }
 }

@@ -109,7 +109,7 @@
     <v-dialog v-model="dialog" persistent max-width="1100px">
       <v-card class="px-6 py-4">
         <v-card-title class="pt-2 pl-0">
-          <span class="headline">Transport bearbeiten</span>
+          <span class="headline">Transport bearbeiten ID: {{ editedOrder.id }}</span>
         </v-card-title>
         <v-divider />
         <!-- order address -->

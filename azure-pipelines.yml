@@ -21,6 +21,8 @@ stages:
             inputs:
               command: build
               dockerfile: $(dockerfilePath)
+            env:
+              EMAIL_SECRET: $(EMAIL_SECRET)
   - stage: Deploy
     dependsOn: Build
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -37,6 +39,8 @@ stages:
               containerRegistry: $(dockerRegistryServiceConnection)
               tags: |
                 $(tag)
+            env:
+              EMAIL_SECRET: $(EMAIL_SECRET)
           - task: AzureRmWebAppDeployment@4
             inputs:
               ConnectionType: "AzureRM"

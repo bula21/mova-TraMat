@@ -20,6 +20,9 @@
       "node",
       "vuetify"
     ],
+    "typeRoots": [
+      "./src/types"
+    ],
     "paths": {
       "@/*": [
         "src/*"

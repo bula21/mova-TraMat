@@ -66,7 +66,7 @@ export default class PrintMultipleTransportOrder extends Vue {
   private firstAndLastName = "";
   private Email = "";
   private fileName = "";
-  private errorMessage = "";
+  public errorMessage = "";
 
   // eslint-disable-next-line new-cap
   private orderPDF = new jsPDF();
@@ -107,7 +107,7 @@ export default class PrintMultipleTransportOrder extends Vue {
     }
   }
 
-  private async printOrder(): Promise<void> {
+  public async printOrder(): Promise<void> {
     this.fileName = `Orders_${format(new Date(), "YYYY-MM-DD HH:mm:ss")}.pdf`;
     this.orderPDF.save(this.fileName);
     this.close();
@@ -700,7 +700,7 @@ export default class PrintMultipleTransportOrder extends Vue {
   }
 
 
-  private async close(): Promise<void> {
+  public async close(): Promise<void> {
     this.$emit("closePrintMultiple");
   }
 }

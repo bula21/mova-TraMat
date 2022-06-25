@@ -3,37 +3,19 @@
   <v-container>
     <input @keyup.enter="printLabels()">
     <div id="pdf-multiple-labels" />
-    <v-alert
-      v-if="errorMessage.length > 0"
-      type="warning"
-    >
+    <v-alert v-if="errorMessage.length > 0" type="warning">
       {{ errorMessage }}
     </v-alert>
-    <div
-      id="divider"
-      style="background-color:#000000; height: 1px; width:100%;"
-      class="mt-4"
-    />
+    <div id="divider" style="background-color:#000000; height: 1px; width:100%;" class="mt-4" />
     <!-- actions print-->
     <v-card-actions class="mt-1 mr-n2">
       <v-spacer />
-      <v-btn
-        color="orange"
-        text
-        @click="close()"
-      >
+      <v-btn color="orange" text @click="close()">
         Schliessen
       </v-btn>
-      <v-btn
-        color="blue darken-2"
-        text
-        @click="printLabels()"
-      >
+      <v-btn color="blue darken-2" text @click="printLabels()">
         PDF
-        <v-icon
-          right
-          dark
-        >
+        <v-icon right dark>
           mdi-printer
         </v-icon>
       </v-btn>
@@ -435,25 +417,42 @@ export default class PrintLables extends Vue {
           // mova logo
           pdf.addImage(logo.image.data, "PNG", secondColSize + 0.67, 1.88 + offset, 5.5, 2.5);
           // medRaster
-          pdf.line(secondColSize, 7.7 + offset, DINA4width - borderLeft, 7.7 + offset);
+          pdf.line(secondColSize, 7.7 + offset, secondColSize, 7.7 + offset);
           pdf.line(secondColSize + 2.2, 5 + offset, secondColSize + 2.2, 11.85 + offset);
           // GIS-Coordinates QR Code or delivery yes/no
           pdf.setFont("Helvetica", "bold");
           pdf.setFontSize(12);
-          pdf.text("Nur\nAnliefer-\nung", secondColSize + 0.2, 5.5 + offset);
+          pdf.text("QR Code\nGIS\nMovaMap", secondColSize + 0.2, 5.5 + offset);
           pdf.setFont("Helvetica", "normal");
           pdf.setFontSize(12);
-          if (orderToPrint.deliveryOnly) {
-            pdf.text("Ja", secondColSize + 0.2 + 2.2, 5.5 + offset);
+
+          if (orderToPrint.anlage?.standort) {
+            const qr = new QRious({
+              background: "white",
+              backgroundAlpha: 1.0,
+              foreground: "black",
+              foregroundAlpha: 1.0,
+              level: "H",
+              size: 500,
+              value: orderToPrint.anlage!.standort,
+            });
+            const dataQR = qr.toDataURL();
+            pdf.addImage(dataQR, "JPEG", secondColSize + 2.8, 5.1 + offset, 3.6, 3.6);
           } else {
-            pdf.text("Nein", secondColSize + 0.2 + 2.2, 5.5 + offset);
+            console.log("could not generate QR code");
           }
-          // notes
+          // only delivery yes/no
+          pdf.line(secondColSize, 8.9 + offset, DINA4width - borderLeft, 8.9 + offset);
           pdf.setFont("Helvetica", "bold");
-          pdf.setFontSize(12);
-          pdf.text("Notizen", secondColSize + 0.2, 8.2 + offset);
+          pdf.setFontSize(9);
+          pdf.text("Nur\nAnlieferung", secondColSize + 0.2, 9.35 + offset);
           pdf.setFont("Helvetica", "normal");
-          pdf.setFontSize(12);
+          pdf.setFontSize(9);
+          if (orderToPrint.deliveryOnly) {
+            pdf.text("Ja", secondColSize + 0.2 + 2.2, 9.35 + offset);
+          } else {
+            pdf.text("Nein", secondColSize + 0.2 + 2.2, 9.35 + offset);
+          }
           // principal
           pdf.setFont("Helvetica", "bold");
           pdf.setFontSize(12);

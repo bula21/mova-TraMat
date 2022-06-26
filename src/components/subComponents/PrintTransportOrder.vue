@@ -136,36 +136,31 @@ export default class PrintTransportOrder extends Vue {
 
   public createEmail(): void {
     const localFileName = `Order${this.order.id}.pdf`;
-    this.sendEmail(this.sendEmailAdress, "test", "test", this.orderPDF.output("datauristring"), localFileName);
+    this.sendEmail(this.sendEmailAdress, `Lieferschein / Transport-Auftrag Order ID: ${this.order.id}`, "test", localFileName, this.orderPDF.output("datauristring"));
     this.dialogSend = false;
   }
 
   // eslint-disable-next-line class-methods-use-this
-  public sendEmail(empfaenger: string, subject: string, Body: string, nameContent: string, content: string): void {
-    const smtpjs = window.Email;
-
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-    const send = () => {
-      smtpjs.send({
-        Host: "smtp.gmail.com",
-        Username: "TraMat.noreply@gmail.com",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        Password: process.env.VUE_APP_EMAIL_SECRET!,
-        To: empfaenger,
-        From: "TraMat.noreply@gmail.com",
-        Subject: "This is the subject",
-        Body: "<html><h2>Header</h2><strong>Bold text</strong><br></br><em>Italic</em></html>",
-        // Attachments: [
-        //   {
-        //     name: nameContent,
-        //     data: content,
-        //   },
-        // ],
-      }).then((message) => {
-        console.log("test");
-        console.log(message);
-      });
-    };
+  public sendEmail(empfaenger: string, subject: string, body: string, nameContent: string, content: string): void {
+    window.Email.send({
+      SecureToken: process.env.VUE_APP_EMAIL_SECRET!,
+      To: empfaenger,
+      From: "TraMat.noreply@gmail.com",
+      Subject: subject,
+      Body: body,
+      Attachments: [
+        {
+          name: nameContent,
+          data: content,
+        },
+      ],
+    }).then((message) => {
+      // eslint-disable-next-line no-alert
+      alert(`Versand Email Status: ${message}`);
+    }).catch((error) => {
+      // eslint-disable-next-line no-alert
+      alert(error);
+    });
   }
 
 
@@ -182,8 +177,7 @@ export default class PrintTransportOrder extends Vue {
         lineBreaks = Math.ceil(text.length / spaceLine);
         newText = text.substring(0, spaceLine);
         for (let i = 1; lineBreaks > i; i++) {
-          newText = `${newText
-          }\n${text.substring(spaceLine * i, i * spaceLine + spaceLine)}`;
+          newText = `${newText}\n${text.substring(spaceLine * i, i * spaceLine + spaceLine)}`;
         }
       }
       lineBreaks -= 1;

@@ -109,7 +109,7 @@
     <v-dialog v-model="dialog" persistent max-width="1100px">
       <v-card class="px-6 py-4">
         <v-card-title class="pt-2 pl-0">
-          <span class="headline">Transport bearbeiten</span>
+          <span class="headline">Transport bearbeiten ID: {{ editedOrder.id }}</span>
         </v-card-title>
         <v-divider />
         <!-- order address -->
@@ -1971,7 +1971,7 @@ export default class SearchShipment extends Vue {
   // eslint-disable-next-line class-methods-use-this
   public printAdress(client: Client): string {
     let adress = "";
-    adress = `${client.name}\n${client.street}\n${client.zipcode}${client.place}\n${client.phone}\n${client.email}`;
+    adress = `${client.name}\n${client.street}\n${client.zipcode} ${client.place}\n${client.phone}\n${client.email}`;
     return adress;
   }
 

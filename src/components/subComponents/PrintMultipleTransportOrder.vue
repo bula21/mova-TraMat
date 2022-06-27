@@ -24,6 +24,12 @@
       >
         Schliessen
       </v-btn>
+      <v-btn color="blue darken-2" text @click="sendEmail()">
+        Versenden
+        <v-icon right dark>
+          mdi-email-fast-outline
+        </v-icon>
+      </v-btn>
       <v-btn
         color="blue darken-2"
         text
@@ -38,6 +44,36 @@
         </v-icon>
       </v-btn>
     </v-card-actions>
+     <!-- Dialog Send Email -->
+    <v-dialog v-model="dialogSend" persistent max-width="550px">
+      <v-card>
+        <v-card-title class="headline">
+          Transport-Auftrag versenden
+        </v-card-title>
+        <v-card-text>
+          Gib die Email Adresse des Empfängers ein
+        </v-card-text>
+        <v-card-text>
+          <v-row>
+            <v-col>
+              <v-text-field v-model="sendEmailAdress" label="Empfänger Email Adresse" outlined
+                hint="Standard Wert Email Auftraggeber" persistent-hint required />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="orange darken-1" text @click="dialogSend = false;">
+            Abbrechen!
+          </v-btn>
+          <v-spacer />
+          <v-btn color="blue darken-1" text @click="createEmail()">
+            Ok, versenden!
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Dialog Warn Permissions-->
+    <DialogPermissions :dialog-warn-permissions="warnPermissions" @closePermissions="closePermissions()" />
   </v-container>
 </template>
 
@@ -52,9 +88,13 @@ import Order from "@/model/Order";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as logo from "@/assets/Mova22Logo.json";
+import { DIRECTUS_ROLES } from "../Const";
+import DialogPermissions from "./DialogPermissions.vue";
+import SendEmail from "@/services/SendEmail";
 
 @Component({
   components: {
+    DialogPermissions,
   },
 })
 export default class PrintMultipleTransportOrder extends Vue {
@@ -66,7 +106,11 @@ export default class PrintMultipleTransportOrder extends Vue {
   private firstAndLastName = "";
   private Email = "";
   private fileName = "";
-  private errorMessage = "";
+  public errorMessage = "";
+  public warnPermissions = false;
+  public dialogSend = false;
+  public sendEmailAdress = "";
+  private arrayOrderId : number[] = [];
 
   // eslint-disable-next-line new-cap
   private orderPDF = new jsPDF();
@@ -107,10 +151,37 @@ export default class PrintMultipleTransportOrder extends Vue {
     }
   }
 
-  private async printOrder(): Promise<void> {
+  public closePermissions(): void {
+    this.warnPermissions = false;
+  }
+
+  public async printOrder(): Promise<void> {
     this.fileName = `Orders_${format(new Date(), "YYYY-MM-DD HH:mm:ss")}.pdf`;
     this.orderPDF.save(this.fileName);
     this.close();
+  }
+
+  public sendEmail(): void {
+    if (this.$store.state.authorisation === DIRECTUS_ROLES["Transport MA"] || this.$store.state.authorisation === DIRECTUS_ROLES.Administrator) {
+      if (this.orders[0].principal!.email) {
+        this.sendEmailAdress = this.orders[0].principal!.email;
+      }
+      this.dialogSend = true;
+    } else {
+      this.warnPermissions = true;
+    }
+  }
+  
+  public createEmail(): void {
+    const localFileName = `Orders${this.arrayOrderId}.pdf`;
+    const htmlBody = `<html><body>Guten Tag<br><br>Im Anhang finden Sie die Lieferscheine/Transport-Aufträge für Aufträge mit IDs: ${this.arrayOrderId}<br><br>Informationen zur Anlieferung im Pfadibundeslager (mova) sind <a href="https://bula21.sharepoint.com/:b:/s/share-externe/EY0yFKMD0gRHpZGT1faKgn4BEWsckIV5NR73OPsYVwEGvw?e=oMZTTE">hier</a> zu finden.<br>Des informations sur la livraison au camp fédéral scout (mova) sont disponibles <a href="https://bula21.sharepoint.com/:b:/s/share-externe/ESTBds8GVO9Nhwt5oF7RaysBiokVdvdwV_J4127LW7HKcg?e=KsoXL2">ici</a>.<br><br>Freundliche Grüsse<br><br>Verein Bundeslager 2021<br>c/o Pfadibewegung Schweiz<br>Teilbereich Transport<br>Speichergasse 31<br>CH-3011 Bern</body></html>`;
+    SendEmail.submitEmail([{
+      email: this.sendEmailAdress, name: this.orders[0].principal!.name!,
+    }], `Lieferscheine / Transport-Aufträge Order IDs: ${this.arrayOrderId}`,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    htmlBody, localFileName, this.orderPDF.output("datauristring").split(",")[1]);
+    this.dialogSend = false;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -146,6 +217,7 @@ export default class PrintMultipleTransportOrder extends Vue {
     }
 
     this.orders.forEach((orderToPrint) => {
+      this.arrayOrderId.push(orderToPrint.id!);
       pdf.addPage("a4", "p");
       const borderLeft = 1.2;
       let pageNr = 1;
@@ -700,7 +772,7 @@ export default class PrintMultipleTransportOrder extends Vue {
   }
 
 
-  private async close(): Promise<void> {
+  public async close(): Promise<void> {
     this.$emit("closePrintMultiple");
   }
 }

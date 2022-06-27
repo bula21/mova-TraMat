@@ -3,35 +3,56 @@
   <v-container>
     <input @keyup.enter="printOrder()">
     <div id="objectPDF" />
-    <div
-      id="divider"
-      style="background-color:#000000; height: 1px; width:100%;"
-      class="mt-4"
-    />
+    <div id="divider" style="background-color:#000000; height: 1px; width:100%;" class="mt-4" />
     <!-- actions print-->
     <v-card-actions class="mt-1 mr-n2">
       <v-spacer />
-      <v-btn
-        color="orange"
-        text
-        @click="close()"
-      >
+      <v-btn color="orange" text @click="close()">
         Schliessen
       </v-btn>
-      <v-btn
-        color="blue darken-2"
-        text
-        @click="printOrder()"
-      >
+      <v-btn color="blue darken-2" text @click="sendEmail()">
+        Versenden
+        <v-icon right dark>
+          mdi-email-fast-outline
+        </v-icon>
+      </v-btn>
+      <v-btn color="blue darken-2" text @click="printOrder()">
         PDF
-        <v-icon
-          right
-          dark
-        >
+        <v-icon right dark>
           mdi-printer
         </v-icon>
       </v-btn>
     </v-card-actions>
+    <!-- Dialog Send Email -->
+    <v-dialog v-model="dialogSend" persistent max-width="550px">
+      <v-card>
+        <v-card-title class="headline">
+          Transport-Auftrag versenden
+        </v-card-title>
+        <v-card-text>
+          Gib die Email Adresse des Empfängers ein
+        </v-card-text>
+        <v-card-text>
+          <v-row>
+            <v-col>
+              <v-text-field v-model="sendEmailAdress" label="Empfänger Email Adresse" outlined
+                hint="Standard Wert Email Auftraggeber" persistent-hint required />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="orange darken-1" text @click="dialogSend = false;">
+            Abbrechen!
+          </v-btn>
+          <v-spacer />
+          <v-btn color="blue darken-1" text @click="createEmail()">
+            Ok, versenden!
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Dialog Warn Permissions-->
+    <DialogPermissions :dialog-warn-permissions="warnPermissions" @closePermissions="closePermissions()" />
   </v-container>
 </template>
 
@@ -46,9 +67,14 @@ import Order from "@/model/Order";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as logo from "@/assets/Mova22Logo.json";
+import { DIRECTUS_ROLES } from "../Const";
+import DialogPermissions from "./DialogPermissions.vue";
+import SendEmail from "@/services/SendEmail";
+
 
 @Component({
   components: {
+    DialogPermissions,
   },
 })
 export default class PrintTransportOrder extends Vue {
@@ -60,6 +86,9 @@ export default class PrintTransportOrder extends Vue {
   private firstAndLastName = "";
   private Email = "";
   private fileName = "";
+  public dialogSend = false;
+  public warnPermissions = false;
+  public sendEmailAdress = "";
 
   // eslint-disable-next-line new-cap
   private orderPDF = new jsPDF();
@@ -96,10 +125,37 @@ export default class PrintTransportOrder extends Vue {
     }
   }
 
-  private async printOrder(): Promise<void> {
+  public closePermissions(): void {
+    this.warnPermissions = false;
+  }
+
+  public async printOrder(): Promise<void> {
     this.fileName = `Order${this.order.id}.pdf`;
     this.orderPDF.save(this.fileName);
     this.close();
+  }
+
+  public sendEmail(): void {
+    if (this.$store.state.authorisation === DIRECTUS_ROLES["Transport MA"] || this.$store.state.authorisation === DIRECTUS_ROLES.Administrator) {
+      if (this.order.principal!.email) {
+        this.sendEmailAdress = this.order.principal!.email;
+      }
+      this.dialogSend = true;
+    } else {
+      this.warnPermissions = true;
+    }
+  }
+
+  public createEmail(): void {
+    const localFileName = `Order${this.order.id}.pdf`;
+    const htmlBody = `<html><body>Guten Tag<br><br>Im Anhang finden Sie den Lieferschein/Transport-Auftrag für Auftrag mit ID: ${this.order.id}<br><br>Informationen zur Anlieferung im Pfadibundeslager (mova) sind <a href="https://bula21.sharepoint.com/:b:/s/share-externe/EY0yFKMD0gRHpZGT1faKgn4BEWsckIV5NR73OPsYVwEGvw?e=oMZTTE">hier</a> zu finden.<br>Des informations sur la livraison au camp fédéral scout (mova) sont disponibles <a href="https://bula21.sharepoint.com/:b:/s/share-externe/ESTBds8GVO9Nhwt5oF7RaysBiokVdvdwV_J4127LW7HKcg?e=KsoXL2">ici</a>.<br><br>Freundliche Grüsse<br><br>Verein Bundeslager 2021<br>c/o Pfadibewegung Schweiz<br>Teilbereich Transport<br>Speichergasse 31<br>CH-3011 Bern</body></html>`;
+    SendEmail.submitEmail([{
+      email: this.sendEmailAdress, name: this.order.principal!.name!,
+    }], `Lieferschein / Transport-Auftrag Order ID: ${this.order.id}`,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    htmlBody, localFileName, this.orderPDF.output("datauristring").split(",")[1]);
+    this.dialogSend = false;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -115,9 +171,7 @@ export default class PrintTransportOrder extends Vue {
         lineBreaks = Math.ceil(text.length / spaceLine);
         newText = text.substring(0, spaceLine);
         for (let i = 1; lineBreaks > i; i++) {
-          newText = `${newText
-          }\n${
-            text.substring(spaceLine * i, i * spaceLine + spaceLine)}`;
+          newText = `${newText}\n${text.substring(spaceLine * i, i * spaceLine + spaceLine)}`;
         }
       }
       lineBreaks -= 1;
@@ -188,8 +242,7 @@ export default class PrintTransportOrder extends Vue {
     pdf.setFont("Helvetica", "bold");
     pdf.text(
       `${"L I E F E R S C H E I N / T R A N S P O R T - A U F T R A G"
-        + "\t \t ID: "}${
-        this.order.id}`,
+      + "\t \t ID: "}${this.order.id}`,
       borderLeft,
       4.5,
     );
@@ -200,16 +253,11 @@ export default class PrintTransportOrder extends Vue {
     pdf.setFont("Helvetica", "normal");
     pdf.text(
       `${this.order.principal?.name
-      }\n${
-        this.order.principal?.street
-      }\n${
-        this.order.principal?.zipcode
-      } ${
-        this.order.principal?.place
-      }\n${
-        this.order.principal?.phone
-      }\n${
-        this.order.principal?.email}`,
+      }\n${this.order.principal?.street
+      }\n${this.order.principal?.zipcode
+      } ${this.order.principal?.place
+      }\n${this.order.principal?.phone
+      }\n${this.order.principal?.email}`,
       1.2,
       6,
     );
@@ -245,35 +293,25 @@ export default class PrintTransportOrder extends Vue {
     pdf.setFont("Helvetica", "normal");
     pdf.text(
       `${this.order.shipper?.name
-      }\n${
-        this.order.shipper?.street
-      }\n${
-        this.order.shipper?.zipcode
-      } ${
-        this.order.shipper?.place
-      }\n${
-        this.order.shipper?.phone
-      }\n${
-        this.order.shipper?.email}`,
+      }\n${this.order.shipper?.street
+      }\n${this.order.shipper?.zipcode
+      } ${this.order.shipper?.place
+      }\n${this.order.shipper?.phone
+      }\n${this.order.shipper?.email}`,
       1.2,
       9,
     );
-    
+
     pdf.setFont("Helvetica", "bold");
     pdf.text(`Lieferadresse: \t${this.order.receiver?.id}`, 10.5, 8.5);
     pdf.setFont("Helvetica", "normal");
     pdf.text(
       `${this.order.receiver?.name
-      }\n${
-        this.order.receiver?.street
-      }\n${
-        this.order.receiver?.zipcode
-      } ${
-        this.order.receiver?.place
-      }\n${
-        this.order.receiver?.phone
-      }\n${
-        this.order.receiver?.email}`,
+      }\n${this.order.receiver?.street
+      }\n${this.order.receiver?.zipcode
+      } ${this.order.receiver?.place
+      }\n${this.order.receiver?.phone
+      }\n${this.order.receiver?.email}`,
       10.5,
       9,
     );
@@ -290,14 +328,12 @@ export default class PrintTransportOrder extends Vue {
       pdf.text("Sendungsart: \t    Spezialleistung mit Fahrzeug", borderLeft, 12.2);
     }
     pdf.text(
-      `Abholbereit ab: \t ${
-        format(this.order.pickUpDate!, "DD.MM.YYYY HH:mm")}`,
+      `Abholbereit ab: \t ${format(this.order.pickUpDate!, "DD.MM.YYYY HH:mm")}`,
       borderLeft,
       12.7,
     );
     pdf.text(
-      `Zustellung bis: \t  ${
-        format(this.order.deliveryDate!, "DD.MM.YYYY HH:mm")}`,
+      `Zustellung bis: \t  ${format(this.order.deliveryDate!, "DD.MM.YYYY HH:mm")}`,
       borderLeft,
       13.2,
     );
@@ -385,12 +421,9 @@ export default class PrintTransportOrder extends Vue {
         pdf.setFont("Helvetica", "italic");
         pdf.setFontSize(10);
         pdf.text(
-          `Dims Gepäck (LxBxH) cm: ${
-            this.order.people![i].length
-          }x${
-            this.order.people![i].width
-          }x${
-            this.order.people![i].height}`,
+          `Dims Gepäck (LxBxH) cm: ${this.order.people![i].length
+          }x${this.order.people![i].width
+          }x${this.order.people![i].height}`,
           borderLeft,
           currPos,
         );
@@ -534,18 +567,12 @@ export default class PrintTransportOrder extends Vue {
         pdf.setFont("Helvetica", "italic");
         pdf.setFontSize(8);
         pdf.text(
-          `Gefahrgut: ${
-            this.order.goods![i].dangerousGoods
-          }, Stapelbar: ${this.order.goods![i].stapelbar}, (LxBxH) cm: ${
-            this.order.goods![i].length
-          }x${
-            this.order.goods![i].width
-          }x${
-            this.order.goods![i].height
-          }, Warenwert (CHF): ${
-            this.order.goods![i].valueChf
-          }, Netto Geweicht (kg): ${
-            this.order.goods![i].netWeight}, Kommission: ${this.order.goods![i].kommissionieren}`,
+          `Gefahrgut: ${this.order.goods![i].dangerousGoods
+          }, Stapelbar: ${this.order.goods![i].stapelbar}, (LxBxH) cm: ${this.order.goods![i].length
+          }x${this.order.goods![i].width
+          }x${this.order.goods![i].height
+          }, Warenwert (CHF): ${this.order.goods![i].valueChf
+          }, Netto Geweicht (kg): ${this.order.goods![i].netWeight}, Kommission: ${this.order.goods![i].kommissionieren}`,
           borderLeft,
           currPos,
         );
@@ -708,8 +735,7 @@ export default class PrintTransportOrder extends Vue {
     return pdf;
   }
 
-
-  private async close(): Promise<void> {
+  public async close(): Promise<void> {
     this.$emit("closePrint");
   }
 }

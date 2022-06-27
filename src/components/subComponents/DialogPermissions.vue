@@ -54,7 +54,7 @@ export default class DialogPermissions extends Vue {
   })
   dialogWarnPermissions!: boolean;
 
-  private closePermissions(): void {
+  public closePermissions(): void {
     this.$emit("closePermissions");
   }
 }

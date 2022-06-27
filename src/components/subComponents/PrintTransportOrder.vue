@@ -10,7 +10,7 @@
       <v-btn color="orange" text @click="close()">
         Schliessen
       </v-btn>
-      <v-btn color="blue darken-2" text @click="send()">
+      <v-btn color="blue darken-2" text @click="sendEmail()">
         Versenden
         <v-icon right dark>
           mdi-email-fast-outline
@@ -23,7 +23,7 @@
         </v-icon>
       </v-btn>
     </v-card-actions>
-    <!-- Dialog Change Status -->
+    <!-- Dialog Send Email -->
     <v-dialog v-model="dialogSend" persistent max-width="550px">
       <v-card>
         <v-card-title class="headline">
@@ -51,6 +51,8 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Dialog Warn Permissions-->
+    <DialogPermissions :dialog-warn-permissions="warnPermissions" @closePermissions="closePermissions()" />
   </v-container>
 </template>
 
@@ -65,9 +67,14 @@ import Order from "@/model/Order";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as logo from "@/assets/Mova22Logo.json";
+import { DIRECTUS_ROLES } from "../Const";
+import DialogPermissions from "./DialogPermissions.vue";
+import SendEmail from "@/services/SendEmail";
+
 
 @Component({
   components: {
+    DialogPermissions,
   },
 })
 export default class PrintTransportOrder extends Vue {
@@ -80,6 +87,7 @@ export default class PrintTransportOrder extends Vue {
   private Email = "";
   private fileName = "";
   public dialogSend = false;
+  public warnPermissions = false;
   public sendEmailAdress = "";
 
   // eslint-disable-next-line new-cap
@@ -88,10 +96,6 @@ export default class PrintTransportOrder extends Vue {
   private typePeopleFromIdToDes = new Map();
 
   async mounted(): Promise<void> {
-    const smtpjsScript = document.createElement("script");
-    smtpjsScript.setAttribute("src", "https://smtpjs.com/v3/smtp.js");
-    document.head.appendChild(smtpjsScript);
-
     window.addEventListener("keyup", this.handleEnter);
     const nameEmail = await DirectusAPI.fetchNameEmail();
     this.Email = nameEmail[2];
@@ -121,48 +125,38 @@ export default class PrintTransportOrder extends Vue {
     }
   }
 
+  public closePermissions(): void {
+    this.warnPermissions = false;
+  }
+
   public async printOrder(): Promise<void> {
     this.fileName = `Order${this.order.id}.pdf`;
     this.orderPDF.save(this.fileName);
     this.close();
   }
 
-  public send(): void {
-    if (this.order.principal!.email) {
-      this.sendEmailAdress = this.order.principal!.email;
+  public sendEmail(): void {
+    if (this.$store.state.authorisation === DIRECTUS_ROLES["Transport MA"] || this.$store.state.authorisation === DIRECTUS_ROLES.Administrator) {
+      if (this.order.principal!.email) {
+        this.sendEmailAdress = this.order.principal!.email;
+      }
+      this.dialogSend = true;
+    } else {
+      this.warnPermissions = true;
     }
-    this.dialogSend = true;
   }
 
   public createEmail(): void {
     const localFileName = `Order${this.order.id}.pdf`;
-    this.sendEmail(this.sendEmailAdress, `Lieferschein / Transport-Auftrag Order ID: ${this.order.id}`, "test", localFileName, this.orderPDF.output("datauristring"));
+    const htmlBody = `<html><body>Guten Tag<br><br>Im Anhang finden Sie den Lieferschein/Transport-Auftrag für Auftrag mit ID: ${this.order.id}<br><br>Informationen zur Anlieferung im Pfadibundeslager (mova) sind <a href="https://bula21.sharepoint.com/:b:/s/share-externe/EY0yFKMD0gRHpZGT1faKgn4BEWsckIV5NR73OPsYVwEGvw?e=oMZTTE">hier</a> zu finden.<br>Des informations sur la livraison au camp fédéral scout (mova) sont disponibles <a href="https://bula21.sharepoint.com/:b:/s/share-externe/ESTBds8GVO9Nhwt5oF7RaysBiokVdvdwV_J4127LW7HKcg?e=KsoXL2">ici</a>.<br><br>Freundliche Grüsse<br><br>Verein Bundeslager 2021<br>c/o Pfadibewegung Schweiz<br>Teilbereich Transport<br>Speichergasse 31<br>CH-3011 Bern</body></html>`;
+    SendEmail.submitEmail([{
+      email: this.sendEmailAdress, name: this.order.principal!.name!,
+    }], `Lieferschein / Transport-Auftrag Order ID: ${this.order.id}`,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    htmlBody, localFileName, this.orderPDF.output("datauristring").split(",")[1]);
     this.dialogSend = false;
   }
-
-  // eslint-disable-next-line class-methods-use-this
-  public sendEmail(empfaenger: string, subject: string, body: string, nameContent: string, content: string): void {
-    window.Email.send({
-      SecureToken: process.env.VUE_APP_EMAIL_SECRET!,
-      To: empfaenger,
-      From: "TraMat.noreply@gmail.com",
-      Subject: subject,
-      Body: body,
-      Attachments: [
-        {
-          name: nameContent,
-          data: content,
-        },
-      ],
-    }).then((message) => {
-      // eslint-disable-next-line no-alert
-      alert(`Versand Email Status: ${message}`);
-    }).catch((error) => {
-      // eslint-disable-next-line no-alert
-      alert(error);
-    });
-  }
-
 
   // eslint-disable-next-line class-methods-use-this
   private breakLines(text: string, spaceLine: number): [string, number] {

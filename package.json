@@ -12,6 +12,7 @@
   "main": ".eslintrc.js",
   "dependencies": {
     "@directus/sdk-js": "^6.3.0",
+    "@sendinblue/client": "^3.2.1",
     "@types/lodash": "^4.14.178",
     "@types/pdfobject": "^2.0.6",
     "axios": "^0.24.0",

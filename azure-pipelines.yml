@@ -33,8 +33,9 @@ stages:
           vmImage: $(vmImageName)
         steps:
           - task: Docker@2
+            displayName: Build
             inputs:
-              command: buildAndPush
+              command: build
               repository: $(imageRepository)
               dockerfile: $(dockerfilePath)
               containerRegistry: $(dockerRegistryServiceConnection)
@@ -43,6 +44,19 @@ stages:
               arguments: --build-arg EMAIL_SECRET=$(EMAIL_SECRET)
             env:
               EMAIL_SECRET: $(EMAIL_SECRET)
+          - task: Docker@2
+            displayName: Push
+            inputs:
+              command: push
+              containerRegistry: $(dockerRegistryServiceConnection)
+              repository: $(imageRepository)
+              Dockerfile: $(dockerfilePath)
+              tags: |
+                  $(tag)
+              arguments: --build-arg EMAIL_SECRET=$(EMAIL_SECRET)
+            env:
+              EMAIL_SECRET: $(EMAIL_SECRET)
+
           - task: AzureRmWebAppDeployment@4
             inputs:
               ConnectionType: "AzureRM"

@@ -50,10 +50,8 @@ stages:
               command: push
               containerRegistry: $(dockerRegistryServiceConnection)
               repository: $(imageRepository)
-              Dockerfile: $(dockerfilePath)
               tags: |
                   $(tag)
-              arguments: --build-arg EMAIL_SECRET=$(EMAIL_SECRET)
             env:
               EMAIL_SECRET: $(EMAIL_SECRET)
 

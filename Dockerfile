@@ -2,6 +2,7 @@
 FROM node:lts as build-stage
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
+ARG EMAIL_SECRET
 ENV VUE_APP_EMAIL_SECRET=$EMAIL_SECRET
 COPY package*.json ./
 RUN npm install

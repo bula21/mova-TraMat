@@ -21,6 +21,7 @@ stages:
             inputs:
               command: build
               dockerfile: $(dockerfilePath)
+              arguments: --build-arg EMAIL_SECRET=$(EMAIL_SECRET)
             env:
               EMAIL_SECRET: $(EMAIL_SECRET)
   - stage: Deploy
@@ -39,6 +40,7 @@ stages:
               containerRegistry: $(dockerRegistryServiceConnection)
               tags: |
                 $(tag)
+              arguments: --build-arg EMAIL_SECRET=$(EMAIL_SECRET)
             env:
               EMAIL_SECRET: $(EMAIL_SECRET)
           - task: AzureRmWebAppDeployment@4

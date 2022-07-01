@@ -148,7 +148,22 @@ export default class PrintTransportOrder extends Vue {
 
   public createEmail(): void {
     const localFileName = `Order${this.order.id}.pdf`;
-    const htmlBody = `<html><body>Guten Tag<br><br>Im Anhang finden Sie den Lieferschein/Transport-Auftrag für Auftrag mit ID: ${this.order.id}<br><br>Informationen zur Anlieferung im Pfadibundeslager (mova) sind <a href="https://bula21.sharepoint.com/:b:/s/share-externe/EY0yFKMD0gRHpZGT1faKgn4BEWsckIV5NR73OPsYVwEGvw?e=oMZTTE">hier</a> zu finden.<br>Des informations sur la livraison au camp fédéral scout (mova) sont disponibles <a href="https://bula21.sharepoint.com/:b:/s/share-externe/ESTBds8GVO9Nhwt5oF7RaysBiokVdvdwV_J4127LW7HKcg?e=KsoXL2">ici</a>.<br><br>Freundliche Grüsse<br><br>Verein Bundeslager 2021<br>c/o Pfadibewegung Schweiz<br>Teilbereich Transport<br>Speichergasse 31<br>CH-3011 Bern</body></html>`;
+    // eslint-disable-next-line prefer-template
+    const htmlBody = "<html><body>Guten Tag<br><br>"
+      + "Du hast die Transporte mit den IDs: " + this.order.id + " bei der Transportcrew vom mova bestellt. Diese wurden nun von uns disponiert und ein Datum fixiert. Jetzt kann der Transport bald erfolgen, es fehlen nur noch folgende letzte Schritte:<br><br>"
+      + "<ol><li><strong>Lieferscheine überprüfen</strong><br>Sieh dir die Lieferscheine an und kontrolliere, ob alles stimmt z.B. wichtig Datum, Transportgut, Abhol- und Anlieferort. Sollte etwas nicht stimmen, melde dich umgehend auf 20_log_21_trp_tramat_request, dort wird dir geholfen, dein Transport korrekt zu erfassen.</li>"
+      + "<li><strong>Dokumente ausdrucken und mitgeben</strong><br>Drucke die Lieferscheine im Anhang aus und gebe sie dem Transport mit. Diese werden Beim Check-In auf dem Lagerplatz benötigt, um das Material an die richtige Stelle zu leiten. Zudem gibt es <a href='https://bula21.sharepoint.com/:b:/s/share-externe/EcPzBOxnshdEmI0mNhfBL5ABZhilQiobOEUpmY0Aay4SZQ?e=ydi1a4'>hier</a> noch eine allgemeine Information für alle Anlieferungen im Pfadibundeslager (mova). Diese Dokumente sind zwingend für jede Anlieferung mitzubringen.</li></ol>"
+      + "Bei Fragen, darfst du dich jederzeit im Slakchannel: 20_log_21_trp_tramat_request melden. Wir helfen dir sehr gerne weiter."
+      + "<br><br>Vielen Dank und beste Grüsse"
+      + "<br>TBL Materialtransport<br><br>"
+      + "<hr>"
+      + "<br>Bonne journée<br><br>"
+      + "Tu as commandé des transports chez nous avec l'ID: " + this.order.id + " Nous les avons maintenant planifiés et fixés à une date. Maintenant, le transport peut bientôt avoir lieu, il ne manque plus que les dernières étapes:<br><br>"
+      + "<ol><li><strong>contrôler les bons de livraison</strong><br>Regarde les bons de livraison et vérifie que tout est correct. (important la date, marchandise transportée, lieu d'enlèvement et de livraison) Si quelque chose ne correspond pas, tu dois te rendre immédiatement sur 20_log_21_trp_tramat_request, où l'on t'aidera à enregistrer correctement ton transport.</li>"
+      + "<li><strong>imprimer les documents et les remettre</strong><br>Imprime les bons de livraison en annexe et remets-les au transport. Ceux-ci sont nécessaires lors de l'enregistrement sur l'aire de stockage pour pouvoir attribuer le matériel. De plus, tu trouveras <a href='https://bula21.sharepoint.com/:b:/s/share-externe/EWUjVQqJuCZIuDa7drYi-yEBkLHXz-e275D-stWl_NufAw?e=aYyBJk'>ici</a> une information générale pour toutes les livraisons dans le camp fédéral scout (mova). Ces documents doivent impérativement être apportés pour chaque livraison.</li></ol>"
+      + "Si tu as des questions, tu peux toujours t'annoncer dans le Slakchannel : 20_log_21_trp_tramat_request nous t'aiderons très volontiers."
+      + "<br><br>Merci beaucoup et meilleures salutations"
+      + "<br>Responsable de sous-secteur Materialtransport, Logistique<br>";
     SendEmail.submitEmail([{
       email: this.sendEmailAdress, name: this.order.principal!.name!,
     }], `Lieferschein / Transport-Auftrag Order ID: ${this.order.id}`,

@@ -155,7 +155,30 @@ export default class PrintLables extends Vue {
   
   public createEmail(): void {
     const localFileName = `Orders${this.arrayOrderId}.pdf`;
-    const htmlBody = `<html><body>Guten Tag<br><br>Im Anhang finden Sie die Label(s) für Aufträge mit IDs: ${this.arrayOrderId}<br><br>Informationen zur Anlieferung im Pfadibundeslager (mova) sind <a href="https://bula21.sharepoint.com/:b:/s/share-externe/EY0yFKMD0gRHpZGT1faKgn4BEWsckIV5NR73OPsYVwEGvw?e=oMZTTE">hier</a> zu finden.<br>Des informations sur la livraison au camp fédéral scout (mova) sont disponibles <a href="https://bula21.sharepoint.com/:b:/s/share-externe/ESTBds8GVO9Nhwt5oF7RaysBiokVdvdwV_J4127LW7HKcg?e=KsoXL2">ici</a>.<br><br>Freundliche Grüsse<br><br>Verein Bundeslager 2021<br>c/o Pfadibewegung Schweiz<br>Teilbereich Transport<br>Speichergasse 31<br>CH-3011 Bern</body></html>`;
+    // eslint-disable-next-line prefer-template
+    const htmlBody = "<html><body>Guten Tag<br><br>"
+      + "Du hast die Transporte mit den IDs " + this.arrayOrderId + " bei der Transportcrew vom mova bestellt. Wir möchten uns bereits jetzt für das Vertrauen bedanken. Um eine reibungslose Zustellung zu gewährleisten bitten wir dich folgende Punkte abzuarbeiten:<br>"
+      + "<ul><li>Stelle dein Material rechtzeitig bei der vereinbarten Adresse bereit.</li>"
+      + "<li>Denke an eine angemessene Transportsicherung. Wir können nur die Paletten sichern, jedoch nicht den Inhalt. Bedenke, dass die Frachtstücke einen Wetterschutz brauchen.</li>"
+      + "<li>Achte darauf, dass der Untergrund befestigt ist, damit die Paletten mit dem Palettenhubwagen eingeladen werden können.</li>"
+      + "<li>Beschrifte alle Transportpositionen gut sichtbar mit den selbst ausgedruckten Label (siehe Anhang). Schütze die Etikette vor dem Wetter mit einer Klarsichtmappe.</li>"
+      + "<li>Lege die Lieferscheine zu deinem Material.</li></ul>"
+      + "Informationen zur Anlieferung im Pfadibundeslager (mova) sind <a href='https://bula21.sharepoint.com/:b:/s/share-externe/EcPzBOxnshdEmI0mNhfBL5ABZhilQiobOEUpmY0Aay4SZQ?e=ydi1a4'>hier</a> zu finden."
+      + "<br><br>Bei Fragen, darfst du dich jederzeit im Slakchannel: 20_log_21_trp_tramat_request melden wir helfen dir sehr gerne weiter."
+      + "<br><br>Vielen Dank und beste Grüsse"
+      + "<br>TBL Materialtransport<br>"
+      + "<hr>"
+      + "<br>Bonne journée<br><br>"
+      + "Tu as commandé les transports avec les IDs: " + this.arrayOrderId + " auprès de l'équipe de transport du movas. Nous te remercions d'ores et déjà de ta confiance. Afin de garantir une livraison sans problème, nous te prions de traiter les points suivants:<br>"
+      + "<ul><li>Prépare ton matériel à temps à l'adresse convenue.</li>"
+      + "<li>Pense à une sécurisation adéquate pour le transport. Nous ne pouvons sécuriser que les palettes, mais pas le contenu. N'oublie pas que les colis doivent être protégés des intempéries.</li>"
+      + "<li>Veille à ce que le support soit fixé pour que les palettes puissent être chargées avec le transpalette.</li>"
+      + "<li>Inscris de manière bien visible toutes les positions de transport avec les étiquettes que tu as imprimées toi-même (voir annexe). Protège les étiquettes des intempéries avec une chemise transparente.</li>"
+      + "<li>Range les bons de livraison avec ton matériel.</li></ul>"
+      + "Les informations concernant la livraison au camp fédéral scout (mova) se trouvent <a href='https://bula21.sharepoint.com/:b:/s/share-externe/EWUjVQqJuCZIuDa7drYi-yEBkLHXz-e275D-stWl_NufAw?e=aYyBJk'>ici</a>."
+      + "<br><br>Si tu as des questions, tu peux toujours t'annoncer dans le Slakchannel : 20_log_21_trp_tramat_request nous t'aiderons très volontiers."
+      + "<br><br>Merci beaucoup et meilleures salutations"
+      + "<br>Responsable de sous-secteur Materialtransport, Logistique";
     SendEmail.submitEmail([{
       email: this.sendEmailAdress, name: this.orders[0].principal!.name!,
     }], `Labels Order IDs: ${this.arrayOrderId}`,

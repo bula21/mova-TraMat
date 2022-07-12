@@ -179,9 +179,7 @@ export default class PrintLables extends Vue {
       + "<br><br>Si tu as des questions, tu peux toujours t'annoncer dans le Slakchannel : 20_log_21_trp_tramat_request nous t'aiderons très volontiers."
       + "<br><br>Merci beaucoup et meilleures salutations"
       + "<br>Responsable de sous-secteur Materialtransport, Logistique";
-    SendEmail.submitEmail([{
-      email: this.sendEmailAdress, name: this.orders[0].principal!.name!,
-    }], `Labels Order IDs: ${this.arrayOrderId}`,
+    SendEmail.submitEmail(this.sendEmailAdress, `Labels Order IDs: ${this.arrayOrderId}`,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     htmlBody, localFileName, this.orderPDF.output("datauristring").split(",")[1]);

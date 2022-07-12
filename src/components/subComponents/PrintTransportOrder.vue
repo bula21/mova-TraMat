@@ -165,8 +165,8 @@ export default class PrintTransportOrder extends Vue {
       + "<br><br>Merci beaucoup et meilleures salutations"
       + "<br>Responsable de sous-secteur Materialtransport, Logistique<br>";
     SendEmail.submitEmail(this.sendEmailAdress, `Lieferschein / Transport-Auftrag Order ID: ${this.order.id}`,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       htmlBody, localFileName, this.orderPDF.output("blob"));
     this.dialogSend = false;
   }

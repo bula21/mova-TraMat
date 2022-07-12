@@ -173,8 +173,8 @@ export default class PrintMultipleTransportOrder extends Vue {
       + "<br><br>Merci beaucoup et meilleures salutations"
       + "<br>Responsable de sous-secteur Materialtransport, Logistique<br>";
     SendEmail.submitEmail(this.sendEmailAdress, `Lieferscheine / Transport-Aufträge Order IDs: ${this.arrayOrderId}`,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       htmlBody, localFileName, this.orderPDF.output("blob"));
     this.dialogSend = false;
   }

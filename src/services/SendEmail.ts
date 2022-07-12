@@ -8,6 +8,7 @@ const VELO_BACKEND = "https://velo-backend.mova.ch/api/email";
 export default class SendEmail {
   /**
       * submitEmailOld
+      * !!!Depricated!!!
       */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static submitEmailOld(empfaenger: [any], subject: string, body: string, nameContent: string, base64Content: string): void {
@@ -43,7 +44,7 @@ export default class SendEmail {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static async submitEmail(empfaenger: string, subject: string, body: string, nameContent: string, content: Blob): Promise<void> {
     const formData = new FormData();
-    formData.append(nameContent, content);
+    formData.append("attachment", content, nameContent);
     formData.append("receivers", empfaenger);
     formData.append("subject", subject);
     formData.append("body", body);
@@ -51,14 +52,12 @@ export default class SendEmail {
     formData.append("logDbJwtToken", DirectusAPI.getToken()!);
 
     axios.post(VELO_BACKEND, formData, {
-
       headers: {
         "Content-Type": "multipart/form-data",
       },
       // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     }).then((data: any) => {
       console.log("API called successfully to send Email");
-      // console.log(data);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }).catch((reason: any) => {
       console.error(JSON.stringify(reason));

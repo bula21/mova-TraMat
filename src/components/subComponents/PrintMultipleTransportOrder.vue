@@ -175,7 +175,7 @@ export default class PrintMultipleTransportOrder extends Vue {
     SendEmail.submitEmail(this.sendEmailAdress, `Lieferscheine / Transport-Aufträge Order IDs: ${this.arrayOrderId}`,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-      htmlBody, localFileName, this.orderPDF.output("datauristring").split(",")[1]);
+      htmlBody, localFileName, this.orderPDF.output("blob"));
     this.dialogSend = false;
   }
 

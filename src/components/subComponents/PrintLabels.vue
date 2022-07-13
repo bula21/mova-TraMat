@@ -166,7 +166,7 @@ export default class PrintLables extends Vue {
       + "Informationen zur Anlieferung im Pfadibundeslager (mova) sind <a href='https://bula21.sharepoint.com/:b:/s/share-externe/EcPzBOxnshdEmI0mNhfBL5ABZhilQiobOEUpmY0Aay4SZQ?e=ydi1a4'>hier</a> zu finden."
       + "<br><br>Bei Fragen, darfst du dich jederzeit im Slakchannel: 20_log_21_trp_tramat_request melden wir helfen dir sehr gerne weiter."
       + "<br><br>Vielen Dank und beste Grüsse"
-      + "<br>TBL Materialtransport<br>"
+      + "<br>TBL Materialtransport<br><br>"
       + "<hr>"
       + "<br>Bonne journée<br><br>"
       + "Tu as commandé les transports avec les IDs: " + this.arrayOrderId + " auprès de l'équipe de transport du movas. Nous te remercions d'ores et déjà de ta confiance. Afin de garantir une livraison sans problème, nous te prions de traiter les points suivants:<br>"
@@ -179,12 +179,10 @@ export default class PrintLables extends Vue {
       + "<br><br>Si tu as des questions, tu peux toujours t'annoncer dans le Slakchannel : 20_log_21_trp_tramat_request nous t'aiderons très volontiers."
       + "<br><br>Merci beaucoup et meilleures salutations"
       + "<br>Responsable de sous-secteur Materialtransport, Logistique";
-    SendEmail.submitEmail([{
-      email: this.sendEmailAdress, name: this.orders[0].principal!.name!,
-    }], `Labels Order IDs: ${this.arrayOrderId}`,
+    SendEmail.submitEmail(this.sendEmailAdress, `Labels Order IDs: ${this.arrayOrderId}`,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    htmlBody, localFileName, this.orderPDF.output("datauristring").split(",")[1]);
+      htmlBody, localFileName, this.orderPDF.output("blob"));
     this.dialogSend = false;
   }
 

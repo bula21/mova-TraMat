@@ -166,7 +166,7 @@ export default class PrintLables extends Vue {
       + "Informationen zur Anlieferung im Pfadibundeslager (mova) sind <a href='https://bula21.sharepoint.com/:b:/s/share-externe/EcPzBOxnshdEmI0mNhfBL5ABZhilQiobOEUpmY0Aay4SZQ?e=ydi1a4'>hier</a> zu finden."
       + "<br><br>Bei Fragen, darfst du dich jederzeit im Slakchannel: 20_log_21_trp_tramat_request melden wir helfen dir sehr gerne weiter."
       + "<br><br>Vielen Dank und beste Grüsse"
-      + "<br>TBL Materialtransport<br>"
+      + "<br>TBL Materialtransport<br><br>"
       + "<hr>"
       + "<br>Bonne journée<br><br>"
       + "Tu as commandé les transports avec les IDs: " + this.arrayOrderId + " auprès de l'équipe de transport du movas. Nous te remercions d'ores et déjà de ta confiance. Afin de garantir une livraison sans problème, nous te prions de traiter les points suivants:<br>"
